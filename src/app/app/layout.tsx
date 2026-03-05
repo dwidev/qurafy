@@ -1,7 +1,4 @@
-import { AppSidebar } from "@/components/layout/AppSidebar";
-import { MobileHeader } from "@/components/layout/MobileHeader";
-
-export default function AppLayout({
+import { AppSidebar } from "@/components/layout/AppSidebar";export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -9,10 +6,11 @@ export default function AppLayout({
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       <AppSidebar />
-      <div className="flex-1 flex flex-col md:border-l border-border/40 overflow-hidden relative">
-        <MobileHeader />
-        <main className="flex-1 overflow-y-auto w-full">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <main className="flex-1 overflow-y-auto w-full pb-24 md:pb-0 md:pl-28">
+          <div className="max-w-6xl mx-auto w-full">
             {children}
+          </div>
         </main>
       </div>
     </div>
