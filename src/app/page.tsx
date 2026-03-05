@@ -101,14 +101,15 @@ export default function Home() {
                 </div>
               </div>
               <div className="p-6 md:p-8 bg-white">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Popular Surahs</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {[
                     { n: 1, ar: "ٱلْفَاتِحَة", en: "Al-Fatihah", v: "7 Verses" },
-                    { n: 2, ar: "ٱلْبَقَرَة", en: "Al-Baqarah", v: "286 Verses" },
-                    { n: 3, ar: "آلَ عِمْرَانَ", en: "Ali 'Imran", v: "200 Verses" },
-                    { n: 4, ar: "ٱلنِّسَآء", en: "An-Nisa", v: "176 Verses" },
-                    { n: 5, ar: "ٱلْمَائِدَة", en: "Al-Ma'idah", v: "120 Verses" },
-                    { n: 6, ar: "ٱلْأَنْعَام", en: "Al-An'am", v: "165 Verses" },
+                    { n: 18, ar: "ٱلْكَهْف", en: "Al-Kahf", v: "110 Verses" },
+                    { n: 36, ar: "يس", en: "Ya-Sin", v: "83 Verses" },
+                    { n: 55, ar: "ٱلرَّحْمَٰن", en: "Ar-Rahman", v: "78 Verses" },
+                    { n: 56, ar: "ٱلْوَاقِعَة", en: "Al-Waqi'ah", v: "96 Verses" },
+                    { n: 67, ar: "ٱلْمُلْك", en: "Al-Mulk", v: "30 Verses" },
                   ].map((s) => (
                     <div key={s.n} className="group flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-3 md:p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer">
                       <div className="flex items-center gap-3">
