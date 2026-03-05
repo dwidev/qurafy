@@ -1,65 +1,336 @@
+import Link from "next/link";
 import Image from "next/image";
+import {
+  ArrowRight,
+  BookOpen,
+  Calendar,
+  CheckCircle,
+  Target,
+  Globe,
+  Headphones,
+  Bookmark,
+  BarChart2,
+} from "lucide-react";
+import ScrollAnimator from "@/components/ScrollAnimator";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex flex-col min-h-screen bg-[#f8f9fc] text-foreground font-sans overflow-x-hidden">
+
+      {/* ── IntersectionObserver (client) drives all .reveal elements ── */}
+      <ScrollAnimator />
+
+      {/* ── NAVBAR ─────────────────────────────────────── */}
+      <header className="sticky top-4 z-50 flex justify-center px-4">
+        <div className="w-full max-w-5xl flex items-center justify-between rounded-2xl border border-black/10 bg-white/80 backdrop-blur-md px-5 py-3 shadow-sm">
+          <Link href="/" className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            <span className="text-lg font-bold tracking-tight">Qurafy</span>
+          </Link>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+            <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
+            <Link href="#preview"  className="hover:text-foreground transition-colors">Preview</Link>
+            <Link href="#pricing"  className="hover:text-foreground transition-colors">Pricing</Link>
+          </nav>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="hidden sm:block text-sm font-medium border border-border rounded-full px-4 py-2 hover:bg-muted transition-colors">
+              Login
+            </Link>
+            <Link href="/app" className="flex items-center gap-1.5 text-sm font-semibold bg-foreground text-background rounded-full px-4 py-2 hover:bg-foreground/90 transition-colors">
+              Register <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1">
+
+        {/* ── HERO ───────────────────────────────────────── */}
+        <section className="flex flex-col items-center text-center px-4 pt-20 pb-8 md:pt-28 md:pb-12">
+
+          {/* pill badge */}
+          <div className="reveal reveal-up inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-sm font-medium text-primary mb-6">
+            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+            Free to use — no ads, no distractions
+          </div>
+
+          {/* headline */}
+          <h1 className="reveal reveal-up reveal-d1 text-5xl md:text-7xl font-bold tracking-tighter max-w-3xl leading-tight text-foreground">
+            Read. Memorize.<br />
+            <span className="text-primary">Complete the Quran.</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          {/* subtext */}
+          <p className="reveal reveal-up reveal-d2 mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
+            Qurafy helps you build daily reading and memorization habits with automated planners, beautiful Uthmani script, and seamless progress tracking.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+          {/* CTAs */}
+          <div className="reveal reveal-up reveal-d3 flex flex-col sm:flex-row gap-3 mt-8">
+            <Link href="/app" className="inline-flex items-center justify-center gap-2 h-12 rounded-full bg-foreground text-background px-8 text-sm font-semibold hover:bg-foreground/90 transition-colors shadow">
+              Get Started — it&apos;s free <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href="#preview" className="inline-flex items-center justify-center h-12 rounded-full border border-input bg-background px-8 text-sm font-medium hover:bg-muted transition-colors shadow-sm">
+              See how it works
+            </Link>
+          </div>
+
+          {/* trust stats */}
+          <div className="reveal reveal-up reveal-d4 flex items-center gap-6 mt-8 text-sm text-muted-foreground">
+            {[["114", "Surahs"], ["30", "Juz"], ["6,236", "Verses"]].map(([n, l]) => (
+              <div key={l} className="flex items-center gap-1.5">
+                <CheckCircle className="h-4 w-4 text-primary" />
+                <span><strong className="text-foreground">{n}</strong> {l}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── HERO MOCKUP ─────────────────────────────── */}
+        <section id="preview" className="flex justify-center px-4 pb-24">
+          <div className="reveal reveal-scale relative w-full max-w-5xl">
+            {/* Glow */}
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-primary/10 via-primary/5 to-transparent blur-3xl -z-10 scale-110" />
+            <div className="rounded-3xl border border-black/10 bg-white shadow-2xl overflow-hidden">
+              <div className="flex items-center gap-2 px-5 py-3 border-b border-black/5 bg-gray-50/80">
+                <div className="h-3 w-3 rounded-full bg-red-400" />
+                <div className="h-3 w-3 rounded-full bg-yellow-400" />
+                <div className="h-3 w-3 rounded-full bg-green-400" />
+                <div className="flex-1 mx-4 h-6 rounded-md bg-gray-100 flex items-center justify-center">
+                  <span className="text-xs text-muted-foreground">qurafy.io/app/read</span>
+                </div>
+              </div>
+              <div className="p-6 md:p-8 bg-white">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { n: 1, ar: "ٱلْفَاتِحَة", en: "Al-Fatihah", v: "7 Verses" },
+                    { n: 2, ar: "ٱلْبَقَرَة", en: "Al-Baqarah", v: "286 Verses" },
+                    { n: 3, ar: "آلَ عِمْرَانَ", en: "Ali 'Imran", v: "200 Verses" },
+                    { n: 4, ar: "ٱلنِّسَآء", en: "An-Nisa", v: "176 Verses" },
+                    { n: 5, ar: "ٱلْمَائِدَة", en: "Al-Ma'idah", v: "120 Verses" },
+                    { n: 6, ar: "ٱلْأَنْعَام", en: "Al-An'am", v: "165 Verses" },
+                  ].map((s) => (
+                    <div key={s.n} className="group flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-3 md:p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary flex-shrink-0">
+                          {s.n}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{s.en}</p>
+                          <p className="text-xs text-muted-foreground">{s.v}</p>
+                        </div>
+                      </div>
+                      <span className="text-xl font-bold text-foreground/80 hidden md:block font-serif" dir="rtl">{s.ar}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FEATURE 1: Reader ──────────────────────── */}
+        <section id="features" className="py-20 md:py-28 px-4 bg-white">
+          <div className="container max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+
+              {/* text side — slides in from left */}
+              <div className="reveal reveal-left space-y-6">
+                <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+                  <BookOpen className="h-3.5 w-3.5 mr-1.5" /> Beautiful Reader
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+                  Read with clarity,<br />in any language.
+                </h2>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                  Authentic Uthmani script beautifully rendered. Toggle translations in your language, play audio for any verse, and bookmark your last position — across all your devices.
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    [Globe, "Multi-language translations"],
+                    [Headphones, "Verse-by-verse audio playback"],
+                    [Bookmark, "Sync bookmarks via Supabase"],
+                  ].map(([Icon, text]) => (
+                    <li key={text as string} className="flex items-center gap-3 text-sm font-medium">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50">
+                        <Icon className="h-4 w-4 text-blue-600" />
+                      </div>
+                      {text as string}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/app/read" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
+                  Open the Reader <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+
+              {/* image side — slides in from right, slightly delayed */}
+              <div className="reveal reveal-right reveal-d2 relative">
+                <div className="absolute -inset-4 rounded-3xl bg-blue-50/50 -z-10" />
+                <Image
+                  src="/mockup-reader.png"
+                  alt="Qurafy Surah Reader"
+                  width={600}
+                  height={500}
+                  className="rounded-2xl shadow-xl border border-black/10 w-full"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FEATURE 2: Memorization ────────────────── */}
+        <section className="py-20 md:py-28 px-4 bg-[#f8f9fc]">
+          <div className="container max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+
+              {/* image side — slides in from left */}
+              <div className="reveal reveal-left reveal-d2 relative order-2 md:order-1">
+                <div className="absolute -inset-4 rounded-3xl bg-emerald-50/50 -z-10" />
+                <Image
+                  src="/mockup-memorize.png"
+                  alt="Qurafy Memorization Planner"
+                  width={600}
+                  height={500}
+                  className="rounded-2xl shadow-xl border border-black/10 w-full"
+                />
+              </div>
+
+              {/* text side — slides in from right */}
+              <div className="reveal reveal-right space-y-6 order-1 md:order-2">
+                <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+                  <Target className="h-3.5 w-3.5 mr-1.5" /> Memorization Planner
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+                  Memorize smarter,<br />not harder.
+                </h2>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                  Pick any Surah or Juz to memorize, set your target deadline, and Qurafy automatically creates a daily verse plan — breaking impossible goals into simple daily check-offs.
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    [Target, "Customizable memorization goals"],
+                    [CheckCircle, "Daily verse check-off"],
+                    [BarChart2, "Visual progress tracking"],
+                  ].map(([Icon, text]) => (
+                    <li key={text as string} className="flex items-center gap-3 text-sm font-medium">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50">
+                        <Icon className="h-4 w-4 text-emerald-600" />
+                      </div>
+                      {text as string}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/app/memorize" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
+                  Start your plan <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FEATURE 3: Khatam ──────────────────────── */}
+        <section className="py-20 md:py-28 px-4 bg-white">
+          <div className="container max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+
+              {/* text side — slides in from left */}
+              <div className="reveal reveal-left space-y-6">
+                <div className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700">
+                  <Calendar className="h-3.5 w-3.5 mr-1.5" /> Khatam Tracker
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+                  Finish the Quran<br />on your schedule.
+                </h2>
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                  Whether you want to finish in 30 days for Ramadan or 90 days at your own pace, Qurafy calculates your exact daily reading target and keeps you on track.
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    [Calendar, "Set any Khatam timeline"],
+                    [BookOpen, "Daily Surah & verse range guidance"],
+                    [CheckCircle, "One-tap progress check-off"],
+                  ].map(([Icon, text]) => (
+                    <li key={text as string} className="flex items-center gap-3 text-sm font-medium">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50">
+                        <Icon className="h-4 w-4 text-orange-500" />
+                      </div>
+                      {text as string}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/app/tracker" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
+                  Plan your Khatam <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+
+              {/* image side — slides in from right */}
+              <div className="reveal reveal-right reveal-d2 relative">
+                <div className="absolute -inset-4 rounded-3xl bg-orange-50/40 -z-10" />
+                <Image
+                  src="/mockup-khatam.png"
+                  alt="Qurafy Khatam Tracker"
+                  width={600}
+                  height={500}
+                  className="rounded-2xl shadow-xl border border-black/10 w-full"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── STATS ──────────────────────────────────── */}
+        <section className="py-16 bg-[#f8f9fc] border-y border-border/40">
+          <div className="container max-w-5xl mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              {[
+                ["114",   "Surahs available", "reveal-d1"],
+                ["30",    "Juz covered",       "reveal-d2"],
+                ["6,236", "Total Ayahs",        "reveal-d3"],
+                ["Free",  "Always free",        "reveal-d4"],
+              ].map(([num, label, delay]) => (
+                <div key={label} className={`reveal reveal-up ${delay} space-y-1`}>
+                  <p className="text-4xl font-bold text-primary">{num}</p>
+                  <p className="text-sm text-muted-foreground">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── CTA ────────────────────────────────────── */}
+        <section className="py-24 md:py-32 px-4">
+          <div className="reveal reveal-scale container max-w-4xl mx-auto text-center space-y-6">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+              Start your Quran journey<br />today — for free.
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              No credit card. No subscription. Just you, the Quran, and a simple plan.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/app" className="inline-flex items-center justify-center gap-2 h-13 rounded-full bg-foreground text-background px-10 py-3.5 text-base font-semibold hover:bg-foreground/90 transition-colors shadow">
+                Get Started Free <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
+
+      {/* ── FOOTER ─────────────────────────────────── */}
+      <footer className="border-t border-border bg-white py-10">
+        <div className="container max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            <span className="font-bold text-lg">Qurafy.io</span>
+          </div>
+          <p className="text-sm text-muted-foreground">Built for better Quran habits. © 2026 Qurafy.</p>
+          <div className="flex gap-5 text-sm text-muted-foreground">
+            <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href="#" className="hover:text-foreground transition-colors">Contact</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
