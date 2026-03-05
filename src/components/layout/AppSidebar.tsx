@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, Calendar, LayoutDashboard, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const navItems = [
   {
@@ -70,6 +71,9 @@ export function AppSidebar() {
       </nav>
 
       <div className="w-8 h-[2px] bg-border/50 rounded-full my-1 hidden md:block" />
+
+      {/* Theme Toggle */}
+      <ThemeToggle className="text-muted-foreground hover:bg-secondary hover:text-foreground md:hover:scale-105 p-3 md:p-3.5" />
 
       {/* User profile at the bottom */}
       <div className="group relative mt-1 mb-1 hidden md:block">

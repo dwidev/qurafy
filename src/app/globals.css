@@ -144,7 +144,23 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground min-h-screen;
+    background-color: hsl(var(--background));
+  }
+
+  /* Light mode gradient (subtle wash) */
+  :root body {
+    background-image: radial-gradient(circle at top right, hsl(160, 84%, 97%), transparent 40%),
+                      radial-gradient(circle at bottom left, hsl(210, 40%, 98%), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  /* Dark mode gradient (gradient lightdark effect) */
+  .dark body {
+    background-color: hsl(224, 71%, 4%);
+    background-image: radial-gradient(circle at top center, hsl(220, 40%, 15%), transparent 60%),
+                      radial-gradient(circle at bottom center, hsl(160, 40%, 8%), transparent 80%);
+    background-attachment: fixed;
   }
 }
 

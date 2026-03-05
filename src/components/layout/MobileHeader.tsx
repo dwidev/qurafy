@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, Calendar, LayoutDashboard, Menu, Target, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const navItems = [
   {
@@ -83,6 +84,11 @@ export function MobileHeader() {
                 );
               })}
             </nav>
+
+            <div className="p-4 border-t border-border flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Dark Mode</span>
+              <ThemeToggle className="p-2 border border-border" />
+            </div>
           </div>
           <div className="flex-1" onClick={() => setIsOpen(false)} />
         </div>

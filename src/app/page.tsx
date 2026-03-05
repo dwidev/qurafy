@@ -13,17 +13,22 @@ import {
   Play,
 } from "lucide-react";
 import ScrollAnimator from "@/components/ScrollAnimator";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { StarryBackground } from "@/components/StarryBackground";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f8f9fc] text-foreground font-sans overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans overflow-x-hidden">
+
+      {/* ── Background stars & moons (dark mode only) ── */}
+      <StarryBackground />
 
       {/* ── IntersectionObserver (client) drives all .reveal elements ── */}
       <ScrollAnimator />
 
       {/* ── NAVBAR ─────────────────────────────────────── */}
       <header className="sticky top-4 z-50 flex justify-center px-4">
-        <div className="w-full max-w-5xl flex items-center justify-between rounded-2xl border border-black/10 bg-white/80 backdrop-blur-md px-5 py-3 shadow-sm">
+        <div className="w-full max-w-5xl flex items-center justify-between rounded-2xl border border-border bg-card/80 backdrop-blur-md px-5 py-3 shadow-sm">
           <Link href="/" className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-primary" />
             <span className="text-lg font-bold tracking-tight">Qurafy</span>
@@ -43,6 +48,9 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* ── Fixed Theme Toggle (bottom-right) ── */}
+      <ThemeToggle showLabel={true} className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full border border-border bg-card/80 backdrop-blur-md text-muted-foreground hover:bg-muted hover:text-foreground shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all" />
 
       <main className="flex-1">
 
@@ -71,7 +79,7 @@ export default function Home() {
             <Link href="/app" className="inline-flex items-center justify-center gap-2 h-12 rounded-full bg-foreground text-background px-8 text-sm font-semibold hover:bg-foreground/90 transition-colors shadow">
               Get Started — it&apos;s free <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="#preview" className="inline-flex items-center justify-center h-12 rounded-full border border-input bg-background px-8 text-sm font-medium hover:bg-muted transition-colors shadow-sm">
+            <Link href="#preview" className="inline-flex items-center justify-center h-12 rounded-full border border-input bg-card px-8 text-sm font-medium hover:bg-muted transition-colors shadow-sm">
               See how it works
             </Link>
           </div>
@@ -92,16 +100,16 @@ export default function Home() {
           <div className="reveal reveal-scale relative w-full max-w-5xl">
             {/* Glow */}
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-primary/10 via-primary/5 to-transparent blur-3xl -z-10 scale-110" />
-            <div className="rounded-3xl border border-black/10 bg-white shadow-2xl overflow-hidden">
-              <div className="flex items-center gap-2 px-5 py-3 border-b border-black/5 bg-gray-50/80">
+            <div className="rounded-3xl border border-border bg-card shadow-2xl overflow-hidden">
+              <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/50">
                 <div className="h-3 w-3 rounded-full bg-red-400" />
                 <div className="h-3 w-3 rounded-full bg-yellow-400" />
                 <div className="h-3 w-3 rounded-full bg-green-400" />
-                <div className="flex-1 mx-4 h-6 rounded-md bg-gray-100 flex items-center justify-center">
+                <div className="flex-1 mx-4 h-6 rounded-md bg-secondary flex items-center justify-center">
                   <span className="text-xs text-muted-foreground">qurafy.io/app/read</span>
                 </div>
               </div>
-              <div className="p-6 md:p-8 bg-white">
+              <div className="p-6 md:p-8 bg-card">
                 <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Popular Surahs</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {[
@@ -112,7 +120,7 @@ export default function Home() {
                     { n: 56, ar: "ٱلْوَاقِعَة", en: "Al-Waqi'ah", v: "96 Verses" },
                     { n: 67, ar: "ٱلْمُلْك", en: "Al-Mulk", v: "30 Verses" },
                   ].map((s) => (
-                    <div key={s.n} className="group flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-3 md:p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer">
+                    <div key={s.n} className="group flex items-center justify-between rounded-xl border border-border bg-secondary/50 p-3 md:p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary flex-shrink-0">
                           {s.n}
@@ -132,13 +140,17 @@ export default function Home() {
         </section>
 
         {/* ── FEATURE 1: Reader ──────────────────────── */}
-        <section id="features" className="py-20 md:py-28 px-4 bg-white">
-          <div className="container max-w-6xl mx-auto">
+        <section id="features" className="relative py-20 md:py-28 px-4 overflow-hidden bg-gradient-to-br from-blue-950/40 via-card to-card dark:from-blue-950/30 dark:via-background dark:to-background">
+          {/* Decorative floating orbs */}
+          <div className="absolute top-10 -left-20 w-72 h-72 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-10 right-0 w-56 h-56 bg-indigo-500/8 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-400/5 dark:bg-blue-400/3 rounded-full blur-3xl pointer-events-none" />
+          <div className="container relative z-10 max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
 
               {/* text side — slides in from left */}
               <div className="reveal reveal-left space-y-6">
-                <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+                <div className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-600 dark:text-blue-400">
                   <BookOpen className="h-3.5 w-3.5 mr-1.5" /> Beautiful Reader
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
@@ -154,8 +166,8 @@ export default function Home() {
                     [Bookmark, "Sync bookmarks via Supabase"],
                   ].map(([Icon, text]) => (
                     <li key={text as string} className="flex items-center gap-3 text-sm font-medium">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50">
-                        <Icon className="h-4 w-4 text-blue-600" />
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500/10">
+                        <Icon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                       </div>
                       {text as string}
                     </li>
@@ -168,13 +180,13 @@ export default function Home() {
 
               {/* image side — slides in from right, slightly delayed */}
               <div className="reveal reveal-right reveal-d2 relative">
-                <div className="absolute -inset-4 rounded-3xl bg-blue-50/50 -z-10" />
+                <div className="absolute -inset-4 rounded-3xl bg-blue-500/5 -z-10" />
                 <Image
                   src="/mockup-reader.png"
                   alt="Qurafy Surah Reader"
                   width={600}
                   height={500}
-                  className="rounded-2xl shadow-xl border border-black/10 w-full"
+                  className="rounded-2xl shadow-xl border border-border w-full"
                 />
               </div>
             </div>
@@ -182,22 +194,26 @@ export default function Home() {
         </section>
 
         {/* ── FEATURE 2: Memorization ────────────────── */}
-        <section className="py-20 md:py-28 px-4 bg-[#f8f9fc]">
-          <div className="container max-w-6xl mx-auto">
+        <section className="relative py-20 md:py-28 px-4 overflow-hidden bg-gradient-to-bl from-emerald-950/30 via-card to-card dark:from-emerald-950/20 dark:via-background dark:to-background">
+          {/* Decorative floating orbs */}
+          <div className="absolute top-20 right-0 w-80 h-80 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 left-10 w-64 h-64 bg-teal-500/8 dark:bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-emerald-400/5 dark:bg-emerald-400/3 rounded-full blur-3xl pointer-events-none" />
+          <div className="container relative z-10 max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
 
               {/* image side — slides in from left */}
               <div className="reveal reveal-left reveal-d2 relative order-2 md:order-1">
-                <div className="absolute -inset-4 rounded-3xl bg-emerald-50/50 -z-10" />
-                <div className="relative rounded-2xl shadow-xl border border-black/10 bg-white p-6 md:p-8 overflow-hidden w-full min-h-[400px] flex flex-col justify-center">
-                  <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-50/80 rounded-full blur-3xl opacity-60 z-0" />
+                <div className="absolute -inset-4 rounded-3xl bg-emerald-500/5 -z-10" />
+                <div className="relative rounded-2xl shadow-xl border border-border bg-card p-6 md:p-8 overflow-hidden w-full min-h-[400px] flex flex-col justify-center">
+                  <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl opacity-60 z-0" />
                   
                   <div className="relative z-10 flex flex-col">
                     
                     {/* Header */}
                     <div className="flex items-center gap-2 mb-4 pointer-events-none">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">
-                        <Target className="h-5 w-5 text-emerald-600" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+                        <Target className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <div>
                         <span className="font-bold text-lg leading-tight">Memorization</span>
@@ -206,12 +222,12 @@ export default function Home() {
                     </div>
 
                     {/* Active Goal */}
-                    <div className="rounded-xl border border-border bg-gradient-to-br from-card to-emerald-50/50 p-4 shadow-sm">
+                    <div className="rounded-xl border border-border bg-gradient-to-br from-card to-emerald-500/5 p-4 shadow-sm">
                       <div className="flex items-center gap-4">
                         {/* Circular progress */}
                         <div className="relative w-[3.5rem] h-[3.5rem] flex-shrink-0">
                           <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                            <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="12" className="text-gray-100" />
+                            <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="12" className="text-secondary" />
                             <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor"
                               strokeWidth="12" className="text-emerald-500" strokeDasharray="180 276.46" strokeLinecap="round" />
                           </svg>
@@ -219,13 +235,13 @@ export default function Home() {
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/50 bg-emerald-100/80 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 mb-1">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" /> Active Goal
+                          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" /> Active Goal
                           </div>
                           <h4 className="font-bold text-sm truncate">Surah An-Naba</h4>
                           <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
                             <span>Day 16 of 30</span>
-                            <span className="font-medium text-emerald-600">26/40 verses</span>
+                            <span className="font-medium text-emerald-600 dark:text-emerald-400">26/40 verses</span>
                           </div>
                         </div>
                       </div>
@@ -251,7 +267,7 @@ export default function Home() {
 
               {/* text side — slides in from right */}
               <div className="reveal reveal-right space-y-6 order-1 md:order-2">
-                <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+                <div className="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-400">
                   <Target className="h-3.5 w-3.5 mr-1.5" /> Memorization Planner
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
@@ -267,8 +283,8 @@ export default function Home() {
                     [BarChart2, "Visual progress tracking"],
                   ].map(([Icon, text]) => (
                     <li key={text as string} className="flex items-center gap-3 text-sm font-medium">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50">
-                        <Icon className="h-4 w-4 text-emerald-600" />
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/10">
+                        <Icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       {text as string}
                     </li>
@@ -283,13 +299,17 @@ export default function Home() {
         </section>
 
         {/* ── FEATURE 3: Khatam ──────────────────────── */}
-        <section className="py-20 md:py-28 px-4 bg-white">
-          <div className="container max-w-6xl mx-auto">
+        <section className="relative py-20 md:py-28 px-4 overflow-hidden bg-gradient-to-br from-orange-950/30 via-card to-card dark:from-orange-950/20 dark:via-background dark:to-background">
+          {/* Decorative floating orbs */}
+          <div className="absolute top-10 -left-10 w-72 h-72 bg-orange-500/10 dark:bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-20 right-10 w-60 h-60 bg-amber-500/8 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[400px] bg-orange-400/5 dark:bg-orange-400/3 rounded-full blur-3xl pointer-events-none" />
+          <div className="container relative z-10 max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
 
               {/* text side — slides in from left */}
               <div className="reveal reveal-left space-y-6">
-                <div className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700">
+                <div className="inline-flex items-center rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-sm font-medium text-orange-700 dark:text-orange-400">
                   <Calendar className="h-3.5 w-3.5 mr-1.5" /> Khatam Tracker
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
@@ -305,8 +325,8 @@ export default function Home() {
                     [CheckCircle, "One-tap progress check-off"],
                   ].map(([Icon, text]) => (
                     <li key={text as string} className="flex items-center gap-3 text-sm font-medium">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50">
-                        <Icon className="h-4 w-4 text-orange-500" />
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-500/10">
+                        <Icon className="h-4 w-4 text-orange-500 dark:text-orange-400" />
                       </div>
                       {text as string}
                     </li>
@@ -319,13 +339,13 @@ export default function Home() {
 
               {/* image side — slides in from right */}
               <div className="reveal reveal-right reveal-d2 relative">
-                <div className="absolute -inset-4 rounded-3xl bg-orange-50/40 -z-10" />
+                <div className="absolute -inset-4 rounded-3xl bg-orange-500/5 -z-10" />
                 <Image
                   src="/mockup-khatam.png"
                   alt="Qurafy Khatam Tracker"
                   width={600}
                   height={500}
-                  className="rounded-2xl shadow-xl border border-black/10 w-full"
+                  className="rounded-2xl shadow-xl border border-border w-full"
                 />
               </div>
             </div>
@@ -333,7 +353,7 @@ export default function Home() {
         </section>
 
         {/* ── STATS ──────────────────────────────────── */}
-        <section className="py-16 bg-[#f8f9fc] border-y border-border/40">
+        <section className="py-16 bg-background border-y border-border/40">
           <div className="container max-w-5xl mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
@@ -370,7 +390,7 @@ export default function Home() {
       </main>
 
       {/* ── FOOTER ─────────────────────────────────── */}
-      <footer className="border-t border-border bg-white py-10">
+      <footer className="border-t border-border bg-card py-10">
         <div className="container max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-primary" />
