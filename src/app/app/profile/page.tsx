@@ -17,7 +17,9 @@ import {
     Bell,
     LogOut,
     ChevronRight,
-    Camera
+    Camera,
+    Sparkles,
+    Heart
 } from "lucide-react";
 import Link from "next/link";
 
@@ -181,17 +183,44 @@ export default function ProfilePage() {
                         ))}
                     </div>
 
-                    <div className="rounded-3xl bg-primary/5 border border-primary/20 p-6 flex flex-col gap-4 text-center">
-                        <div className="h-12 w-12 bg-primary/20 text-primary rounded-full flex items-center justify-center mx-auto">
-                            <Shield className="h-6 w-6" />
+                    <div className="rounded-4xl bg-linear-to-br from-primary/10 via-primary/5 to-background border border-primary/20 p-8 shadow-xl shadow-primary/5 relative overflow-hidden group/pro">
+                        <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-2xl group-hover/pro:scale-150 transition-transform duration-700" />
+
+                        <div className="relative z-10 space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="h-14 w-14 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover/pro:rotate-12 transition-transform">
+                                    <Sparkles className="h-7 w-7" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black">Qurafy Pro</h3>
+                                    <p className="text-xs font-bold text-primary/60 uppercase tracking-widest mt-0.5">Premium Features</p>
+                                </div>
+                            </div>
+
+                            <p className="text-sm text-muted-foreground leading-relaxed font-medium">Donate any amount as Sadaqah to unlock Pro features permanently.</p>
+
+                            <div className="space-y-3">
+                                {[
+                                    "Donate Any Amount",
+                                    "Permanent Pro Access",
+                                    "Supporting Our Mission",
+                                ].map((feat) => (
+                                    <div key={feat} className="flex items-center gap-2.5 text-xs font-bold text-foreground/80">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                        {feat}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="pt-2 space-y-3">
+                                <button className="w-full h-12 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-black shadow-sm hover:bg-primary/10 transition-all">
+                                    Donate to Unlock Pro
+                                </button>
+                                <button className="w-full h-12 rounded-full bg-amber-500 text-white text-sm font-black shadow-lg shadow-amber-500/20 hover:bg-amber-600 hover:-translate-y-0.5 transition-all">
+                                    Lifetime Supporter ($49)
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-sm font-bold">Qurafy Pro</p>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Unlock advanced analytics, custom goals, and premium audio reciters.</p>
-                        </div>
-                        <button className="w-full h-10 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-md hover:bg-primary/90 transition-all">
-                            Upgrade Now
-                        </button>
                     </div>
                 </div>
             </div>
