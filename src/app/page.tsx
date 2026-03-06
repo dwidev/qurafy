@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+
 import {
   ArrowRight,
   BookOpen,
@@ -11,6 +11,10 @@ import {
   Bookmark,
   BarChart2,
   Play,
+  ChevronRight,
+  Flame,
+  TrendingUp,
+  Clock,
 } from "lucide-react";
 import ScrollAnimator from "@/components/ScrollAnimator";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -35,8 +39,8 @@ export default function Home() {
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
-            <Link href="#preview"  className="hover:text-foreground transition-colors">Preview</Link>
-            <Link href="#pricing"  className="hover:text-foreground transition-colors">Pricing</Link>
+            <Link href="#preview" className="hover:text-foreground transition-colors">Preview</Link>
+            <Link href="#pricing" className="hover:text-foreground transition-colors">Pricing</Link>
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/login" className="hidden sm:block text-sm font-medium border border-border rounded-full px-4 py-2 hover:bg-muted transition-colors">
@@ -99,40 +103,129 @@ export default function Home() {
         <section id="preview" className="flex justify-center px-4 pb-24">
           <div className="reveal reveal-scale relative w-full max-w-5xl">
             {/* Glow */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-primary/10 via-primary/5 to-transparent blur-3xl -z-10 scale-110" />
-            <div className="rounded-3xl border border-border bg-card shadow-2xl overflow-hidden">
+            <div className="absolute inset-0 rounded-3xl bg-linear-to-b from-primary/10 via-primary/5 to-transparent blur-3xl -z-10 scale-110" />
+            <div className="rounded-3xl border border-border bg-card shadow-2xl overflow-hidden pointer-events-none select-none">
               <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/50">
                 <div className="h-3 w-3 rounded-full bg-red-400" />
                 <div className="h-3 w-3 rounded-full bg-yellow-400" />
                 <div className="h-3 w-3 rounded-full bg-green-400" />
                 <div className="flex-1 mx-4 h-6 rounded-md bg-secondary flex items-center justify-center">
-                  <span className="text-xs text-muted-foreground">qurafy.io/app/read</span>
+                  <span className="text-xs text-muted-foreground">qurafy.io/app</span>
                 </div>
               </div>
-              <div className="p-6 md:p-8 bg-card">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Popular Surahs</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="p-6 md:p-8 bg-background flex flex-col gap-8 md:gap-10">
+                {/* ── Quick Stats Mock ── */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
-                    { n: 1, ar: "ٱلْفَاتِحَة", en: "Al-Fatihah", v: "7 Verses" },
-                    { n: 18, ar: "ٱلْكَهْف", en: "Al-Kahf", v: "110 Verses" },
-                    { n: 36, ar: "يس", en: "Ya-Sin", v: "83 Verses" },
-                    { n: 55, ar: "ٱلرَّحْمَٰن", en: "Ar-Rahman", v: "78 Verses" },
-                    { n: 56, ar: "ٱلْوَاقِعَة", en: "Al-Waqi'ah", v: "96 Verses" },
-                    { n: 67, ar: "ٱلْمُلْك", en: "Al-Mulk", v: "30 Verses" },
-                  ].map((s) => (
-                    <div key={s.n} className="group flex items-center justify-between rounded-xl border border-border bg-secondary/50 p-3 md:p-4 hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary flex-shrink-0">
-                          {s.n}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{s.en}</p>
-                          <p className="text-xs text-muted-foreground">{s.v}</p>
-                        </div>
+                    { icon: Flame, label: "Current Streak", value: "16 Days", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-500/10" },
+                    { icon: Clock, label: "Time Read", value: "14h 20m", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-500/10" },
+                    { icon: BookOpen, label: "Verses Read", value: "1,240", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+                    { icon: TrendingUp, label: "Weekly Goal", value: "80%", color: "text-primary", bg: "bg-primary/10" },
+                  ].map(({ icon: Icon, label, value, color, bg }) => (
+                    <div key={label} className="rounded-2xl border border-border bg-card p-4 flex items-center gap-3 shadow-sm">
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bg}`}>
+                        <Icon className={`h-5 w-5 ${color}`} />
                       </div>
-                      <span className="text-xl font-bold text-foreground/80 hidden md:block font-serif" dir="rtl">{s.ar}</span>
+                      <div>
+                        <p className="text-xs text-muted-foreground leading-none">{label}</p>
+                        <p className="text-lg font-bold leading-tight mt-0.5">{value}</p>
+                      </div>
                     </div>
                   ))}
+                </div>
+
+                {/* ── Active Goals & Progress Mock ── */}
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold px-1">Your Progress</h2>
+                  <div className="grid md:grid-cols-2 gap-4">
+
+                    {/* Memorization Progress */}
+                    <div className="group flex flex-col justify-between rounded-3xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                      <div className="flex items-start justify-between mb-8">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 shadow-inner">
+                            <Target className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg leading-tight">Memorization</h3>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                              <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span> Active Target
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50/50 dark:bg-emerald-500/5 text-emerald-600">
+                          <ChevronRight className="h-4 w-4" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Surah An-Naba</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Verses 1-15 memorized</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-emerald-600">38%</p>
+                          </div>
+                        </div>
+
+                        <div className="h-2.5 w-full rounded-full bg-secondary overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full w-[38%] relative">
+                            <div className="absolute top-0 right-0 bottom-0 left-0 bg-white/20"></div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs pt-2 border-t border-border/50">
+                          <span className="text-muted-foreground">Daily Goal: 5 Verses</span>
+                          <span className="font-medium text-emerald-600 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/10">On Track</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Khatam Tracker */}
+                    <div className="group flex flex-col justify-between rounded-3xl border border-border bg-card p-6 md:p-8 shadow-sm">
+                      <div className="flex items-start justify-between mb-8">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 shadow-inner">
+                            <Calendar className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg leading-tight">Khatam Progress</h3>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                              <span className="flex h-2 w-2 rounded-full bg-orange-500"></span> Ramadan Plan
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-50/50 dark:bg-orange-500/5 text-orange-500">
+                          <ChevronRight className="h-4 w-4" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Juz 8</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Day 8 of 30</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-orange-500">26%</p>
+                          </div>
+                        </div>
+
+                        <div className="h-2.5 w-full rounded-full bg-secondary overflow-hidden">
+                          <div className="h-full bg-orange-500 rounded-full w-[26%] relative">
+                            <div className="absolute top-0 right-0 bottom-0 left-0 bg-white/20"></div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs pt-2 border-t border-border/50">
+                          <span className="text-muted-foreground">Today's Target: 20 Pages</span>
+                          <span className="font-medium text-orange-500 px-2 py-0.5 rounded bg-orange-50 dark:bg-orange-500/10">12 Pages Left</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
               </div>
             </div>
@@ -181,20 +274,59 @@ export default function Home() {
               {/* image side — slides in from right, slightly delayed */}
               <div className="reveal reveal-right reveal-d2 relative">
                 <div className="absolute -inset-4 rounded-3xl bg-blue-500/5 -z-10" />
-                <Image
-                  src="/mockup-reader.png"
-                  alt="Qurafy Surah Reader"
-                  width={600}
-                  height={500}
-                  className="rounded-2xl shadow-xl border border-border w-full"
-                />
+                <div className="relative rounded-2xl shadow-xl border border-border bg-card p-6 md:p-8 overflow-hidden w-full min-h-[400px] flex flex-col justify-center">
+                  <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl opacity-60 z-0" />
+
+                  <div className="relative z-10 flex flex-col gap-4 pointer-events-none select-none">
+                    {/* Header */}
+                    <div className="flex items-center gap-3 border-b border-border pb-4 mb-2">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
+                        <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-lg leading-tight">Surah Al-Kahf</span>
+                        <p className="text-xs text-muted-foreground mt-0.5">Verses 1-10</p>
+                      </div>
+                    </div>
+
+                    {/* Ayah 1 */}
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground mt-1">
+                          1
+                        </div>
+                        <p className="text-2xl font-serif text-right leading-loose" dir="rtl">
+                          ٱلْحَمْدُ لِلَّهِ ٱلَّذِىٓ أَنزَلَ عَلَىٰ عَبْدِهِ ٱلْكِتَٰبَ وَلَمْ يَجْعَل لَّهُۥ عِوَجًا ۜ
+                        </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground pl-12 leading-relaxed">
+                        [All] praise is [due] to Allah, who has sent down upon His Servant the Book and has not made therein any deviance.
+                      </p>
+                    </div>
+
+                    {/* Ayah 2 */}
+                    <div className="space-y-3 pt-4 border-t border-border/50">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground mt-1">
+                          2
+                        </div>
+                        <p className="text-2xl font-serif text-right leading-loose" dir="rtl">
+                          قَيِّمًا لِّيُنذِرَ بَأْسًا شَدِيدًا مِّن لَّدُنْهُ وَيُبَشِّرَ ٱلْمُؤْمِنِينَ ٱلَّذِينَ يَعْمَلُونَ ٱلصَّٰلِحَٰتِ أَنَّ لَهُمْ أَجْرًا حَسَنًا
+                        </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground pl-12 leading-relaxed">
+                        [He has made it] straight, to warn of severe punishment from Him and to give good tidings to the believers who do righteous deeds that they will have a good reward.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* ── FEATURE 2: Memorization ────────────────── */}
-        <section className="relative py-20 md:py-28 px-4 overflow-hidden bg-gradient-to-bl from-emerald-950/30 via-card to-card dark:from-emerald-950/20 dark:via-background dark:to-background">
+        <section className="relative py-20 md:py-28 px-4 overflow-hidden bg-linear-to-bl from-emerald-950/30 via-card to-card dark:from-emerald-950/20 dark:via-background dark:to-background">
           {/* Decorative floating orbs */}
           <div className="absolute top-20 right-0 w-80 h-80 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-10 left-10 w-64 h-64 bg-teal-500/8 dark:bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -207,9 +339,9 @@ export default function Home() {
                 <div className="absolute -inset-4 rounded-3xl bg-emerald-500/5 -z-10" />
                 <div className="relative rounded-2xl shadow-xl border border-border bg-card p-6 md:p-8 overflow-hidden w-full min-h-[400px] flex flex-col justify-center">
                   <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl opacity-60 z-0" />
-                  
+
                   <div className="relative z-10 flex flex-col">
-                    
+
                     {/* Header */}
                     <div className="flex items-center gap-2 mb-4 pointer-events-none">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
@@ -222,10 +354,10 @@ export default function Home() {
                     </div>
 
                     {/* Active Goal */}
-                    <div className="rounded-xl border border-border bg-gradient-to-br from-card to-emerald-500/5 p-4 shadow-sm">
+                    <div className="rounded-xl border border-border bg-linear-to-br from-card to-emerald-500/5 p-4 shadow-sm">
                       <div className="flex items-center gap-4">
                         {/* Circular progress */}
-                        <div className="relative w-[3.5rem] h-[3.5rem] flex-shrink-0">
+                        <div className="relative w-14 h-14 shrink-0">
                           <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
                             <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="12" className="text-secondary" />
                             <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor"
@@ -233,7 +365,7 @@ export default function Home() {
                           </svg>
                           <span className="absolute inset-0 flex items-center justify-center text-xs font-bold mt-1">65%</span>
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" /> Active Goal
@@ -248,7 +380,7 @@ export default function Home() {
                     </div>
 
                     {/* Today's Target Card */}
-                    <div className="relative group rounded-xl border border-border bg-gradient-to-br from-card to-background p-4 shadow-md flex items-center justify-between gap-4 mt-3">
+                    <div className="relative group rounded-xl border border-border bg-linear-to-br from-card to-background p-4 shadow-md flex items-center justify-between gap-4 mt-3">
                       <div className="space-y-1">
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground mb-1">
                           <Calendar className="h-3 w-3" /> Today
@@ -256,8 +388,8 @@ export default function Home() {
                         <h5 className="font-bold text-sm">Verses 27–30</h5>
                         <p className="text-xs text-muted-foreground">4 verses • 3× reps</p>
                       </div>
-                      
-                      <button className="h-12 w-12 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center flex-shrink-0 transition-transform hover:scale-105 active:scale-95">
+
+                      <button className="h-12 w-12 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center shrink-0 transition-transform hover:scale-105 active:scale-95">
                         <Play className="h-5 w-5 ml-1 fill-white" />
                       </button>
                     </div>
@@ -299,7 +431,7 @@ export default function Home() {
         </section>
 
         {/* ── FEATURE 3: Khatam ──────────────────────── */}
-        <section className="relative py-20 md:py-28 px-4 overflow-hidden bg-gradient-to-br from-orange-950/30 via-card to-card dark:from-orange-950/20 dark:via-background dark:to-background">
+        <section className="relative py-20 md:py-28 px-4 overflow-hidden bg-linear-to-br from-orange-950/30 via-card to-card dark:from-orange-950/20 dark:via-background dark:to-background">
           {/* Decorative floating orbs */}
           <div className="absolute top-10 -left-10 w-72 h-72 bg-orange-500/10 dark:bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-20 right-10 w-60 h-60 bg-amber-500/8 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -340,13 +472,77 @@ export default function Home() {
               {/* image side — slides in from right */}
               <div className="reveal reveal-right reveal-d2 relative">
                 <div className="absolute -inset-4 rounded-3xl bg-orange-500/5 -z-10" />
-                <Image
-                  src="/mockup-khatam.png"
-                  alt="Qurafy Khatam Tracker"
-                  width={600}
-                  height={500}
-                  className="rounded-2xl shadow-xl border border-border w-full"
-                />
+                <div className="relative rounded-2xl shadow-xl border border-border bg-card p-6 md:p-8 overflow-hidden w-full min-h-[400px] flex flex-col justify-center">
+                  <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl opacity-60 z-0" />
+
+                  <div className="relative z-10 flex flex-col gap-4 pointer-events-none select-none">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">
+                          <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                          <span className="font-bold text-lg leading-tight">Ramadan Plan</span>
+                          <p className="text-xs text-muted-foreground mt-0.5">30 days to completion</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xl font-bold text-orange-600 dark:text-orange-400">Juz 8</span>
+                        <p className="text-xs text-muted-foreground mt-0.5">Day 8 / 30</p>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="space-y-2 mb-2">
+                      <div className="flex justify-between text-xs font-medium">
+                        <span className="text-foreground">Overall Progress</span>
+                        <span className="text-orange-600 dark:text-orange-400">26%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                        <div className="h-full bg-orange-500 rounded-full w-[26%]"></div>
+                      </div>
+                    </div>
+
+                    {/* Daily Target */}
+                    <div className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-semibold text-sm">Today&apos;s Target</h4>
+                        <span className="rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2.5 py-0.5 text-xs font-medium">12 Pages Left</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between group border border-border/50 rounded-lg p-3 bg-secondary/30">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-card border border-border text-[10px] text-muted-foreground">
+                              1
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Al-An&apos;am (6:111 - 6:140)</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">Pages 142 - 146</p>
+                            </div>
+                          </div>
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full border border-orange-500/50 text-orange-500 bg-orange-500/10">
+                            <CheckCircle className="h-3 w-3" />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between group border border-border/50 rounded-lg p-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border text-[10px] text-muted-foreground">
+                              2
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Al-An&apos;am (6:141 - 6:165)</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">Pages 147 - 150</p>
+                            </div>
+                          </div>
+                          <div className="h-5 w-5 rounded-full border border-border bg-card" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -357,10 +553,10 @@ export default function Home() {
           <div className="container max-w-5xl mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
-                ["114",   "Surahs available", "reveal-d1"],
-                ["30",    "Juz covered",       "reveal-d2"],
-                ["6,236", "Total Ayahs",        "reveal-d3"],
-                ["Free",  "Always free",        "reveal-d4"],
+                ["114", "Surahs available", "reveal-d1"],
+                ["30", "Juz covered", "reveal-d2"],
+                ["6,236", "Total Ayahs", "reveal-d3"],
+                ["Free", "Always free", "reveal-d4"],
               ].map(([num, label, delay]) => (
                 <div key={label} className={`reveal reveal-up ${delay} space-y-1`}>
                   <p className="text-4xl font-bold text-primary">{num}</p>
