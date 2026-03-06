@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Calendar, LayoutDashboard, Menu, Target, X } from "lucide-react";
+import { BookOpen, Calendar, LayoutDashboard, Menu, Target, X, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -27,6 +27,16 @@ const navItems = [
     title: "Khatam Tracker",
     href: "/app/tracker",
     icon: Calendar,
+  },
+  {
+    title: "Profile",
+    href: "/app/profile",
+    icon: User,
+  },
+  {
+    title: "Settings",
+    href: "/app/settings",
+    icon: Settings,
   },
 ];
 
@@ -62,7 +72,7 @@ export function MobileHeader() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
@@ -73,8 +83,8 @@ export function MobileHeader() {
                     onClick={() => setIsOpen(false)}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-colors",
-                      isActive 
-                        ? "bg-primary/10 text-primary" 
+                      isActive
+                        ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >

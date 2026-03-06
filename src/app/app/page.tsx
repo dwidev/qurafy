@@ -1,9 +1,18 @@
 import Link from "next/link";
-import { BookOpen, Calendar, Target, Flame, TrendingUp, Clock, ChevronRight, Quote, History } from "lucide-react";
+import { BookOpen, Calendar, Target, Flame, TrendingUp, Clock, ChevronRight, Quote, History, MapPin, Compass, Sparkles, Trophy } from "lucide-react";
 
 export default function AppDashboard() {
   // Mock flag for fresh login - set to true to see empty states for new user
   const isNewUser = false;
+
+  // Mock prayer times (as might be seen in a premium Islamic SaaS)
+  const prayerTimes = [
+    { name: "Fajr", time: "04:42", active: false },
+    { name: "Dhuhr", time: "12:05", active: true },
+    { name: "Asr", time: "15:20", active: false },
+    { name: "Maghrib", time: "18:12", active: false },
+    { name: "Isha", time: "19:25", active: false },
+  ];
 
   // Mock data for Continue Reading section
   const readingQuranData: any = isNewUser ? null : {
@@ -21,20 +30,49 @@ export default function AppDashboard() {
   };
 
   return (
-    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-20">
+    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-32">
+
+      {/* ── Prayer Times Top Bar ─────────────────────────── */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 md:p-1 md:pr-4 rounded-4xl border border-border bg-card shadow-sm group hover:border-primary/20 transition-all">
+        <div className="flex items-center gap-3 bg-secondary/50 rounded-full px-4 py-2 self-start md:self-auto w-full md:w-auto">
+          <MapPin className="h-4 w-4 text-primary" />
+          <span className="text-xs font-bold truncate">Jakarta, ID</span>
+          <div className="h-4 w-px bg-border/50 mx-1" />
+          <Compass className="h-4 w-4 text-emerald-500" />
+          <span className="text-xs font-bold">295° NW</span>
+        </div>
+
+        <div className="flex items-center justify-between w-full md:w-auto gap-4 md:gap-8 overflow-x-auto no-scrollbar py-1">
+          {prayerTimes.map((p) => (
+            <div key={p.name} className="flex flex-col items-center min-w-[50px]">
+              <span className={`text-[10px] font-black uppercase tracking-widest ${p.active ? "text-primary" : "text-muted-foreground"}`}>{p.name}</span>
+              <span className={`text-sm font-black ${p.active ? "text-foreground" : "text-muted-foreground/60"}`}>{p.time}</span>
+              {p.active && <div className="h-1 w-4 bg-primary rounded-full mt-1 animate-pulse" />}
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ── Page Header ─────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight flex items-center gap-2.5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 shadow-inner">
               <span className="text-primary text-xl">👋</span>
             </span>
             Assalamu'alaikum, User
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Welcome back to your daily Quran journey.
+          <p className="text-sm text-muted-foreground mt-1.5 font-medium">
+            Wednesday, March 5, 2026 • 7 Ramadan 1447 AH
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="h-10 w-10 flex items-center justify-center rounded-full border border-border bg-card shadow-sm hover:shadow-md transition-all">
+            <History className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <Link href="/app/settings" className="h-10 w-10 flex items-center justify-center rounded-full border border-border bg-card shadow-sm hover:shadow-md transition-all">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </Link>
         </div>
       </div>
 
@@ -161,6 +199,22 @@ export default function AppDashboard() {
           )}
         </div>
       )}
+
+      {/* ── Daily Challenge card ─────────────────────────── */}
+      <div className="group relative rounded-3xl border border-amber-200 bg-linear-to-br from-amber-50 to-orange-50/30 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-all">
+        <div className="flex items-center gap-6 text-center md:text-left">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-200 group-hover:scale-110 transition-transform">
+            <Sparkles className="h-8 w-8" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-amber-900 flex items-center gap-2">Daily Challenge <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-900/10 text-[10px] text-amber-900">+50 XP</span></h2>
+            <p className="text-amber-800/70 text-sm font-medium">Complete one juz of the Quran to earn the <strong>'Consistency'</strong> badge!</p>
+          </div>
+        </div>
+        <button className="h-12 px-8 rounded-full bg-amber-900 text-white text-sm font-black hover:bg-amber-950 shadow-md shadow-amber-900/20 active:scale-95 transition-all">
+          Accept Challenge
+        </button>
+      </div>
 
       {/* ── Active Goals & Progress ───────────────────────── */}
       <div className="space-y-4 pt-4">

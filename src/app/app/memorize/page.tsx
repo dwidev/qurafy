@@ -22,25 +22,25 @@ import {
 
 /* ─── Static Surah data ──────────────────────────────────────────────── */
 const SURAHS = [
-  { n: 1,  en: "Al-Fatihah",  ar: "ٱلْفَاتِحَة",   verses: 7   },
-  { n: 78, en: "An-Naba",     ar: "ٱلنَّبَإِ",       verses: 40  },
-  { n: 79, en: "An-Nazi'at",  ar: "ٱلنَّٰزِعَٰت",   verses: 46  },
-  { n: 80, en: "Abasa",       ar: "عَبَسَ",          verses: 42  },
+  { n: 1, en: "Al-Fatihah", ar: "ٱلْفَاتِحَة", verses: 7 },
+  { n: 78, en: "An-Naba", ar: "ٱلنَّبَإِ", verses: 40 },
+  { n: 79, en: "An-Nazi'at", ar: "ٱلنَّٰزِعَٰت", verses: 46 },
+  { n: 80, en: "Abasa", ar: "عَبَسَ", verses: 42 },
 ];
 
 /* ─── Sample verse data for today's target ───────────────────────────── */
 const TODAY_VERSES = [
-  { n: 1, ar: "عَمَّ يَتَسَآءَلُونَ",              tr: "What are they asking one another about?" },
-  { n: 2, ar: "عَنِ ٱلنَّبَإِ ٱلْعَظِيمِ",         tr: "About the great news —"                  },
+  { n: 1, ar: "عَمَّ يَتَسَآءَلُونَ", tr: "What are they asking one another about?" },
+  { n: 2, ar: "عَنِ ٱلنَّبَإِ ٱلْعَظِيمِ", tr: "About the great news —" },
   { n: 3, ar: "ٱلَّذِى هُمْ فِيهِ مُخْتَلِفُونَ", tr: "that over which they are in disagreement." },
-  { n: 4, ar: "كَلَّا سَيَعْلَمُونَ",              tr: "No! They are going to know."               },
-  { n: 5, ar: "ثُمَّ كَلَّا سَيَعْلَمُونَ",        tr: "Then, no! They are going to know."         },
+  { n: 4, ar: "كَلَّا سَيَعْلَمُونَ", tr: "No! They are going to know." },
+  { n: 5, ar: "ثُمَّ كَلَّا سَيَعْلَمُونَ", tr: "Then, no! They are going to know." },
 ];
 
 const UPCOMING = [
-  { day: "Day 9 · Tomorrow",   range: "An-Naba, Verses 11–20", count: 10 },
-  { day: "Day 10 · Thu",       range: "An-Naba, Verses 21–30", count: 10 },
-  { day: "Day 11 · Fri",       range: "An-Naba, Verses 31–40", count: 10 },
+  { day: "Day 9 · Tomorrow", range: "An-Naba, Verses 11–20", count: 10 },
+  { day: "Day 10 · Thu", range: "An-Naba, Verses 21–30", count: 10 },
+  { day: "Day 11 · Fri", range: "An-Naba, Verses 31–40", count: 10 },
 ];
 
 /* ─── Circular progress SVG ─────────────────────────────────────────── */
@@ -170,7 +170,7 @@ export default function MemorizePage() {
           >
             <Plus className="h-5 w-5" /> Create Your First Goal
           </button>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-20 text-left max-w-3xl">
             <div className="space-y-2">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">1</div>
@@ -195,10 +195,10 @@ export default function MemorizePage() {
           {/* Quick stats row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-in fade-in duration-500">
             {[
-              { icon: Flame,     label: "Day Streak",      value: "1 days",   color: "text-orange-500",  bg: "bg-orange-50" },
-              { icon: BookOpen,  label: "Verses Done",      value: `${goal.doneVerses}/${goal.totalVerses}`, color: "text-blue-600",  bg: "bg-blue-50" },
-              { icon: Clock,     label: "Days Remaining",   value: `${remaining} days`, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { icon: TrendingUp,label: "Overall Progress", value: `${pct}%`,  color: "text-primary",     bg: "bg-primary/10" },
+              { icon: Flame, label: "Day Streak", value: "1 days", color: "text-orange-500", bg: "bg-orange-50" },
+              { icon: BookOpen, label: "Verses Done", value: `${goal.doneVerses}/${goal.totalVerses}`, color: "text-blue-600", bg: "bg-blue-50" },
+              { icon: Clock, label: "Days Remaining", value: `${remaining} days`, color: "text-emerald-600", bg: "bg-emerald-50" },
+              { icon: TrendingUp, label: "Overall Progress", value: `${pct}%`, color: "text-primary", bg: "bg-primary/10" },
             ].map(({ icon: Icon, label, value, color, bg }) => (
               <div key={label} className="rounded-2xl border border-border bg-card p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
                 <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${bg}`}>
@@ -247,7 +247,7 @@ export default function MemorizePage() {
           {/* Today's Target (Stack Card) */}
           <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
             <h2 className="text-xl font-bold">Today's Target</h2>
-            
+
             {sessionDone ? (
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 md:p-8 flex items-center gap-4 shadow-sm">
                 <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -259,13 +259,13 @@ export default function MemorizePage() {
                 </div>
               </div>
             ) : (
-              <div 
+              <div
                 className="relative group cursor-pointer pt-4"
                 onClick={() => setSessionOpen(true)}
               >
                 <div className="absolute inset-x-8 top-0 h-full bg-primary/10 rounded-3xl transition-transform duration-300 group-hover:-translate-y-2" />
                 <div className="absolute inset-x-4 top-2 h-full bg-primary/20 rounded-3xl transition-transform duration-300 group-hover:-translate-y-1" />
-                
+
                 <div className="relative rounded-3xl border border-border bg-gradient-to-br from-card to-background p-6 md:p-8 shadow-md group-hover:shadow-xl transition-all flex flex-col sm:flex-row items-center justify-between gap-6 z-10 mt-4">
                   <div className="space-y-2 text-center sm:text-left">
                     <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground mb-1">
@@ -276,7 +276,7 @@ export default function MemorizePage() {
                       {TODAY_VERSES.length} verses • {targetReps}× repetitions per verse
                     </p>
                   </div>
-                  
+
                   <button className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-active:scale-95 transition-all">
                     <Play className="h-8 w-8 ml-1 fill-white" />
                   </button>
@@ -340,9 +340,9 @@ export default function MemorizePage() {
                 </div>
                 <div className="space-y-4">
                   <h2 className="text-3xl font-bold">Ready to Memorize?</h2>
-                  <p className="text-muted-foreground">Today's target: {SURAHS[form.surahIdx]?.en || "An-Naba"}, 1–5.<br/>Focus solely on these verses. We will guide you through {targetReps} reps per verse.</p>
+                  <p className="text-muted-foreground">Today's target: {SURAHS[form.surahIdx]?.en || "An-Naba"}, 1–5.<br />Focus solely on these verses. We will guide you through {targetReps} reps per verse.</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setSessionStarted(true)}
                   className="w-full rounded-2xl bg-primary px-8 py-5 text-lg font-bold text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3"
                 >
@@ -363,7 +363,7 @@ export default function MemorizePage() {
                   <p className={`text-5xl md:text-6xl font-serif leading-tight font-bold text-foreground transition-all duration-700 ${phase === "reciting" ? "text-foreground/80 scale-95 blur-[2px] select-none hover:blur-none" : ""}`} dir="rtl">
                     {v.ar}
                   </p>
-                  
+
                   <p className={`text-lg md:text-xl text-muted-foreground transition-all duration-500 ${phase === "reciting" ? "opacity-0" : ""}`}>
                     {v.tr}
                   </p>
@@ -380,7 +380,7 @@ export default function MemorizePage() {
                       </div>
                       <p className="font-semibold text-primary text-lg">Listening...</p>
                       <p className="text-sm text-muted-foreground mt-1">Focus on the pronunciation</p>
-                      
+
                       <button onClick={() => setPhase("reciting")} className="mt-8 text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors">
                         Skip & Recite Now
                       </button>
@@ -418,7 +418,7 @@ export default function MemorizePage() {
                   <h2 className="text-3xl font-bold text-foreground">Alhamdulillah!</h2>
                   <p className="text-muted-foreground mt-2">You've successfully completed today's memorization target.</p>
                 </div>
-                <button 
+                <button
                   onClick={resetSession}
                   className="w-full rounded-2xl bg-foreground px-8 py-4 text-background font-bold hover:bg-foreground/90 transition-all mt-4"
                 >
@@ -445,28 +445,28 @@ export default function MemorizePage() {
                 <X className="h-5 w-5 text-muted-foreground" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-              
+
               {/* Goal Title */}
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold">Goal Title</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. Memorize Juz 30" 
-                  value={form.title} 
-                  onChange={e => setForm({ ...form, title: e.target.value })} 
-                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition" 
+                <input
+                  type="text"
+                  placeholder="e.g. Memorize Juz 30"
+                  value={form.title}
+                  onChange={e => setForm({ ...form, title: e.target.value })}
+                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
                 />
               </div>
-              
+
               {/* Surah Select */}
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold">Select Target</label>
                 <div className="relative">
-                  <select 
-                    value={form.surahIdx} 
-                    onChange={e => setForm({ ...form, surahIdx: Number(e.target.value) })} 
+                  <select
+                    value={form.surahIdx}
+                    onChange={e => setForm({ ...form, surahIdx: Number(e.target.value) })}
                     className="w-full appearance-none rounded-xl border border-input bg-background px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
                   >
                     {SURAHS.map((s, i) => (
@@ -503,9 +503,9 @@ export default function MemorizePage() {
                 </div>
                 <div className="grid grid-cols-5 gap-2">
                   {[1, 3, 5, 7, 10].map(n => (
-                    <button 
-                      key={n} 
-                      onClick={() => setForm({ ...form, reps: n })} 
+                    <button
+                      key={n}
+                      onClick={() => setForm({ ...form, reps: n })}
                       className={`rounded-xl py-2.5 text-sm font-semibold border transition-all ${form.reps === n ? "bg-primary text-primary-foreground border-primary shadow-md scale-105" : "border-border bg-background hover:border-primary/40 text-muted-foreground hover:bg-muted/50"}`}
                     >
                       {n}×
@@ -524,19 +524,19 @@ export default function MemorizePage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="border-t border-border px-6 py-4 flex gap-3 bg-muted/20">
-              <button 
-                onClick={() => setShowGoalModal(false)} 
+              <button
+                onClick={() => setShowGoalModal(false)}
                 className="flex-1 rounded-xl border border-border py-3 text-sm font-semibold hover:bg-muted"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setShowGoalModal(false);
                   setHasActiveGoal(true);
-                }} 
+                }}
                 disabled={!form.title}
                 className="flex-1 rounded-xl bg-primary text-primary-foreground py-3 font-bold shadow-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
