@@ -102,28 +102,28 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --background: 0 0% 7.8%; /* #141414 */
+    --foreground: 0 0% 91%;
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 56.9%;
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 215 20.2% 65.1%;
+    --popover: 0 0% 7.8%;
+    --popover-foreground: 0 0% 65.1%;
 
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
+    --card: 0 0% 7.8%;
+    --card-foreground: 0 0% 91%;
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
+    --border: 0 0% 17%;
+    --input: 0 0% 17%;
 
     --primary: 160 84% 39%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 11.2%;
     --secondary-foreground: 210 40% 98%;
 
-    --accent: 216 34% 17%;
+    --accent: 0 0% 17%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 63% 31%;
@@ -157,10 +157,8 @@
 
   /* Dark mode gradient (gradient lightdark effect) */
   .dark body {
-    background-color: hsl(224, 71%, 4%);
-    background-image: radial-gradient(circle at top center, hsl(220, 40%, 15%), transparent 60%),
-                      radial-gradient(circle at bottom center, hsl(160, 40%, 8%), transparent 80%);
-    background-attachment: fixed;
+    background-color: #141414;
+    background-image: none;
   }
 }
 
