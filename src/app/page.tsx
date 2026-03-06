@@ -91,9 +91,9 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* trust stats */}
+          {/* social proof stats */}
           <div className="reveal reveal-up reveal-d4 flex items-center gap-6 mt-8 text-sm text-muted-foreground">
-            {[["114", "Surahs"], ["30", "Juz"], ["6,236", "Verses"]].map(([n, l]) => (
+            {[["1k+", "Users Joined"], ["500+", "Khatams Completed"], ["10K+", "Verses Read"]].map(([n, l]) => (
               <div key={l} className="flex items-center gap-1.5">
                 <CheckCircle className="h-4 w-4 text-primary" />
                 <span><strong className="text-foreground">{n}</strong> {l}</span>
@@ -641,19 +641,19 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── STATS ──────────────────────────────────── */}
+        {/* ── COMMUNITY STATS ──────────────────────────────────── */}
         <section className="py-16 bg-background border-y border-border/40">
           <div className="container max-w-5xl mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
-                ["114", "Surahs available", "reveal-d1"],
-                ["30", "Juz covered", "reveal-d2"],
-                ["6,236", "Total Ayahs", "reveal-d3"],
-                ["Free", "Always free", "reveal-d4"],
+                ["12,400+", "Active Users", "reveal-d1"],
+                ["8,250+", "Khatams Done", "reveal-d2"],
+                ["1.5M+", "Verses Memorized", "reveal-d3"],
+                ["98%", "Consistency Rate", "reveal-d4"],
               ].map(([num, label, delay]) => (
                 <div key={label} className={`reveal reveal-up ${delay} space-y-1`}>
                   <p className="text-4xl font-bold text-primary">{num}</p>
-                  <p className="text-sm text-muted-foreground">{label}</p>
+                  <p className="text-sm text-muted-foreground font-medium">{label}</p>
                 </div>
               ))}
             </div>
