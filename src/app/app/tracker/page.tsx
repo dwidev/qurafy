@@ -641,7 +641,7 @@ export default function TrackerPage() {
 
                       <div className="flex gap-2 pt-6">
                         <Link
-                          href="/app/read"
+                          href={`/app/read/juz-${stats.todayEntry.juzFrom}?khatam=true`}
                           className="flex-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
                         >
                           <Play className="mr-2 h-4 w-4 fill-white" /> Read
