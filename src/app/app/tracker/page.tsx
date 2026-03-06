@@ -264,8 +264,8 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
                   key={j}
                   onClick={() => setStartJuz(j)}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${startJuz === j
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-secondary text-foreground hover:bg-secondary/80"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-secondary text-foreground hover:bg-secondary/80"
                     }`}
                 >
                   {j}
@@ -293,8 +293,8 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
                   key={p.days}
                   onClick={() => handlePreset(p.days)}
                   className={`rounded-xl py-2.5 text-sm font-medium transition-all ${!useCustomDate && targetDays === p.days
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-secondary text-foreground hover:bg-secondary/80"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-secondary text-foreground hover:bg-secondary/80"
                     }`}
                 >
                   {p.label}
@@ -544,7 +544,7 @@ export default function TrackerPage() {
                 {/* ── Completion Banner */}
                 {isComplete && (
                   <div className="rounded-4xl bg-primary/5 dark:bg-primary/10 border border-primary/20 p-8 flex items-center gap-6">
-                    <div className="h-16 w-16 rounded-full bg-primary/20 flex flex-shrink-0 items-center justify-center text-primary">
+                    <div className="h-16 w-16 rounded-full bg-primary/20 flex shrink-0 items-center justify-center text-primary">
                       <Trophy className="h-8 w-8" />
                     </div>
                     <div>
@@ -612,12 +612,25 @@ export default function TrackerPage() {
 
                       <div className="flex-1 space-y-6">
                         <div>
-                          <h3 className="text-2xl font-bold text-primary">{stats.todayEntry.label}</h3>
-                          <p className="text-sm font-medium text-muted-foreground mt-1">
-                            {JUZ_DATA[stats.todayEntry.juzFrom - 1]?.start.split(" ")[0]}
-                            <span className="mx-2 opacity-50">→</span>
-                            {JUZ_DATA[Math.min(30, stats.todayEntry.juzTo) - 1]?.end.split(" ")[0]}
-                          </p>
+                          <h3 className="text-xl font-bold text-primary mb-3">{stats.todayEntry.label}</h3>
+
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <div className="flex-1 rounded-xl bg-secondary/30 px-3.5 py-2 border border-border/50">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-0.5">Start</p>
+                              <p className="text-xs font-semibold">{JUZ_DATA[stats.todayEntry.juzFrom - 1]?.start.split(" ").slice(0, -1).join(" ")}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{JUZ_DATA[stats.todayEntry.juzFrom - 1]?.start.split(" ").pop()}</p>
+                            </div>
+
+                            <div className="hidden sm:flex shrink-0 items-center justify-center text-muted-foreground/50">
+                              <ChevronRight className="h-4 w-4" />
+                            </div>
+
+                            <div className="flex-1 rounded-xl bg-secondary/30 px-3.5 py-2 border border-border/50">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-0.5">End</p>
+                              <p className="text-xs font-semibold">{JUZ_DATA[Math.min(30, stats.todayEntry.juzTo) - 1]?.end.split(" ").slice(0, -1).join(" ")}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{JUZ_DATA[Math.min(30, stats.todayEntry.juzTo) - 1]?.end.split(" ").pop()}</p>
+                            </div>
+                          </div>
                         </div>
 
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -636,9 +649,9 @@ export default function TrackerPage() {
                         <button
                           onClick={toggleToday}
                           title={todayDone ? "Mark as not done" : "Mark as done"}
-                          className={`h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-xl border transition-all active:scale-95 ${todayDone
-                              ? "bg-primary/10 border-primary/30 text-primary"
-                              : "bg-secondary border-transparent hover:bg-muted text-muted-foreground"
+                          className={`h-12 w-12 shrink-0 flex items-center justify-center rounded-xl border transition-all active:scale-95 ${todayDone
+                            ? "bg-primary/10 border-primary/30 text-primary"
+                            : "bg-secondary border-transparent hover:bg-muted text-muted-foreground"
                             }`}
                         >
                           <CheckCircle2 className="h-5 w-5" />
