@@ -143,9 +143,9 @@ function WelcomeState({ onOpenSetup }: { onOpenSetup: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center animate-in fade-in zoom-in-95 duration-500">
       <div className="relative mb-8">
-        <div className="absolute inset-0 rounded-full bg-green-500/20 blur-3xl animate-pulse" />
-        <div className="h-32 w-32 bg-linear-to-br from-green-500/20 to-green-500/5 rounded-4xl flex items-center justify-center border border-green-500/20 shadow-lg relative z-10 rotate-3 transition-transform hover:rotate-6">
-          <BookOpen className="h-16 w-16 text-green-600 drop-shadow-md" />
+        <div className="absolute inset-0 rounded-full bg-primary/20 blur-3xl animate-pulse" />
+        <div className="h-32 w-32 bg-linear-to-br from-primary/20 to-primary/5 rounded-4xl flex items-center justify-center border border-primary/20 shadow-lg relative z-10 rotate-3 transition-transform hover:rotate-6">
+          <BookOpen className="h-16 w-16 text-primary drop-shadow-md" />
         </div>
       </div>
       <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Start Your Khatam Journey</h2>
@@ -154,24 +154,24 @@ function WelcomeState({ onOpenSetup }: { onOpenSetup: () => void }) {
       </p>
       <button
         onClick={onOpenSetup}
-        className="rounded-full bg-green-600 px-8 py-4 text-white font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all text-lg flex items-center gap-2"
+        className="rounded-full bg-primary px-8 py-4 text-primary-foreground font-bold shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all text-lg flex items-center gap-2"
       >
         <Plus className="h-5 w-5" /> Create Khatam Plan
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-20 text-left max-w-3xl">
         <div className="space-y-2">
-          <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600 font-bold">1</div>
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">1</div>
           <h3 className="font-semibold text-foreground">Set a Target</h3>
           <p className="text-sm text-muted-foreground">Pick a start Juz and choose how many days you want to complete the Khatam in.</p>
         </div>
         <div className="space-y-2">
-          <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600 font-bold">2</div>
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">2</div>
           <h3 className="font-semibold text-foreground">Daily Schedule</h3>
           <p className="text-sm text-muted-foreground">We calculate exactly which Juz and pages you need to read every single day.</p>
         </div>
         <div className="space-y-2">
-          <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600 font-bold">3</div>
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">3</div>
           <h3 className="font-semibold text-foreground">Track Progress</h3>
           <p className="text-sm text-muted-foreground">Mark days as done, build your streak, and watch your Khatam heatmap light up.</p>
         </div>
@@ -230,8 +230,9 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-4xl border border-border bg-card p-6 md:p-8 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-4xl border border-border bg-card p-6 md:p-8 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
 
         <button onClick={onClose} className="absolute top-6 right-6 h-8 w-8 flex items-center justify-center rounded-full bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
           <X className="h-4 w-4" />
@@ -249,7 +250,7 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-base outline-none focus:border-green-600 transition-colors"
+              className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-base outline-none focus:border-primary transition-colors"
               placeholder="e.g. Daily Check-in"
             />
           </div>
@@ -263,8 +264,8 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
                   key={j}
                   onClick={() => setStartJuz(j)}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${startJuz === j
-                    ? "bg-green-600 text-white shadow-sm"
-                    : "bg-secondary text-foreground hover:bg-secondary/80"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-secondary text-foreground hover:bg-secondary/80"
                     }`}
                 >
                   {j}
@@ -278,7 +279,7 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
                 min={1} max={30}
                 value={startJuz}
                 onChange={(e) => setStartJuz(Math.min(30, Math.max(1, Number(e.target.value))))}
-                className="w-16 rounded-xl border border-border bg-transparent px-3 py-2 text-sm text-center outline-none focus:border-green-600"
+                className="w-16 rounded-xl border border-border bg-transparent px-3 py-2 text-sm text-center outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -292,8 +293,8 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
                   key={p.days}
                   onClick={() => handlePreset(p.days)}
                   className={`rounded-xl py-2.5 text-sm font-medium transition-all ${!useCustomDate && targetDays === p.days
-                    ? "bg-green-600 text-white shadow-sm"
-                    : "bg-secondary text-foreground hover:bg-secondary/80"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-secondary text-foreground hover:bg-secondary/80"
                     }`}
                 >
                   {p.label}
@@ -307,16 +308,16 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
                 value={targetDate}
                 min={addDays(today(), 1)}
                 onChange={(e) => handleCustomDate(e.target.value)}
-                className="flex-1 rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-green-600"
+                className="flex-1 rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-primary"
               />
             </div>
           </div>
 
           {/* Clean Summary */}
-          <div className="rounded-2xl bg-secondary/50 p-5 mt-4">
+          <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5 mt-4">
             <div className="flex justify-between items-center mb-1">
               <span className="text-sm font-medium">Daily Target</span>
-              <span className="text-green-600 font-bold">{pagesPerDay} pages</span>
+              <span className="text-primary font-bold">{pagesPerDay} pages</span>
             </div>
             <div className="flex justify-between items-center text-sm text-muted-foreground">
               <span>Goal</span>
@@ -326,7 +327,7 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
 
           <button
             onClick={handleSave}
-            className="w-full h-12 rounded-full bg-green-600 text-white font-medium text-base shadow-sm hover:bg-green-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4"
+            className="w-full h-12 rounded-full bg-primary text-primary-foreground font-medium text-base shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4"
           >
             Start Plan
           </button>
@@ -354,8 +355,9 @@ function EditModal({ plan, onSave, onClose, onReset }: {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md rounded-4xl border border-border bg-card p-6 md:p-8 space-y-6 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+      <div className="relative z-[201] w-full max-w-md rounded-4xl border border-border bg-card p-6 md:p-8 space-y-6 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
 
         <button onClick={onClose} className="absolute top-6 right-6 h-8 w-8 flex items-center justify-center rounded-full bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
           <X className="h-4 w-4" />
@@ -371,7 +373,7 @@ function EditModal({ plan, onSave, onClose, onReset }: {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-green-600"
+              className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary"
             />
           </div>
 
@@ -382,13 +384,13 @@ function EditModal({ plan, onSave, onClose, onReset }: {
               value={targetDate}
               min={addDays(today(), 1)}
               onChange={(e) => setTargetDate(e.target.value)}
-              className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-green-600"
+              className="w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary"
             />
           </div>
 
           <button
             onClick={handleSave}
-            className="w-full h-12 mt-2 rounded-full bg-green-600 text-white font-medium text-base shadow-sm hover:bg-green-700 active:scale-[0.98] transition-all"
+            className="w-full h-12 mt-2 rounded-full bg-primary text-primary-foreground font-medium text-base shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
           >
             Save Changes
           </button>
@@ -426,9 +428,9 @@ function CalendarHeatmap({ plan }: { plan: KhatamPlan }) {
       <div className="flex gap-1.5 flex-wrap">
         {days.map((d) => {
           let bg = "bg-secondary/60";
-          if (d.isCompleted) bg = "bg-green-500 shadow-sm shadow-green-500/20";
-          else if (d.isToday) bg = "bg-background border-2 border-green-500 shadow-sm";
-          else if (d.isPast && !d.isCompleted) bg = "bg-red-500/10 border border-red-500/20";
+          if (d.isCompleted) bg = "bg-primary shadow-sm shadow-primary/20";
+          else if (d.isToday) bg = "bg-background border-2 border-primary shadow-sm";
+          else if (d.isPast && !d.isCompleted) bg = "bg-destructive/10 border border-destructive/20";
 
           return (
             <div
@@ -440,8 +442,8 @@ function CalendarHeatmap({ plan }: { plan: KhatamPlan }) {
         })}
       </div>
       <div className="flex items-center gap-5 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-[3px] bg-green-500 shadow-sm" /> Done</span>
-        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-[3px] bg-red-500/10 border border-red-500/20" /> Missed</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-[3px] bg-primary shadow-sm" /> Done</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-[3px] bg-destructive/10 border border-destructive/20" /> Missed</span>
         <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-[3px] bg-secondary/60" /> Upcoming</span>
       </div>
     </div>
@@ -493,35 +495,42 @@ export default function TrackerPage() {
   if (!loaded) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <div className="h-8 w-8 rounded-full border-4 border-muted border-t-green-600 animate-spin" />
+        <div className="h-8 w-8 rounded-full border-4 border-muted border-t-primary animate-spin" />
       </div>
     );
   }
 
   return (
-    <>
+    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-24">
+      {/* ── Page Header (Always visible) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+              <BookOpen className="h-5 w-5 text-primary" />
+            </span>
+            Khatam Planner
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {plan ? plan.name : "Track your Quran completion progress"}
+          </p>
+        </div>
+
+        {plan && (
+          <button
+            onClick={() => setShowEdit(true)}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Edit2 className="h-4 w-4" /> Plan Settings
+          </button>
+        )}
+      </div>
+
       {/* If no plan, show welcome state. If showSetup is true, modal floats above it. */}
       {!plan ? (
         <WelcomeState onOpenSetup={() => setShowSetup(true)} />
       ) : (
-        <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-24 animate-in fade-in duration-500">
-
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                Khatam Planner
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">{plan.name}</p>
-            </div>
-            <button
-              onClick={() => setShowEdit(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-card border border-border rounded-full hover:bg-secondary transition-colors"
-            >
-              <Edit2 className="h-3.5 w-3.5" /> Plan Settings
-            </button>
-          </div>
-
+        <div className="animate-in fade-in duration-500 space-y-8">
           {(() => {
             const stats = computeStats(plan);
             const { days } = computeSchedule(plan);
@@ -534,13 +543,13 @@ export default function TrackerPage() {
               <>
                 {/* ── Completion Banner */}
                 {isComplete && (
-                  <div className="rounded-4xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 p-8 flex items-center gap-6">
-                    <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-600/20 flex flex-shrink-0 items-center justify-center text-green-600">
+                  <div className="rounded-4xl bg-primary/5 dark:bg-primary/10 border border-primary/20 p-8 flex items-center gap-6">
+                    <div className="h-16 w-16 rounded-full bg-primary/20 flex flex-shrink-0 items-center justify-center text-primary">
                       <Trophy className="h-8 w-8" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-green-800 dark:text-green-400">Alhamdulillah! Khatam Complete 🎉</h2>
-                      <p className="text-green-700/80 dark:text-green-500/80 mt-1">May Allah bless your recitation and accept your effort.</p>
+                      <h2 className="text-xl font-bold text-foreground">Alhamdulillah! Khatam Complete 🎉</h2>
+                      <p className="text-primary/80 mt-1">May Allah bless your recitation and accept your effort.</p>
                     </div>
                   </div>
                 )}
@@ -548,12 +557,12 @@ export default function TrackerPage() {
                 <div className="grid md:grid-cols-3 gap-6">
                   {/* ── Clean Hero / Stats */}
                   <div className="md:col-span-2 rounded-4xl border border-border bg-card p-6 md:p-8 flex flex-col justify-between relative overflow-hidden">
-                    <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-green-500/5 rounded-full blur-3xl" />
+                    <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
 
                     <div className="relative z-10 flex flex-col justify-between h-full space-y-8">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-xs font-semibold text-green-600 uppercase tracking-widest mb-1.5">Progress</p>
+                          <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1.5">Progress</p>
                           <h2 className="text-4xl font-bold">
                             Day {stats.currentDay} <span className="text-2xl text-muted-foreground font-medium">/ {stats.totalDays}</span>
                           </h2>
@@ -562,14 +571,14 @@ export default function TrackerPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-3xl font-bold text-green-600">{stats.pct}%</p>
+                          <p className="text-3xl font-bold text-primary">{stats.pct}%</p>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Completed</p>
                         </div>
                       </div>
 
                       <div className="space-y-4">
                         <div className="h-2.5 w-full bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-green-500 rounded-full transition-all duration-1000" style={{ width: `${stats.pct}%` }} />
+                          <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${stats.pct}%` }} />
                         </div>
                         <div className="flex items-center gap-6 text-sm">
                           <div className="flex items-center gap-2">
@@ -577,7 +586,7 @@ export default function TrackerPage() {
                             <span className="font-medium">{stats.streak} day streak</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            <CheckCircle2 className="h-4 w-4 text-primary" />
                             <span className="font-medium text-muted-foreground">{stats.completedCount} exact days done</span>
                           </div>
                         </div>
@@ -591,7 +600,7 @@ export default function TrackerPage() {
                       <div className="flex items-center justify-between mb-6">
                         <span className="text-xs font-semibold text-foreground uppercase tracking-widest">Today</span>
                         {todayDone ? (
-                          <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 dark:bg-green-500/10 px-2.5 py-1 rounded-full border border-green-200 dark:border-green-500/20">
+                          <span className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
                             <CheckCircle2 className="h-3 w-3" /> Done
                           </span>
                         ) : (
@@ -603,7 +612,7 @@ export default function TrackerPage() {
 
                       <div className="flex-1 space-y-6">
                         <div>
-                          <h3 className="text-2xl font-bold text-green-600 dark:text-green-500">{stats.todayEntry.label}</h3>
+                          <h3 className="text-2xl font-bold text-primary">{stats.todayEntry.label}</h3>
                           <p className="text-sm font-medium text-muted-foreground mt-1">
                             {JUZ_DATA[stats.todayEntry.juzFrom - 1]?.start.split(" ")[0]}
                             <span className="mx-2 opacity-50">→</span>
@@ -620,7 +629,7 @@ export default function TrackerPage() {
                       <div className="flex gap-2 pt-6">
                         <Link
                           href="/app/read"
-                          className="flex-1 inline-flex h-12 items-center justify-center rounded-xl bg-green-600 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 active:scale-[0.98] transition-all"
+                          className="flex-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
                         >
                           <Play className="mr-2 h-4 w-4 fill-white" /> Read
                         </Link>
@@ -628,8 +637,8 @@ export default function TrackerPage() {
                           onClick={toggleToday}
                           title={todayDone ? "Mark as not done" : "Mark as done"}
                           className={`h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-xl border transition-all active:scale-95 ${todayDone
-                            ? "bg-green-100 dark:bg-green-500/10 border-green-200 dark:border-green-500/30 text-green-600"
-                            : "bg-secondary border-transparent hover:bg-muted text-muted-foreground"
+                              ? "bg-primary/10 border-primary/30 text-primary"
+                              : "bg-secondary border-transparent hover:bg-muted text-muted-foreground"
                             }`}
                         >
                           <CheckCircle2 className="h-5 w-5" />
@@ -646,14 +655,14 @@ export default function TrackerPage() {
                     <div className="flex items-center gap-3 border-b border-border pb-3">
                       <button
                         onClick={() => setTab("overview")}
-                        className={`text-sm font-semibold pb-3 -mb-3.5 border-b-2 transition-colors ${tab === "overview" ? "border-green-600 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                        className={`text-sm font-semibold pb-3 -mb-3.5 border-b-2 transition-colors ${tab === "overview" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
                           }`}
                       >
                         Recent & Upcoming
                       </button>
                       <button
                         onClick={() => setTab("schedule")}
-                        className={`text-sm font-semibold pb-3 -mb-3.5 border-b-2 transition-colors ${tab === "schedule" ? "border-green-600 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                        className={`text-sm font-semibold pb-3 -mb-3.5 border-b-2 transition-colors ${tab === "schedule" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
                           }`}
                       >
                         Full Journey
@@ -664,9 +673,9 @@ export default function TrackerPage() {
                       {tab === "overview" ? (
                         <>
                           {upcoming.map((item) => (
-                            <div key={item.date} className="flex items-center justify-between p-4 rounded-2xl border border-border bg-card hover:border-green-500/30 transition-colors group">
+                            <div key={item.date} className="flex items-center justify-between p-4 rounded-2xl border border-border bg-card hover:border-primary/30 transition-colors group">
                               <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground group-hover:bg-green-500/10 group-hover:text-green-600 transition-colors">
+                                <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                                   <span className="font-bold">{item.day}</span>
                                 </div>
                                 <div>
@@ -691,9 +700,9 @@ export default function TrackerPage() {
                                     </div>
                                   </div>
                                   {item.isCompleted ? (
-                                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                    <CheckCircle2 className="h-4 w-4 text-primary" />
                                   ) : (
-                                    <span className="h-2 w-2 rounded-full bg-red-400" title="Missed" />
+                                    <span className="h-2 w-2 rounded-full bg-destructive" title="Missed" />
                                   )}
                                 </div>
                               ))}
@@ -703,10 +712,10 @@ export default function TrackerPage() {
                       ) : (
                         <div className="max-h-[500px] overflow-y-auto space-y-2 pr-2">
                           {days.map((item) => (
-                            <div key={item.date} className={`flex items-center justify-between p-3 rounded-xl border ${item.isToday ? "border-green-500 bg-green-50 dark:bg-green-500/10" : "border-transparent bg-secondary/50 hover:bg-secondary"
+                            <div key={item.date} className={`flex items-center justify-between p-3 rounded-xl border ${item.isToday ? "border-primary bg-primary/5 dark:bg-primary/10" : "border-transparent bg-secondary/50 hover:bg-secondary"
                               }`}>
                               <div className="flex items-center gap-4">
-                                <span className={`w-8 text-center text-xs font-bold ${item.isToday ? "text-green-600" : "text-muted-foreground"}`}>{item.day}</span>
+                                <span className={`w-8 text-center text-xs font-bold ${item.isToday ? "text-primary" : "text-muted-foreground"}`}>{item.day}</span>
                                 <div>
                                   <p className="font-medium text-sm">{item.label}</p>
                                   <p className="text-[11px] text-muted-foreground">{formatShortDate(item.date)}</p>
@@ -740,6 +749,6 @@ export default function TrackerPage() {
       {/* Modals outside the main flow */}
       {showSetup && <SetupModal onSave={handlePlanSave} onClose={() => setShowSetup(false)} />}
       {showEdit && plan && <EditModal plan={plan} onSave={handlePlanSave} onClose={() => setShowEdit(false)} onReset={handleReset} />}
-    </>
+    </div>
   );
 }
