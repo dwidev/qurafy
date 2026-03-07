@@ -22,7 +22,9 @@ function isSmtpConfigured() {
 
 function getTransporter() {
   if (!isSmtpConfigured()) {
-    throw new Error("SMTP is not configured. Please set SMTP_HOST, SMTP_USER, SMTP_PASS, and SMTP_FROM.");
+    throw new Error(
+      "SMTP is not configured. Please set SMTP_HOST, SMTP_USER, SMTP_PASS, and SMTP_FROM.",
+    );
   }
 
   if (transporter) {
@@ -44,7 +46,11 @@ function getTransporter() {
   return transporter;
 }
 
-export async function sendPasswordResetEmail({ to, resetUrl, name }: PasswordResetMailInput) {
+export async function sendPasswordResetEmail({
+  to,
+  resetUrl,
+  name,
+}: PasswordResetMailInput) {
   const client = getTransporter();
   const displayName = name || "there";
 
@@ -52,20 +58,129 @@ export async function sendPasswordResetEmail({ to, resetUrl, name }: PasswordRes
     from: smtpFrom,
     to,
     subject: "Reset your Qurafy password",
-    text: `Hi ${displayName},\n\nWe received a request to reset your Qurafy password.\n\nReset link: ${resetUrl}\n\nIf you didn’t request this, you can ignore this email.\n`,
+    text: `Hi ${displayName},\n\nWe received a request to reset your Qurafy password.\n\nReset link: ${resetUrl}\n\nIf you didn’t request this, you can ignore this email.\n\nThanks,\nThe Qurafy Team`,
     html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
-        <p>Hi ${displayName},</p>
-        <p>We received a request to reset your Qurafy password.</p>
-        <p>
-          <a href="${resetUrl}" style="display:inline-block;padding:10px 14px;border-radius:10px;background:#111827;color:#fff;text-decoration:none;">
-            Reset Password
-          </a>
-        </p>
-        <p>If the button doesn’t work, use this link:</p>
-        <p><a href="${resetUrl}">${resetUrl}</a></p>
-        <p>If you didn’t request this, you can ignore this email.</p>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset your Qurafy password</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333333;
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafb;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background-color: #111827;
+      padding: 30px 40px;
+      text-align: center;
+    }
+    .logo {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin: 0;
+    }
+    .content {
+      padding: 40px;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111827;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    p {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+    .button-container {
+      text-align: center;
+      margin: 35px 0;
+    }
+    .button {
+      display: inline-block;
+      padding: 14px 28px;
+      background-color: #111827;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      text-align: center;
+    }
+    .fallback-link {
+      font-size: 14px;
+      color: #6b7280;
+      word-break: break-all;
+      background-color: #f3f4f6;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .fallback-link a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .footer {
+      padding: 30px 40px;
+      background-color: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .ignore-text {
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="logo">Qurafy</h1>
+    </div>
+    <div class="content">
+      <h1>Password Reset Request</h1>
+      <p>Hi ${displayName},</p>
+      <p>We received a request to reset your password for your Qurafy account. Click the button below to choose a new password:</p>
+      
+      <div class="button-container">
+        <a href="${resetUrl}" class="button">Reset Password</a>
       </div>
+      
+      <p class="ignore-text">If you didn't request a password reset, you can safely ignore this email. Your current password will remain unchanged.</p>
+      
+      <p class="ignore-text">If the button above doesn't work, copy and paste the following link into your browser:</p>
+      <div class="fallback-link">
+        <a href="${resetUrl}">${resetUrl}</a>
+      </div>
+      
+      <p style="margin-bottom: 0;">Thanks,<br>The Qurafy Team</p>
+    </div>
+    <div class="footer">
+      &copy; ${new Date().getFullYear()} Qurafy. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
     `,
   });
 }
