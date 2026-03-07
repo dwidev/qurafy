@@ -6,16 +6,13 @@ import { DailyInspiration } from "@/features/dashboard/components/DailyInspirati
 import { ContinueReading } from "@/features/dashboard/components/ContinueReading";
 import { ProgressSection } from "@/features/dashboard/components/ProgressSection";
 import { RecentActivity } from "@/features/dashboard/components/RecentActivity";
-import { readingQuranData, khatamProgressData } from "@/features/dashboard/constants/mock-data";
 import { requireServerSession } from "@/features/auth/server/session";
+import { getDashboardViewData } from "@/features/dashboard/server/dashboard-data";
 
 export async function DashboardPage() {
   const session = await requireServerSession();
-
+  const dashboard = await getDashboardViewData(session.user.id);
   const displayName = session?.user.name?.trim() || "User";
-
-  // Mock flag for fresh login - set to true to see empty states for new user
-  const isNewUser = false;
 
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-32">
@@ -31,7 +28,7 @@ export async function DashboardPage() {
             Assalamu&apos;alaikum, {displayName}
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5 font-medium">
-            Wednesday, March 5, 2026 • 7 Ramadan 1447 AH
+            {dashboard.dateInfo.gregorian} • {dashboard.dateInfo.hijri}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -44,14 +41,18 @@ export async function DashboardPage() {
         </div>
       </div>
 
-      <QuickStats isNewUser={isNewUser} />
-      <DailyInspiration />
+      <QuickStats isNewUser={dashboard.isNewUser} stats={dashboard.quickStats} />
+      <DailyInspiration quote={dashboard.dailyVerse} />
       <ContinueReading
-        readingQuranData={isNewUser ? null : readingQuranData}
-        khatamProgressData={isNewUser ? null : khatamProgressData}
+        readingQuranData={dashboard.readingQuranData}
+        khatamProgressData={dashboard.khatamProgressData}
       />
-      <ProgressSection isNewUser={isNewUser} />
-      <RecentActivity isNewUser={isNewUser} />
+      <ProgressSection
+        isNewUser={dashboard.isNewUser}
+        memorizationCard={dashboard.memorizationCard}
+        khatamCard={dashboard.khatamCard}
+      />
+      <RecentActivity items={dashboard.recentItems} />
     </div>
   );
 }

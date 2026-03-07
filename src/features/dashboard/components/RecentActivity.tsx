@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { History } from "lucide-react";
-import { recentActivityItems } from "@/features/dashboard/constants/mock-data";
+import type { RecentActivityItem } from "@/types";
 
 interface RecentActivityProps {
-    isNewUser: boolean;
+    items: RecentActivityItem[];
 }
 
-export function RecentActivity({ isNewUser }: RecentActivityProps) {
+export function RecentActivity({ items }: RecentActivityProps) {
+    const hasNoItems = items.length === 0;
+
     return (
         <div className="space-y-4 pt-4">
             <div className="flex items-center justify-between px-1">
@@ -14,7 +16,7 @@ export function RecentActivity({ isNewUser }: RecentActivityProps) {
                 <Link href="/app/read" className="text-sm text-primary hover:underline font-medium">View History</Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                {isNewUser ? (
+                {hasNoItems ? (
                     <div className="col-span-full flex flex-col items-center justify-center py-10 px-4 text-center rounded-3xl border border-dashed border-border bg-card/50">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-muted-foreground mb-3">
                             <History className="h-6 w-6" />
@@ -25,8 +27,8 @@ export function RecentActivity({ isNewUser }: RecentActivityProps) {
                         </p>
                     </div>
                 ) : (
-                    recentActivityItems.map((item) => (
-                        <Link key={item.surah} href="/app/read" className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-primary/40 hover:shadow-md transition-all group">
+                    items.map((item) => (
+                        <Link key={`${item.surah}-${item.time}`} href="/app/read" className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-primary/40 hover:shadow-md transition-all group">
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                                 <History className="h-5 w-5" />
                             </div>
