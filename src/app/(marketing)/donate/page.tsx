@@ -13,26 +13,15 @@ import {
     ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { monthlyPresets, yearlyPresets } from "@/constants/mock-data";
 
 export default function DonatePage() {
     const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-    const [amount, setAmount] = useState<string>("50000"); // Default 50k IDR for monthly
+    const [amount, setAmount] = useState<string>("50000");
     const [customAmount, setCustomAmount] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const presets = billingCycle === "monthly"
-        ? [
-            { value: "25000", label: "25K" },
-            { value: "50000", label: "50K" },
-            { value: "100000", label: "100K" },
-            { value: "250000", label: "250K" },
-        ]
-        : [
-            { value: "200000", label: "200K" },
-            { value: "500000", label: "500K" },
-            { value: "1000000", label: "1M" },
-            { value: "2500000", label: "2.5M" },
-        ];
+    const presets = billingCycle === "monthly" ? monthlyPresets : yearlyPresets;
 
     const handleDonate = (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,7 +79,7 @@ export default function DonatePage() {
 
                     <form onSubmit={handleDonate} className="space-y-6">
 
-                        {/* Billing Toggle - Unified Sizing */}
+                        {/* Billing Toggle */}
                         <div className="flex p-1 bg-secondary/30 rounded-2xl w-full border border-border/50">
                             <button
                                 type="button"
@@ -144,7 +133,7 @@ export default function DonatePage() {
                             </div>
                         </div>
 
-                        {/* Custom Input - Unified Sizing */}
+                        {/* Custom Input */}
                         <div className="relative group/input">
                             <div className="absolute inset-y-0 left-0 pl-6 flex items-center text-[10px] font-bold tracking-widest text-muted-foreground/30 group-focus-within/input:text-rose-500 transition-colors uppercase">
                                 IDR
@@ -158,7 +147,7 @@ export default function DonatePage() {
                             />
                         </div>
 
-                        {/* Allocation Summary - Unified Sizing */}
+                        {/* Allocation Summary */}
                         {Number(displayAmount) > 0 && (
                             <div className="space-y-3.5">
                                 <div className="bg-secondary/20 rounded-2xl p-4.5 space-y-3 border border-border/40">
@@ -178,12 +167,12 @@ export default function DonatePage() {
                                     </div>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground/60 leading-relaxed px-1 text-center font-medium italic text-balance">
-                                    "70% sustains platform infrastructure while 30% flows to our humanitarian network."
+                                    &quot;70% sustains platform infrastructure while 30% flows to our humanitarian network.&quot;
                                 </p>
                             </div>
                         )}
 
-                        {/* Action Button - Unified Sizing */}
+                        {/* Action Button */}
                         <button
                             type="submit"
                             disabled={isLoading || Number(displayAmount) <= 0}

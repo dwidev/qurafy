@@ -2,32 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Calendar, LayoutDashboard, Target, Settings } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/theme-toggle";
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/app",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Read Quran",
-    href: "/app/read",
-    icon: BookOpen,
-  },
-  {
-    title: "Memorization",
-    href: "/app/memorize",
-    icon: Target,
-  },
-  {
-    title: "Khatam Tracker",
-    href: "/app/tracker",
-    icon: Calendar,
-  },
-];
+import { mainNavItems, utilityNavItems } from "@/config/navigation";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -44,7 +21,7 @@ export function AppSidebar() {
       <div className="w-8 h-[2px] bg-border/50 rounded-full my-1 hidden md:block" />
 
       <nav className="flex flex-row md:flex-col gap-2 md:gap-3 items-center">
-        {navItems.map((item) => {
+        {mainNavItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -58,11 +35,8 @@ export function AppSidebar() {
               )}
             >
               <item.icon className="h-5 w-5 md:h-5 md:w-5" />
-
-              {/* Tooltip (shows on left) */}
               <div className="absolute left-full ml-5 top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl bg-foreground text-background text-xs font-bold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap shadow-xl border border-border/10 hidden md:block">
                 {item.title}
-                {/* Arrow */}
                 <div className="absolute top-1/2 -mt-1.5 -left-3 border-[6px] border-transparent border-r-foreground" />
               </div>
             </Link>
@@ -72,25 +46,27 @@ export function AppSidebar() {
 
       <div className="w-8 h-[2px] bg-border/50 rounded-full my-1 hidden md:block" />
 
-      {/* Utility Actions (Settings & Theme) */}
+      {/* Utility Actions */}
       <div className="flex flex-row md:flex-col gap-2 md:gap-3 items-center">
-        <Link
-          href="/app/settings"
-          className={cn(
-            "group relative flex items-center justify-center rounded-2xl p-3 md:p-3.5 transition-all outline-none",
-            pathname === "/app/settings"
-              ? "bg-secondary text-foreground"
-              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-          )}
-        >
-          <Settings className="h-5 w-5" />
-          <div className="absolute left-full ml-5 top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl bg-foreground text-background text-xs font-bold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap shadow-xl border border-border/10 hidden md:block">
-            Settings
-            <div className="absolute top-1/2 -mt-1.5 -left-3 border-[6px] border-transparent border-r-foreground" />
-          </div>
-        </Link>
+        {utilityNavItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "group relative flex items-center justify-center rounded-2xl p-3 md:p-3.5 transition-all outline-none",
+              pathname === item.href
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            )}
+          >
+            <item.icon className="h-5 w-5" />
+            <div className="absolute left-full ml-5 top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl bg-foreground text-background text-xs font-bold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap shadow-xl border border-border/10 hidden md:block">
+              {item.title}
+              <div className="absolute top-1/2 -mt-1.5 -left-3 border-[6px] border-transparent border-r-foreground" />
+            </div>
+          </Link>
+        ))}
       </div>
-
 
       {/* User profile Link */}
       <Link href="/app/profile" className="group relative mt-1 mb-1 hidden md:block">
@@ -110,4 +86,3 @@ export function AppSidebar() {
     </div>
   );
 }
-

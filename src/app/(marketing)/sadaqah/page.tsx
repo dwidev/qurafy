@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-    Heart,
     ArrowRight,
     ChevronLeft,
     HandHeart,
@@ -12,18 +11,12 @@ import {
     Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sadaqahPresets } from "@/constants/mock-data";
 
 export default function SadaqahPage() {
     const [amount, setAmount] = useState<string>("50000");
     const [customAmount, setCustomAmount] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
-
-    const presets = [
-        { value: "20000", label: "20K" },
-        { value: "50000", label: "50K" },
-        { value: "100000", label: "100K" },
-        { value: "500000", label: "500K" },
-    ];
 
     const handleDonate = (e: React.FormEvent) => {
         e.preventDefault();
@@ -79,7 +72,7 @@ export default function SadaqahPage() {
 
                     <form onSubmit={handleDonate} className="space-y-8">
 
-                        {/* Preset Selection - Unified Sizing */}
+                        {/* Preset Selection */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between px-1">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">Select Amount</label>
@@ -89,7 +82,7 @@ export default function SadaqahPage() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
-                                {presets.map((p) => (
+                                {sadaqahPresets.map((p) => (
                                     <button
                                         key={p.value}
                                         type="button"
@@ -107,7 +100,7 @@ export default function SadaqahPage() {
                             </div>
                         </div>
 
-                        {/* Custom Input - Unified Sizing */}
+                        {/* Custom Input */}
                         <div className="relative group/input">
                             <div className="absolute inset-y-0 left-0 pl-6 flex items-center text-[10px] font-bold tracking-widest text-muted-foreground/30 group-focus-within/input:text-emerald-600 transition-colors uppercase">
                                 IDR
@@ -121,7 +114,7 @@ export default function SadaqahPage() {
                             />
                         </div>
 
-                        {/* Summary Block - Adjusted to match Donate positioning/sizing */}
+                        {/* Summary Block */}
                         {Number(displayAmount) > 0 ? (
                             <div className="pt-2">
                                 <div className="flex justify-between items-end">
@@ -141,7 +134,7 @@ export default function SadaqahPage() {
                             <div className="h-[52px]" /> /* Placeholder to maintain fixed layout height */
                         )}
 
-                        {/* Action Button - Unified Sizing */}
+                        {/* Action Button */}
                         <button
                             type="submit"
                             disabled={isLoading || Number(displayAmount) <= 0}

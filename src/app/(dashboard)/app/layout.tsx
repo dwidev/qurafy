@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { GlobalSearch } from "@/components/GlobalSearch";
+import { GlobalSearch } from "@/components/shared/GlobalSearch";
 
 export default function AppLayout({
   children,
@@ -20,4 +20,3 @@ export default function AppLayout({
     </div>
   );
 }
-

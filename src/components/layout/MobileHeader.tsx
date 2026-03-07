@@ -3,42 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Calendar, LayoutDashboard, Menu, Target, X, User, Settings } from "lucide-react";
+import { BookOpen, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/theme-toggle";
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/app",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Read Quran",
-    href: "/app/read",
-    icon: BookOpen,
-  },
-  {
-    title: "Memorization",
-    href: "/app/memorize",
-    icon: Target,
-  },
-  {
-    title: "Khatam Tracker",
-    href: "/app/tracker",
-    icon: Calendar,
-  },
-  {
-    title: "Profile",
-    href: "/app/profile",
-    icon: User,
-  },
-  {
-    title: "Settings",
-    href: "/app/settings",
-    icon: Settings,
-  },
-];
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { mobileNavItems } from "@/config/navigation";
 
 export function MobileHeader() {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,7 +42,7 @@ export function MobileHeader() {
             </div>
 
             <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-              {navItems.map((item) => {
+              {mobileNavItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <Link
