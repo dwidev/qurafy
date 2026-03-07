@@ -151,12 +151,16 @@ export const memorizationProgress = pgTable(
     goalId: uuid("goal_id")
       .references(() => memorizationGoals.id, { onDelete: "cascade" })
       .notNull(),
-    verseNumber: integer("verse_number").notNull(),
+    dayNumber: integer("day_number").notNull(),
+    startVerse: integer("start_verse").notNull(),
+    endVerse: integer("end_verse").notNull(),
+    versesCount: integer("verses_count").notNull().default(1),
     isCompleted: boolean("is_completed").default(false).notNull(),
   },
   (table) => [
     index("memorization_progress_goal_id_idx").on(table.goalId),
     index("memorization_progress_goal_completed_idx").on(table.goalId, table.isCompleted),
+    index("memorization_progress_goal_day_idx").on(table.goalId, table.dayNumber),
   ],
 );
 

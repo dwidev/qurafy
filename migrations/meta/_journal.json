@@ -22,6 +22,13 @@
       "when": 1772892501503,
       "tag": "0002_dapper_magus",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772896200000,
+      "tag": "0003_daily_echo",
+      "breakpoints": true
     }
   ]
 }

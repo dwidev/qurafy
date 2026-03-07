@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Target,
   Plus,
@@ -13,13 +14,17 @@ import {
   ChevronDown,
   Play,
   Check,
-  Volume2,
-  Mic,
-  ArrowRight
 } from "lucide-react";
+import {
+  getMemorizeErrorMessage,
+  isUnauthorizedMemorizeError,
+  useCreateMemorizeGoalMutation,
+  useMemorizeMeQuery,
+} from "@/features/memorize/api/client";
+import { MemorizePageSkeleton } from "@/features/memorize/components/MemorizePageSkeleton";
 
 /* ─── Static Surah data ──────────────────────────────────────────────── */
-const SURAHS = [
+const DEFAULT_SURAHS = [
   { n: 1, en: "Al-Fatihah", ar: "ٱلْفَاتِحَة", verses: 7 },
   { n: 78, en: "An-Naba", ar: "ٱلنَّبَإِ", verses: 40 },
   { n: 79, en: "An-Nazi'at", ar: "ٱلنَّٰزِعَٰت", verses: 46 },
@@ -27,7 +32,7 @@ const SURAHS = [
 ];
 
 /* ─── Sample verse data for today's target ───────────────────────────── */
-const TODAY_VERSES = [
+const DEFAULT_TODAY_VERSES = [
   { n: 1, ar: "عَمَّ يَتَسَآءَلُونَ", tr: "What are they asking one another about?" },
   { n: 2, ar: "عَنِ ٱلنَّبَإِ ٱلْعَظِيمِ", tr: "About the great news —" },
   { n: 3, ar: "ٱلَّذِى هُمْ فِيهِ مُخْتَلِفُونَ", tr: "that over which they are in disagreement." },
@@ -35,7 +40,7 @@ const TODAY_VERSES = [
   { n: 5, ar: "ثُمَّ كَلَّا سَيَعْلَمُونَ", tr: "Then, no! They are going to know." },
 ];
 
-const UPCOMING = [
+const DEFAULT_UPCOMING = [
   { day: "Day 9 · Tomorrow", range: "An-Naba, Verses 11–20", count: 10 },
   { day: "Day 10 · Thu", range: "An-Naba, Verses 21–30", count: 10 },
   { day: "Day 11 · Fri", range: "An-Naba, Verses 31–40", count: 10 },
@@ -59,71 +64,191 @@ function CircleProgress({ pct }: { pct: number }) {
   );
 }
 
+function buildRangeLabel(surahName: string, startVerse: number, endVerse: number) {
+  if (startVerse === endVerse) {
+    return `${surahName}, Verse ${startVerse}`;
+  }
+
+  return `${surahName}, Verses ${startVerse}-${endVerse}`;
+}
+
+const MEMORIZE_SESSION_DONE_STORAGE_KEY = "memorize.session.done";
+
+type MemorizeSessionDoneMarker = {
+  dateKey: string;
+  goalId: string;
+  dayNumber: number;
+};
+
+function getLocalDateKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function readMemorizeSessionDoneMarker(): MemorizeSessionDoneMarker | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.localStorage.getItem(MEMORIZE_SESSION_DONE_STORAGE_KEY);
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as MemorizeSessionDoneMarker;
+
+    if (!parsed?.goalId || !parsed?.dateKey || !Number.isInteger(parsed?.dayNumber)) {
+      window.localStorage.removeItem(MEMORIZE_SESSION_DONE_STORAGE_KEY);
+      return null;
+    }
+
+    if (parsed.dateKey !== getLocalDateKey()) {
+      window.localStorage.removeItem(MEMORIZE_SESSION_DONE_STORAGE_KEY);
+      return null;
+    }
+
+    return parsed;
+  } catch {
+    window.localStorage.removeItem(MEMORIZE_SESSION_DONE_STORAGE_KEY);
+    return null;
+  }
+}
+
+function clearMemorizeSessionDoneMarker() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(MEMORIZE_SESSION_DONE_STORAGE_KEY);
+}
+
 /* ─── Main page ──────────────────────────────────────────────────────── */
 export default function MemorizePage() {
   /* ── State ── */
-  const [hasActiveGoal, setHasActiveGoal] = useState(false);
+  const router = useRouter();
+  const memorizeQuery = useMemorizeMeQuery();
+  const createGoalMutation = useCreateMemorizeGoalMutation();
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [form, setForm] = useState({ title: "", surahIdx: 0, days: 30, reps: 3 });
+  const [sessionDoneMarker, setSessionDoneMarker] = useState<MemorizeSessionDoneMarker | null>(() =>
+    readMemorizeSessionDoneMarker(),
+  );
+
+  const data = memorizeQuery.data;
+  const activeGoal = data?.activeGoal ?? null;
+  const hasActiveGoal = Boolean(activeGoal);
+  const SURAHS = data?.surahs ?? DEFAULT_SURAHS;
+  const safeSurahIdx = SURAHS[form.surahIdx] ? form.surahIdx : 0;
+  const selectedSurah = SURAHS[safeSurahIdx];
+  const showCompletionCard = Boolean(
+    activeGoal &&
+      sessionDoneMarker &&
+      sessionDoneMarker.dateKey === getLocalDateKey() &&
+      sessionDoneMarker.goalId === activeGoal.id,
+  );
+  const TODAY_VERSES = activeGoal?.todayTarget
+    ? activeGoal.todayTarget.verses.map((verse) => ({
+        n: verse.n,
+        ar: verse.ar,
+        tr: verse.en,
+      }))
+    : DEFAULT_TODAY_VERSES;
+  const baseUpcoming = activeGoal
+    ? activeGoal.upcomingTargets.map((item) => ({
+        day: item.dayLabel,
+        range: item.rangeLabel,
+        count: item.count,
+      }))
+    : DEFAULT_UPCOMING;
+  const UPCOMING =
+    showCompletionCard && activeGoal?.todayTarget
+      ? [
+          {
+            day: `Day ${activeGoal.todayTarget.dayNumber} · Next Target`,
+            range: buildRangeLabel(activeGoal.surahName, activeGoal.todayTarget.startVerse, activeGoal.todayTarget.endVerse),
+            count: Math.max(
+              1,
+              activeGoal.todayTarget.endVerse - activeGoal.todayTarget.startVerse + 1,
+            ),
+          },
+          ...baseUpcoming,
+        ].slice(0, 3)
+      : baseUpcoming;
+
+  useEffect(() => {
+    if (memorizeQuery.error && isUnauthorizedMemorizeError(memorizeQuery.error)) {
+      router.replace("/login");
+    }
+  }, [memorizeQuery.error, router]);
 
   /* Active Goal Mock Data */
-  const goal = {
-    title: "Juz 30 — Amma",
-    surah: "An-Naba & beyond",
-    totalDays: 30,
-    passedDays: form.title ? 1 : 16,
-    totalVerses: form.title ? SURAHS[form.surahIdx]?.verses || 110 : 110,
-    doneVerses: form.title ? 0 : 62,
-  };
+  const goal = activeGoal
+    ? {
+        title: activeGoal.title,
+        surah: activeGoal.surahName,
+        totalDays: activeGoal.targetDays,
+        passedDays: activeGoal.passedDays,
+        totalVerses: activeGoal.totalVerses,
+        doneVerses: activeGoal.completedVerses,
+      }
+    : {
+        title: "Juz 30 — Amma",
+        surah: "An-Naba & beyond",
+        totalDays: 30,
+        passedDays: form.title ? 1 : 16,
+        totalVerses: selectedSurah?.verses || 110,
+        doneVerses: form.title ? 0 : 62,
+      };
   const pct = Math.round((goal.doneVerses / goal.totalVerses) * 100) || 0;
   const remaining = goal.totalDays - goal.passedDays;
 
-  /* ── GUIDED SESSION STATE ── */
-  const [sessionOpen, setSessionOpen] = useState(false);
-  const [sessionStarted, setSessionStarted] = useState(false);
-  const [currIdx, setCurrIdx] = useState(0);
-  const [currRep, setCurrRep] = useState(1);
-  const [phase, setPhase] = useState<"listening" | "reciting">("listening");
-  const [sessionDone, setSessionDone] = useState(false);
+  const targetReps = activeGoal?.repsPerVerse ?? (form.reps || 3);
 
-  // Mock audio playing delay
-  useEffect(() => {
-    if (sessionOpen && sessionStarted && !sessionDone && phase === "listening") {
-      const timer = setTimeout(() => {
-        setPhase("reciting");
-      }, 3000); // 3 seconds mock listening
-      return () => clearTimeout(timer);
+  async function handleCreateGoal() {
+    if (!form.title || !selectedSurah) {
+      return;
     }
-  }, [sessionOpen, sessionStarted, sessionDone, phase, currIdx, currRep]);
 
-  function handleNext() {
-    if (currRep < (form.reps || 3)) {
-      setCurrRep(r => r + 1);
-      setPhase("listening");
-    } else {
-      if (currIdx < TODAY_VERSES.length - 1) {
-        setCurrIdx(i => i + 1);
-        setCurrRep(1);
-        setPhase("listening");
-      } else {
-        setSessionDone(true);
-      }
-    }
+    await createGoalMutation.mutateAsync({
+      title: form.title,
+      surahNumber: selectedSurah.n,
+      targetDays: form.days,
+      repsPerVerse: form.reps,
+    });
+
+    setShowGoalModal(false);
+    setForm((prev) => ({ ...prev, title: "" }));
+    clearMemorizeSessionDoneMarker();
+    setSessionDoneMarker(null);
+    await memorizeQuery.refetch();
   }
 
-  function resetSession() {
-    setSessionOpen(false);
-    setTimeout(() => {
-      setSessionStarted(false);
-      setSessionDone(false);
-      setCurrIdx(0);
-      setCurrRep(1);
-      setPhase("listening");
-    }, 300);
+  if (memorizeQuery.isError) {
+    return (
+      <div className="flex-1 p-4 md:p-8 pt-6 max-w-3xl mx-auto pb-24">
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 space-y-4">
+          <h2 className="text-lg font-black">Could not load memorization</h2>
+          <p className="text-sm text-muted-foreground">{getMemorizeErrorMessage(memorizeQuery.error)}</p>
+          <button
+            type="button"
+            onClick={() => memorizeQuery.refetch()}
+            className="h-10 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  const v = TODAY_VERSES[currIdx];
-  const targetReps = form.reps || 3;
+  if (memorizeQuery.isLoading || !data) {
+    return <MemorizePageSkeleton />;
+  }
 
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-20">
@@ -227,7 +352,7 @@ export default function MemorizePage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold truncate">{form.title || goal.title}</h2>
-                  <p className="text-muted-foreground text-sm mt-0.5">{SURAHS[form.surahIdx]?.en || goal.surah}</p>
+                  <p className="text-muted-foreground text-sm mt-0.5">{selectedSurah?.en || goal.surah}</p>
                 </div>
                 <div className="space-y-1.5 pt-1">
                   <div className="h-2.5 w-full rounded-full bg-secondary overflow-hidden">
@@ -246,7 +371,27 @@ export default function MemorizePage() {
           <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
             <h2 className="text-xl font-bold">Today&apos;s Target</h2>
 
-            {sessionDone ? (
+            {showCompletionCard ? (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 md:p-8 flex items-center gap-4 shadow-sm">
+                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                  <Check className="h-6 w-6 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-emerald-800">Alhamdulillah!</h3>
+                  <p className="text-emerald-700/80 text-sm mt-0.5">You have completed your memorization session.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearMemorizeSessionDoneMarker();
+                    setSessionDoneMarker(null);
+                  }}
+                  className="ml-auto h-9 rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700"
+                >
+                  Continue
+                </button>
+              </div>
+            ) : !activeGoal?.todayTarget ? (
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 md:p-8 flex items-center gap-4 shadow-sm">
                 <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                   <Check className="h-6 w-6 text-emerald-600" />
@@ -259,7 +404,13 @@ export default function MemorizePage() {
             ) : (
               <div
                 className="relative group cursor-pointer pt-4"
-                onClick={() => setSessionOpen(true)}
+                onClick={() => {
+                  if (activeGoal?.todayTarget) {
+                    clearMemorizeSessionDoneMarker();
+                    setSessionDoneMarker(null);
+                    router.push("/app/memorize/session");
+                  }
+                }}
               >
                 <div className="absolute inset-x-8 top-0 h-full bg-primary/10 rounded-3xl transition-transform duration-300 group-hover:-translate-y-2" />
                 <div className="absolute inset-x-4 top-2 h-full bg-primary/20 rounded-3xl transition-transform duration-300 group-hover:-translate-y-1" />
@@ -269,7 +420,10 @@ export default function MemorizePage() {
                     <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground mb-1">
                       <Calendar className="h-3.5 w-3.5" /> March 5, 2026
                     </div>
-                    <h3 className="text-2xl font-bold">{SURAHS[form.surahIdx]?.en || "An-Naba"}, Verses 1–5</h3>
+                    <h3 className="text-2xl font-bold">
+                      {activeGoal?.surahName || selectedSurah?.en || "An-Naba"}, Verses{" "}
+                      {activeGoal?.todayTarget?.startVerse ?? 1}–{activeGoal?.todayTarget?.endVerse ?? 5}
+                    </h3>
                     <p className="text-muted-foreground">
                       {TODAY_VERSES.length} verses • {targetReps}× repetitions per verse
                     </p>
@@ -307,128 +461,6 @@ export default function MemorizePage() {
           </div>
         </>
       )}
-
-      {/* ========================================================= */}
-      {/* ── GUIDED MEMORIZATION FULLSCREEN POPUP ───────────────── */}
-      {/* ========================================================= */}
-      {sessionOpen && hasActiveGoal && (
-        <div className="fixed inset-0 z-100 flex flex-col bg-background/95 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="flex items-center justify-between p-4 md:p-6 border-b border-foreground/5">
-            <button onClick={resetSession} className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors">
-              <X className="h-6 w-6" />
-            </button>
-            {sessionStarted && !sessionDone && (
-              <div className="text-center">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Memorization Focus</p>
-                <div className="flex items-center gap-2 mt-1 justify-center">
-                  {TODAY_VERSES.map((_, i) => (
-                    <div key={i} className={`h-1.5 rounded-full transition-all ${i === currIdx ? "w-6 bg-primary" : i < currIdx ? "w-2 bg-primary/50" : "w-2 bg-secondary"}`} />
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="w-10" />
-          </div>
-
-          <div className="flex-1 flex flex-col items-center justify-center p-6 relative">
-            {!sessionStarted && !sessionDone && (
-              <div className="max-w-md text-center space-y-8 animate-in slide-in-from-bottom-8 duration-500">
-                <div className="h-24 w-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20 shadow-inner">
-                  <Target className="h-10 w-10 text-primary" />
-                </div>
-                <div className="space-y-4">
-                  <h2 className="text-3xl font-bold">Ready to Memorize?</h2>
-                  <p className="text-muted-foreground">Today&apos;s target: {SURAHS[form.surahIdx]?.en || "An-Naba"}, 1–5.<br />Focus solely on these verses. We will guide you through {targetReps} reps per verse.</p>
-                </div>
-                <button
-                  onClick={() => setSessionStarted(true)}
-                  className="w-full rounded-2xl bg-primary px-8 py-5 text-lg font-bold text-primary-foreground shadow-lg shadow-primary/30 hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3"
-                >
-                  <Play className="fill-white h-5 w-5" /> Start Session Now
-                </button>
-              </div>
-            )}
-
-            {sessionStarted && !sessionDone && (
-              <div className="w-full max-w-2xl mx-auto flex flex-col items-center animate-in zoom-in-95 duration-500">
-                <div className="mb-8 flex items-center gap-2 bg-secondary px-4 py-1.5 rounded-full text-sm font-semibold text-muted-foreground">
-                  Repetition {currRep} of {targetReps}
-                </div>
-                <div className="text-center w-full space-y-8 relative">
-                  <span className="absolute -top-12 -left-4 text-8xl text-secondary/50 font-serif opacity-30 pointer-events-none">“</span>
-                  <span className="absolute -bottom-16 -right-4 text-8xl text-secondary/50 font-serif opacity-30 pointer-events-none">”</span>
-
-                  <p className={`text-5xl md:text-6xl font-serif leading-tight font-bold text-foreground transition-all duration-700 ${phase === "reciting" ? "text-foreground/80 scale-95 blur-[2px] select-none hover:blur-none" : ""}`} dir="rtl">
-                    {v.ar}
-                  </p>
-
-                  <p className={`text-lg md:text-xl text-muted-foreground transition-all duration-500 ${phase === "reciting" ? "opacity-0" : ""}`}>
-                    {v.tr}
-                  </p>
-                </div>
-
-                <div className="mt-16 sm:mt-24 w-full flex flex-col items-center justify-center space-y-6">
-                  {phase === "listening" && (
-                    <div className="flex flex-col items-center animate-in fade-in duration-300">
-                      <div className="relative flex items-center justify-center mb-4">
-                        <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-                        <div className="h-16 w-16 bg-primary rounded-full flex items-center justify-center shadow-lg relative z-10">
-                          <Volume2 className="h-7 w-7 text-primary-foreground" />
-                        </div>
-                      </div>
-                      <p className="font-semibold text-primary text-lg">Listening...</p>
-                      <p className="text-sm text-muted-foreground mt-1">Focus on the pronunciation</p>
-
-                      <button onClick={() => setPhase("reciting")} className="mt-8 text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors">
-                        Skip & Recite Now
-                      </button>
-                    </div>
-                  )}
-
-                  {phase === "reciting" && (
-                    <div className="flex flex-col items-center w-full animate-in slide-in-from-bottom-4 duration-500">
-                      <div className="h-16 w-16 bg-card border-2 border-primary rounded-full flex items-center justify-center mb-6 shadow-lg">
-                        <Mic className="h-7 w-7 text-primary animate-pulse" />
-                      </div>
-                      <p className="font-semibold text-lg">Your turn to recite</p>
-                      <p className="text-sm text-muted-foreground mt-1">Repeat it aloud from memory</p>
-
-                      <div className="w-full grid grid-cols-2 gap-4 mt-8">
-                        <button onClick={() => setPhase("listening")} className="py-4 rounded-2xl border border-border bg-card text-foreground font-semibold hover:bg-muted transition-colors">
-                          Play Again
-                        </button>
-                        <button onClick={handleNext} className="py-4 rounded-2xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-md transition-all flex items-center justify-center gap-2">
-                          {currRep < targetReps ? "Next Repetition" : "Next Verse"} <ArrowRight className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {sessionDone && (
-              <div className="max-w-sm text-center space-y-6 animate-in zoom-in-95 duration-500">
-                <div className="h-24 w-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                  <Check className="h-12 w-12 text-emerald-600" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-foreground">Alhamdulillah!</h2>
-                  <p className="text-muted-foreground mt-2">You&apos;ve successfully completed today&apos;s memorization target.</p>
-                </div>
-                <button
-                  onClick={resetSession}
-                  className="w-full rounded-2xl bg-foreground px-8 py-4 text-background font-bold hover:bg-foreground/90 transition-all mt-4"
-                >
-                  Return to Dashboard
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-
       {/* ── Create Goal Modal ── */}
       {showGoalModal && (
         <div className="fixed inset-0 z-200 flex items-end sm:items-center justify-center p-4">
@@ -463,7 +495,7 @@ export default function MemorizePage() {
                 <label className="text-sm font-semibold">Select Target</label>
                 <div className="relative">
                   <select
-                    value={form.surahIdx}
+                    value={safeSurahIdx}
                     onChange={e => setForm({ ...form, surahIdx: Number(e.target.value) })}
                     className="w-full appearance-none rounded-xl border border-input bg-background px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
                   >
@@ -518,7 +550,7 @@ export default function MemorizePage() {
                   <Flame className="h-4 w-4" /> Plan Summary
                 </h4>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  You will memorize <strong className="text-foreground">{SURAHS[form.surahIdx]?.en}</strong> over <strong className="text-foreground">{form.days} days</strong>. This requires learning approximately <strong className="text-foreground">{Math.ceil((SURAHS[form.surahIdx]?.verses || 0) / form.days)} verses</strong> per day, repeating each verse <strong className="text-foreground">{form.reps} times</strong> during training.
+                  You will memorize <strong className="text-foreground">{selectedSurah?.en}</strong> over <strong className="text-foreground">{form.days} days</strong>. This requires learning approximately <strong className="text-foreground">{Math.ceil((selectedSurah?.verses || 0) / form.days)} verses</strong> per day, repeating each verse <strong className="text-foreground">{form.reps} times</strong> during training.
                 </p>
               </div>
             </div>
@@ -532,13 +564,12 @@ export default function MemorizePage() {
               </button>
               <button
                 onClick={() => {
-                  setShowGoalModal(false);
-                  setHasActiveGoal(true);
+                  void handleCreateGoal();
                 }}
-                disabled={!form.title}
+                disabled={!form.title || createGoalMutation.isPending}
                 className="flex-1 rounded-xl bg-primary text-primary-foreground py-3 font-bold shadow-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                Start Memorizing
+                {createGoalMutation.isPending ? "Starting..." : "Start Memorizing"}
               </button>
             </div>
           </div>

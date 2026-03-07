@@ -88,16 +88,16 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   if (activeGoal) {
     const [goalTotalRow, goalDoneRow] = await Promise.all([
       db
-        .select({ total: sql<number>`count(*)` })
+        .select({ total: sql<number>`coalesce(sum(${memorizationProgress.versesCount}), 0)` })
         .from(memorizationProgress)
         .where(eq(memorizationProgress.goalId, activeGoal.id)),
       db
-        .select({ total: sql<number>`count(*)` })
+        .select({ total: sql<number>`coalesce(sum(${memorizationProgress.versesCount}), 0)` })
         .from(memorizationProgress)
         .where(and(eq(memorizationProgress.goalId, activeGoal.id), eq(memorizationProgress.isCompleted, true))),
     ]);
 
-    const totalGoalVerses = Math.max(Number(goalTotalRow[0]?.total ?? 0), activeGoal.targetDays * 2, 20);
+    const totalGoalVerses = Math.max(Number(goalTotalRow[0]?.total ?? 0), 1);
     const completedGoalVerses = Number(goalDoneRow[0]?.total ?? 0);
     const progressPct = Math.min(100, Math.round((completedGoalVerses / totalGoalVerses) * 100));
 
