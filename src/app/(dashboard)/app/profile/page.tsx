@@ -12,12 +12,12 @@ import {
     Settings,
     Shield,
     Bell,
-    LogOut,
     ChevronRight,
     Camera,
     Sparkles
 } from "lucide-react";
 import Link from "next/link";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export default function ProfilePage() {
     const [, setIsEditing] = useState(false);
@@ -161,12 +161,11 @@ export default function ProfilePage() {
                             { label: "Account Settings", icon: Settings, href: "/app/settings", color: "text-foreground" },
                             { label: "Notification Prefs", icon: Bell, href: "/app/settings", color: "text-foreground" },
                             { label: "Privacy & Security", icon: Shield, href: "/app/settings", color: "text-foreground" },
-                            { label: "Log Out", icon: LogOut, href: "/", color: "text-destructive" },
                         ].map((item, i) => (
                             <Link
                                 key={i}
                                 href={item.href}
-                                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors first:rounded-t-[1.25rem] last:rounded-b-[1.25rem]"
+                                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors first:rounded-t-[1.25rem]"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className={`h-9 w-9 rounded-xl flex items-center justify-center bg-secondary/50 ${item.color}`}>
@@ -177,6 +176,11 @@ export default function ProfilePage() {
                                 <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
                             </Link>
                         ))}
+                        <LogoutButton
+                            showLabel
+                            className="w-full rounded-b-[1.25rem] p-4 text-sm font-bold text-destructive hover:bg-muted/50 transition-colors"
+                            iconClassName="h-4 w-4"
+                        />
                     </div>
 
                     <div className="rounded-4xl bg-linear-to-br from-primary/10 via-primary/5 to-background border border-primary/20 p-8 shadow-xl shadow-primary/5 relative overflow-hidden group/pro">

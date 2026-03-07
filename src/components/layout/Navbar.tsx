@@ -1,8 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { authClient } from "@/lib/auth-client";
 
 export function Navbar() {
+    const { data: session, isPending: isSessionPending } = authClient.useSession();
+    const isAuthenticated = Boolean(session);
+
     return (
         <>
             <header className="sticky top-4 z-50 flex justify-center px-4">
@@ -17,12 +23,22 @@ export function Navbar() {
                         <Link href="/app/read" className="hover:text-foreground transition-colors">Quran</Link>
                     </nav>
                     <div className="flex items-center gap-3">
-                        <Link href="/login" className="hidden sm:block text-sm font-medium border border-border rounded-full px-4 py-2 hover:bg-muted transition-colors">
-                            Login
-                        </Link>
-                        <Link href="/app" className="flex items-center gap-1.5 text-sm font-semibold bg-foreground text-background rounded-full px-4 py-2 hover:bg-foreground/90 transition-colors">
-                            Register <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
+                        {isSessionPending ? (
+                            <div className="h-10 w-28 rounded-full border border-border bg-muted/40" />
+                        ) : isAuthenticated ? (
+                            <Link href="/app" className="flex items-center gap-1.5 text-sm font-semibold bg-foreground text-background rounded-full px-4 py-2 hover:bg-foreground/90 transition-colors">
+                                Dashboard <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
+                        ) : (
+                            <>
+                                <Link href="/login" className="hidden sm:block text-sm font-medium border border-border rounded-full px-4 py-2 hover:bg-muted transition-colors">
+                                    Login
+                                </Link>
+                                <Link href="/login" className="flex items-center gap-1.5 text-sm font-semibold bg-foreground text-background rounded-full px-4 py-2 hover:bg-foreground/90 transition-colors">
+                                    Register <ArrowRight className="h-3.5 w-3.5" />
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </header>
