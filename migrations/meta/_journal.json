@@ -8,6 +8,20 @@
       "when": 1772874697195,
       "tag": "0000_soft_wallop",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772890623731,
+      "tag": "0001_wise_azazel",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772892501503,
+      "tag": "0002_dapper_magus",
+      "breakpoints": true
     }
   ]
 }

@@ -81,47 +81,84 @@ export const verification = pgTable(
 // Alias retained for existing domain references.
 export const users = user;
 
-export const khatamPlans = pgTable("khatam_plans", {
-  id: uuid("id").primaryKey().defaultRandom(),
+export const userProfile = pgTable("user_profile", {
   userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
-    .notNull(),
-  name: text("name").notNull(),
-  startJuz: integer("start_juz").notNull().default(1),
-  startDate: timestamp("start_date").notNull(),
-  targetDate: timestamp("target_date").notNull(),
-  isCompleted: boolean("is_completed").default(false).notNull(),
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  username: text("username").notNull().unique(),
+  location: text("location").notNull(),
+  bio: text("bio").notNull(),
+  dailyGoal: text("daily_goal").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const khatamProgress = pgTable("khatam_progress", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  planId: uuid("plan_id")
-    .references(() => khatamPlans.id, { onDelete: "cascade" })
-    .notNull(),
-  date: timestamp("date").notNull(),
-  isDone: boolean("is_done").default(false).notNull(),
-});
+export const khatamPlans = pgTable(
+  "khatam_plans",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    name: text("name").notNull(),
+    startJuz: integer("start_juz").notNull().default(1),
+    startDate: timestamp("start_date").notNull(),
+    targetDate: timestamp("target_date").notNull(),
+    isCompleted: boolean("is_completed").default(false).notNull(),
+  },
+  (table) => [
+    index("khatam_plans_user_id_idx").on(table.userId),
+    index("khatam_plans_user_completed_idx").on(table.userId, table.isCompleted),
+  ],
+);
 
-export const memorizationGoals = pgTable("memorization_goals", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
-    .notNull(),
-  title: text("title").notNull(),
-  surahNumber: integer("surah_number").notNull(),
-  targetDays: integer("target_days").notNull(),
-  repsPerVerse: integer("reps_per_verse").default(3).notNull(),
-  status: goalStatusEnum("status").default("active").notNull(),
-});
+export const khatamProgress = pgTable(
+  "khatam_progress",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    planId: uuid("plan_id")
+      .references(() => khatamPlans.id, { onDelete: "cascade" })
+      .notNull(),
+    date: timestamp("date").notNull(),
+    isDone: boolean("is_done").default(false).notNull(),
+  },
+  (table) => [index("khatam_progress_plan_id_idx").on(table.planId)],
+);
 
-export const memorizationProgress = pgTable("memorization_progress", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  goalId: uuid("goal_id")
-    .references(() => memorizationGoals.id, { onDelete: "cascade" })
-    .notNull(),
-  verseNumber: integer("verse_number").notNull(),
-  isCompleted: boolean("is_completed").default(false).notNull(),
-});
+export const memorizationGoals = pgTable(
+  "memorization_goals",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    title: text("title").notNull(),
+    surahNumber: integer("surah_number").notNull(),
+    targetDays: integer("target_days").notNull(),
+    repsPerVerse: integer("reps_per_verse").default(3).notNull(),
+    status: goalStatusEnum("status").default("active").notNull(),
+  },
+  (table) => [
+    index("memorization_goals_user_id_idx").on(table.userId),
+    index("memorization_goals_user_status_idx").on(table.userId, table.status),
+  ],
+);
+
+export const memorizationProgress = pgTable(
+  "memorization_progress",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    goalId: uuid("goal_id")
+      .references(() => memorizationGoals.id, { onDelete: "cascade" })
+      .notNull(),
+    verseNumber: integer("verse_number").notNull(),
+    isCompleted: boolean("is_completed").default(false).notNull(),
+  },
+  (table) => [
+    index("memorization_progress_goal_id_idx").on(table.goalId),
+    index("memorization_progress_goal_completed_idx").on(table.goalId, table.isCompleted),
+  ],
+);
 
 export const donations = pgTable("donations", {
   id: uuid("id").primaryKey().defaultRandom(),

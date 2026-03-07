@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { History } from "lucide-react";
-import { recentActivityItems } from "@/constants/mock-data";
+import { recentActivityItems } from "@/features/dashboard/constants/mock-data";
 
 interface RecentActivityProps {
     isNewUser: boolean;

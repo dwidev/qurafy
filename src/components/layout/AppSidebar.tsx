@@ -3,11 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { useProfileMeQuery } from "@/features/profile/api/client";
 import { cn } from "@/lib/utils";
 import { mainNavItems, utilityNavItems } from "@/config/navigation";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { data: profileData } = useProfileMeQuery();
+  const { data: session } = authClient.useSession();
+  const displayName = profileData?.user.name?.trim() || session?.user.name?.trim() || "User";
+  const profileInitial = displayName.charAt(0).toUpperCase() || "U";
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-6 md:top-1/2 md:-translate-y-1/2 md:translate-x-0 z-50 flex flex-row md:flex-col items-center gap-2 md:gap-4 rounded-4xl border border-border bg-background/80 backdrop-blur-xl p-2.5 md:p-3.5 shadow-2xl shadow-primary/10 animate-in fade-in slide-in-from-bottom-8 md:slide-in-from-left-8 duration-700">
@@ -76,10 +82,10 @@ export function AppSidebar() {
             ? "bg-primary/10 border-primary text-primary"
             : "bg-secondary border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
         )}>
-          A
+          {profileInitial}
         </div>
         <div className="absolute left-full ml-5 top-1/2 -translate-y-1/2 px-3 py-2 rounded-xl bg-foreground text-background text-xs font-bold opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap shadow-xl border border-border/10">
-          Ahmad Faris
+          {displayName}
           <div className="absolute top-1/2 -mt-1.5 -left-3 border-[6px] border-transparent border-r-foreground" />
         </div>
       </Link>

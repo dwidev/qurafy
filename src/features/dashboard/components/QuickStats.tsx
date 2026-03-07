@@ -1,4 +1,4 @@
-import { quickStats } from "@/constants/mock-data";
+import { quickStats } from "@/features/dashboard/constants/mock-data";
 
 interface QuickStatsProps {
     isNewUser: boolean;

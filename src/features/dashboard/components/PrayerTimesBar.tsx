@@ -1,5 +1,5 @@
 import { MapPin, Compass } from "lucide-react";
-import { prayerTimes } from "@/constants/mock-data";
+import { prayerTimes } from "@/features/dashboard/constants/mock-data";
 
 export function PrayerTimesBar() {
     return (
