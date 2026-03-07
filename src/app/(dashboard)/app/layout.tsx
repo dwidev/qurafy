@@ -1,11 +1,22 @@
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { GlobalSearch } from "@/components/shared/GlobalSearch";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/login");
+  }
+
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       <GlobalSearch />

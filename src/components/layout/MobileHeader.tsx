@@ -7,6 +7,7 @@ import { BookOpen, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { mobileNavItems } from "@/config/navigation";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export function MobileHeader() {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,6 +67,15 @@ export function MobileHeader() {
             <div className="p-4 border-t border-border flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">Dark Mode</span>
               <ThemeToggle className="p-2 border border-border" />
+            </div>
+
+            <div className="p-4 border-t border-border">
+              <LogoutButton
+                onDone={() => setIsOpen(false)}
+                showLabel
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-colors text-destructive hover:bg-destructive/10"
+                iconClassName="h-5 w-5"
+              />
             </div>
           </div>
           <div className="flex-1" onClick={() => setIsOpen(false)} />
