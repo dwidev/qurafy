@@ -53,7 +53,7 @@ export default function SadaqahPage() {
                     <div className="inline-flex flex-col items-center gap-6">
                         <div className="relative group">
                             <div className="absolute -inset-4 bg-emerald-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                            <div className="relative flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-card border border-border shadow-sm">
+                            <div className="relative flex h-16 w-16 items-center justify-center rounded-3xl bg-card border border-border shadow-sm">
                                 <HandHeart className="h-7 w-7 text-foreground" />
                             </div>
                         </div>
@@ -68,7 +68,7 @@ export default function SadaqahPage() {
                 </div>
 
                 {/* ── DONATION CARD ─────────────────────── */}
-                <div className="w-full bg-card border border-border/80 rounded-[2.5rem] p-8 shadow-2xl shadow-black/[0.03] space-y-8">
+                <div className="w-full bg-card border border-border/80 rounded-[2.5rem] p-8 shadow-2xl shadow-black/3 space-y-8">
 
                     <form onSubmit={handleDonate} className="space-y-8">
 

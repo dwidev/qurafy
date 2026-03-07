@@ -27,7 +27,7 @@ export function RecentActivity({ isNewUser }: RecentActivityProps) {
                 ) : (
                     recentActivityItems.map((item) => (
                         <Link key={item.surah} href="/app/read" className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-primary/40 hover:shadow-md transition-all group">
-                            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                                 <History className="h-5 w-5" />
                             </div>
                             <div className="flex-1 overflow-hidden">

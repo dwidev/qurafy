@@ -230,7 +230,7 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
       <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-4xl border border-border bg-card p-6 md:p-8 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
 
@@ -355,9 +355,9 @@ function EditModal({ plan, onSave, onClose, onReset }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
-      <div className="relative z-[201] w-full max-w-md rounded-4xl border border-border bg-card p-6 md:p-8 space-y-6 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
+      <div className="relative z-201 w-full max-w-md rounded-4xl border border-border bg-card p-6 md:p-8 space-y-6 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
 
         <button onClick={onClose} className="absolute top-6 right-6 h-8 w-8 flex items-center justify-center rounded-full bg-secondary/80 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
           <X className="h-4 w-4" />

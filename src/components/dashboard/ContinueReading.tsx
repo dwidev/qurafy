@@ -10,7 +10,7 @@ interface ContinueReadingProps {
 export function ContinueReading({ readingQuranData, khatamProgressData }: ContinueReadingProps) {
     if (!readingQuranData && !khatamProgressData) {
         return (
-            <div className="group relative rounded-3xl border border-primary/20 bg-gradient-to-br from-card to-primary/5 p-6 md:p-10 shadow-sm hover:shadow-md hover:border-primary/40 transition-all overflow-hidden text-center flex flex-col items-center justify-center space-y-5">
+            <div className="group relative rounded-3xl border border-primary/20 bg-linear-to-br from-card to-primary/5 p-6 md:p-10 shadow-sm hover:shadow-md hover:border-primary/40 transition-all overflow-hidden text-center flex flex-col items-center justify-center space-y-5">
                 <div className="absolute right-0 top-0 -mt-16 -mr-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-50" />
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-2">
                     <BookOpen className="h-8 w-8" />
@@ -32,7 +32,7 @@ export function ContinueReading({ readingQuranData, khatamProgressData }: Contin
     }
 
     return (
-        <div className="group relative rounded-3xl border border-primary/20 bg-gradient-to-br from-card to-primary/5 shadow-sm hover:shadow-md hover:border-primary/40 transition-all overflow-hidden flex flex-col md:flex-row">
+        <div className="group relative rounded-3xl border border-primary/20 bg-linear-to-br from-card to-primary/5 shadow-sm hover:shadow-md hover:border-primary/40 transition-all overflow-hidden flex flex-col md:flex-row">
             <div className="absolute right-0 top-0 -mt-16 -mr-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-50" />
 
             {/* Reading Quran Side */}
@@ -78,7 +78,7 @@ export function ContinueReading({ readingQuranData, khatamProgressData }: Contin
                             {khatamProgressData.arabic}
                         </p>
                     </div>
-                    <div className={readingQuranData ? "mt-4" : "flex-shrink-0"}>
+                    <div className={readingQuranData ? "mt-4" : "shrink-0"}>
                         <Link
                             href={khatamProgressData.link}
                             className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"

@@ -6,7 +6,7 @@ export function DailyInspiration() {
             <div className="absolute top-0 right-0 p-8 opacity-5 text-primary transition-opacity group-hover:opacity-10">
                 <Quote className="h-32 w-32 -rotate-6" />
             </div>
-            <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Quote className="h-5 w-5" />
             </div>
             <div className="space-y-3 flex-1 z-10 w-full text-center md:text-left">

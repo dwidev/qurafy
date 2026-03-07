@@ -9,7 +9,7 @@ import {
 
 export function FeatureReader() {
     return (
-        <section id="features" className="relative py-20 md:py-28 px-4 overflow-hidden bg-gradient-to-br from-blue-950/40 via-card to-card dark:from-blue-950/30 dark:via-background dark:to-background">
+        <section id="features" className="relative py-20 md:py-28 px-4 overflow-hidden bg-linear-to-br from-blue-950/40 via-card to-card dark:from-blue-950/30 dark:via-background dark:to-background">
             {/* Decorative floating orbs */}
             <div className="absolute top-10 -left-20 w-72 h-72 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-10 right-0 w-56 h-56 bg-indigo-500/8 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />

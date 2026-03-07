@@ -156,7 +156,7 @@ export default function MemorizePage() {
         <div className="flex flex-col items-center justify-center py-16 md:py-24 text-center animate-in fade-in zoom-in-95 duration-500">
           <div className="relative mb-8">
             <div className="absolute inset-0 rounded-full bg-primary/20 blur-3xl animate-pulse" />
-            <div className="h-32 w-32 bg-gradient-to-br from-primary/20 to-primary/5 rounded-[2rem] flex items-center justify-center border border-primary/20 shadow-lg relative z-10 rotate-3 transition-transform hover:rotate-6">
+            <div className="h-32 w-32 bg-linear-to-br from-primary/20 to-primary/5 rounded-4xl flex items-center justify-center border border-primary/20 shadow-lg relative z-10 rotate-3 transition-transform hover:rotate-6">
               <BookOpen className="h-16 w-16 text-primary drop-shadow-md" />
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function MemorizePage() {
               { icon: TrendingUp, label: "Overall Progress", value: `${pct}%`, color: "text-primary", bg: "bg-primary/10" },
             ].map(({ icon: Icon, label, value, color, bg }) => (
               <div key={label} className="rounded-2xl border border-border bg-card p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
-                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${bg}`}>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bg}`}>
                   <Icon className={`h-5 w-5 ${color}`} />
                 </div>
                 <div>
@@ -213,9 +213,9 @@ export default function MemorizePage() {
           </div>
 
           {/* Active Goal Card */}
-          <div className="rounded-2xl border border-border bg-gradient-to-br from-card to-primary/5 p-6 md:p-8 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+          <div className="rounded-2xl border border-border bg-linear-to-br from-card to-primary/5 p-6 md:p-8 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
             <div className="flex items-center gap-8">
-              <div className="flex-shrink-0 hidden sm:block">
+              <div className="shrink-0 hidden sm:block">
                 <CircleProgress pct={pct} />
               </div>
               <div className="flex-1 space-y-3 min-w-0">
@@ -233,7 +233,7 @@ export default function MemorizePage() {
                 </div>
                 <div className="space-y-1.5 pt-1">
                   <div className="h-2.5 w-full rounded-full bg-secondary overflow-hidden">
-                    <div className="h-2.5 rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-700" style={{ width: `${pct}%` }} />
+                    <div className="h-2.5 rounded-full bg-linear-to-r from-primary to-primary/70 transition-all duration-700" style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>{goal.doneVerses} / {goal.totalVerses} verses</span>
@@ -250,7 +250,7 @@ export default function MemorizePage() {
 
             {sessionDone ? (
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 md:p-8 flex items-center gap-4 shadow-sm">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                   <Check className="h-6 w-6 text-emerald-600" />
                 </div>
                 <div>
@@ -266,7 +266,7 @@ export default function MemorizePage() {
                 <div className="absolute inset-x-8 top-0 h-full bg-primary/10 rounded-3xl transition-transform duration-300 group-hover:-translate-y-2" />
                 <div className="absolute inset-x-4 top-2 h-full bg-primary/20 rounded-3xl transition-transform duration-300 group-hover:-translate-y-1" />
 
-                <div className="relative rounded-3xl border border-border bg-gradient-to-br from-card to-background p-6 md:p-8 shadow-md group-hover:shadow-xl transition-all flex flex-col sm:flex-row items-center justify-between gap-6 z-10 mt-4">
+                <div className="relative rounded-3xl border border-border bg-linear-to-br from-card to-background p-6 md:p-8 shadow-md group-hover:shadow-xl transition-all flex flex-col sm:flex-row items-center justify-between gap-6 z-10 mt-4">
                   <div className="space-y-2 text-center sm:text-left">
                     <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground mb-1">
                       <Calendar className="h-3.5 w-3.5" /> March 5, 2026
@@ -277,7 +277,7 @@ export default function MemorizePage() {
                     </p>
                   </div>
 
-                  <button className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-active:scale-95 transition-all">
+                  <button className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center shrink-0 group-hover:scale-110 group-active:scale-95 transition-all">
                     <Play className="h-8 w-8 ml-1 fill-white" />
                   </button>
                 </div>
@@ -292,7 +292,7 @@ export default function MemorizePage() {
               {UPCOMING.map((u, i) => (
                 <div key={i} className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-4 hover:border-primary/30 hover:shadow-sm transition-all cursor-default text-sm md:text-base">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-secondary">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
                       <Calendar className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
@@ -314,7 +314,7 @@ export default function MemorizePage() {
       {/* ── GUIDED MEMORIZATION FULLSCREEN POPUP ───────────────── */}
       {/* ========================================================= */}
       {sessionOpen && hasActiveGoal && (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-background/95 backdrop-blur-xl animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-100 flex flex-col bg-background/95 backdrop-blur-xl animate-in fade-in duration-300">
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-foreground/5">
             <button onClick={resetSession} className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors">
               <X className="h-6 w-6" />
@@ -433,7 +433,7 @@ export default function MemorizePage() {
 
       {/* ── Create Goal Modal ── */}
       {showGoalModal && (
-        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-200 flex items-end sm:items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowGoalModal(false)} />
           <div className="relative z-10 w-full max-w-lg rounded-3xl border border-border bg-background shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4">
             <div className="flex items-center justify-between border-b border-border px-6 py-4 bg-muted/30">
