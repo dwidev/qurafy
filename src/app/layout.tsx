@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/shared/Providers";
 import { LandingCursor } from "@/components/shared/LandingCursor";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Qurafy - Read & Memorize Quran",
@@ -21,9 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} antialiased landing-cursor-area`}
-      >
+      <body className="antialiased landing-cursor-area">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

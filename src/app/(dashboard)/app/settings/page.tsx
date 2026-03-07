@@ -7,7 +7,6 @@ import {
     Bell,
     Shield,
     Palette,
-    Volume2,
     Globe,
     Smartphone,
     ChevronRight,
@@ -15,9 +14,7 @@ import {
     HelpCircle,
     CreditCard,
     History,
-    Languages,
     BookOpen,
-    Mail,
     Lock
 } from "lucide-react";
 import Link from "next/link";

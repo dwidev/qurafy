@@ -5,8 +5,6 @@ import {
   Target,
   Plus,
   X,
-  PlayCircle,
-  PauseCircle,
   Calendar,
   BookOpen,
   Flame,
@@ -162,7 +160,7 @@ export default function MemorizePage() {
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Start Your Memorization Journey</h2>
           <p className="text-muted-foreground max-w-md mx-auto mb-10 text-base md:text-lg">
-            Build a lasting habit of memorizing the Quran. Choose a target, set your pace, and we'll guide you step-by-step with interactive daily repetitions.
+            Build a lasting habit of memorizing the Quran. Choose a target, set your pace, and we&apos;ll guide you step-by-step with interactive daily repetitions.
           </p>
           <button
             onClick={() => setShowGoalModal(true)}
@@ -246,7 +244,7 @@ export default function MemorizePage() {
 
           {/* Today's Target (Stack Card) */}
           <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
-            <h2 className="text-xl font-bold">Today's Target</h2>
+            <h2 className="text-xl font-bold">Today&apos;s Target</h2>
 
             {sessionDone ? (
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 md:p-8 flex items-center gap-4 shadow-sm">
@@ -255,7 +253,7 @@ export default function MemorizePage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-emerald-800">Alhamdulillah!</h3>
-                  <p className="text-emerald-700/80 text-sm mt-0.5">You have completed today's memorization target.</p>
+                  <p className="text-emerald-700/80 text-sm mt-0.5">You have completed today&apos;s memorization target.</p>
                 </div>
               </div>
             ) : (
@@ -340,7 +338,7 @@ export default function MemorizePage() {
                 </div>
                 <div className="space-y-4">
                   <h2 className="text-3xl font-bold">Ready to Memorize?</h2>
-                  <p className="text-muted-foreground">Today's target: {SURAHS[form.surahIdx]?.en || "An-Naba"}, 1–5.<br />Focus solely on these verses. We will guide you through {targetReps} reps per verse.</p>
+                  <p className="text-muted-foreground">Today&apos;s target: {SURAHS[form.surahIdx]?.en || "An-Naba"}, 1–5.<br />Focus solely on these verses. We will guide you through {targetReps} reps per verse.</p>
                 </div>
                 <button
                   onClick={() => setSessionStarted(true)}
@@ -416,7 +414,7 @@ export default function MemorizePage() {
                 </div>
                 <div>
                   <h2 className="text-3xl font-bold text-foreground">Alhamdulillah!</h2>
-                  <p className="text-muted-foreground mt-2">You've successfully completed today's memorization target.</p>
+                  <p className="text-muted-foreground mt-2">You&apos;ve successfully completed today&apos;s memorization target.</p>
                 </div>
                 <button
                   onClick={resetSession}

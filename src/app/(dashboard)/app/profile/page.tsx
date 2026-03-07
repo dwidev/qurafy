@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import {
-    User,
-    Mail,
     MapPin,
-    Link as LinkIcon,
     Edit3,
     Trophy,
     Medal,
@@ -18,13 +15,12 @@ import {
     LogOut,
     ChevronRight,
     Camera,
-    Sparkles,
-    Heart
+    Sparkles
 } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
-    const [isEditing, setIsEditing] = useState(false);
+    const [, setIsEditing] = useState(false);
 
     // Mock user data
     const user = {

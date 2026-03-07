@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { ArrowLeft, Bookmark, PlayCircle, Settings, Share2, CheckCircle2, X, BookOpen, Menu } from "lucide-react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 
@@ -28,7 +28,7 @@ function ReaderContent() {
     arabicSize: 4 // scale 1-7
   });
 
-  const updateSetting = (key: keyof typeof settings, value: any) => {
+  const updateSetting = <K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -240,7 +240,7 @@ function ReaderContent() {
             <div className="h-16 w-16 bg-primary/20 text-primary rounded-full flex items-center justify-center shrink-0 mb-4">
               <CheckCircle2 className="h-8 w-8" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Finished Today's Reading?</h3>
+            <h3 className="text-xl font-bold mb-2">Finished Today&apos;s Reading?</h3>
             <p className="text-muted-foreground text-sm mb-6">
               Mark this Juz as complete to update your Khatam Planner streak.
             </p>

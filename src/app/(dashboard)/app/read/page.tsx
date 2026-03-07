@@ -235,7 +235,7 @@ export default function ReadQuranPage() {
 
         {((tab === "surah" && filteredSurahs.length === 0) || (tab === "juz" && filteredJuzs.length === 0)) && (
           <div className="col-span-1 md:col-span-2 lg:col-span-3 py-20 text-center">
-            <p className="text-muted-foreground">No matches found for "{searchQuery}"</p>
+            <p className="text-muted-foreground">No matches found for &quot;{searchQuery}&quot;</p>
           </div>
         )}
       </div>

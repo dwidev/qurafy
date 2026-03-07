@@ -7,10 +7,8 @@ import {
     Book,
     Target,
     Calendar,
-    Hash,
     Command,
     ArrowRight,
-    History,
     Sparkles
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -175,7 +173,7 @@ export function GlobalSearch() {
                                 <Search className="h-8 w-8 text-muted-foreground/50" />
                             </div>
                             <div>
-                                <p className="text-base font-bold">No results found for "{query}"</p>
+                                <p className="text-base font-bold">No results found for &quot;{query}&quot;</p>
                                 <p className="text-sm text-muted-foreground max-w-xs mt-1">Try searching for a surah name (e.g. Al-Fatihah) or an app feature.</p>
                             </div>
                         </div>

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import {
-  BookMarked, Calendar, ChevronRight, Play, CheckCircle2,
-  Edit2, Clock, Target, Plus, X, Trophy, Flame,
-  RotateCcw, Info, BookOpen, ChevronLeft
+  ChevronRight, Play, CheckCircle2,
+  Edit2, Clock, Plus, X, Trophy, Flame,
+  RotateCcw, BookOpen
 } from "lucide-react";
 
 // ─── Quran data ───────────────────────────────────────────────────────────────
@@ -452,19 +452,19 @@ function CalendarHeatmap({ plan }: { plan: KhatamPlan }) {
 
 // ─── Main Tracker Page ────────────────────────────────────────────────────────
 export default function TrackerPage() {
-  const [plan, setPlan] = useState<KhatamPlan | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [plan, setPlan] = useState<KhatamPlan | null>(() => {
+    if (typeof window === "undefined") return null;
+    const saved = window.localStorage.getItem("khatam_plan");
+    if (!saved) return null;
+    try {
+      return JSON.parse(saved) as KhatamPlan;
+    } catch {
+      return null;
+    }
+  });
   const [showSetup, setShowSetup] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [tab, setTab] = useState<"overview" | "schedule">("overview");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("khatam_plan");
-    if (saved) {
-      try { setPlan(JSON.parse(saved)); } catch { }
-    }
-    setLoaded(true);
-  }, []);
 
   const handlePlanSave = useCallback((p: KhatamPlan) => {
     setPlan(p);
@@ -491,14 +491,6 @@ export default function TrackerPage() {
     localStorage.setItem("khatam_plan", JSON.stringify(updated));
     setPlan(updated);
   }, [plan]);
-
-  if (!loaded) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <div className="h-8 w-8 rounded-full border-4 border-muted border-t-primary animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-24">
