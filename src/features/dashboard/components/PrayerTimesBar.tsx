@@ -70,6 +70,7 @@ function getActivePrayerName(timings: PrayerTiming[], timeZone: string, now: Dat
 
 export function PrayerTimesBar() {
   const coordinates = usePrayerLocationStore((state) => state.coordinates);
+  const hasPrompted = usePrayerLocationStore((state) => state.hasPrompted);
   const permission = usePrayerLocationStore((state) => state.permission);
   const locationError = usePrayerLocationStore((state) => state.error);
   const setRequesting = usePrayerLocationStore((state) => state.setRequesting);
@@ -117,10 +118,10 @@ export function PrayerTimesBar() {
   }, [setCoordinates, setDenied, setRequesting, setUnsupported]);
 
   useEffect(() => {
-    if (!coordinates && permission === "idle") {
+    if (!coordinates && permission === "idle" && !hasPrompted) {
       requestLocation();
     }
-  }, [coordinates, permission, requestLocation]);
+  }, [coordinates, hasPrompted, permission, requestLocation]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {

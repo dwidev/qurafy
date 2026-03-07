@@ -9,6 +9,7 @@ type LocationPermissionState = "idle" | "requesting" | "granted" | "denied" | "u
 type PrayerLocationState = {
   coordinates: DashboardCoordinates | null;
   updatedAt: number | null;
+  hasPrompted: boolean;
   permission: LocationPermissionState;
   error: string | null;
 };
@@ -28,10 +29,12 @@ export const usePrayerLocationStore = create<PrayerLocationStore>()(
     (set) => ({
       coordinates: null,
       updatedAt: null,
+      hasPrompted: false,
       permission: "idle",
       error: null,
       setRequesting: () =>
         set({
+          hasPrompted: true,
           permission: "requesting",
           error: null,
         }),
@@ -39,16 +42,19 @@ export const usePrayerLocationStore = create<PrayerLocationStore>()(
         set({
           coordinates,
           updatedAt: Date.now(),
+          hasPrompted: true,
           permission: "granted",
           error: null,
         }),
       setDenied: (errorMessage) =>
         set({
+          hasPrompted: true,
           permission: "denied",
           error: errorMessage,
         }),
       setUnsupported: () =>
         set({
+          hasPrompted: true,
           permission: "unsupported",
           error: "Geolocation is not supported on this browser.",
         }),
@@ -63,9 +69,8 @@ export const usePrayerLocationStore = create<PrayerLocationStore>()(
       partialize: (state) => ({
         coordinates: state.coordinates,
         updatedAt: state.updatedAt,
+        hasPrompted: state.hasPrompted,
       }),
     },
   ),
 );
-
-export const usePrayerCoordinates = () => usePrayerLocationStore((state) => state.coordinates);
