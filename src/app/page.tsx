@@ -564,7 +564,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {/* Pro Plan (Donate Only) */}
               <div className="reveal reveal-scale flex flex-col justify-between p-8 rounded-[2.5rem] border border-border bg-card shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group overflow-hidden relative">
                 <div className="absolute top-0 right-0 px-4 py-1.5 bg-secondary text-muted-foreground text-[10px] font-black uppercase tracking-widest rounded-bl-2xl">
@@ -576,7 +576,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="text-2xl font-black">Qurafy Pro</h3>
-                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-medium">Support our mission with any amount and unlock all Pro features as a gift of appreciation.</p>
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-medium">Sustain the app and build a better future for the Ummah. 30% of your support goes directly to Sadaqah.</p>
                   </div>
                   <div className="flex items-baseline gap-1 pt-2">
                     <span className="text-4xl font-black">Any Amount</span>
@@ -596,9 +596,9 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-                <button className="w-full h-12 rounded-full border-2 border-primary/20 bg-primary/5 text-primary font-black text-sm hover:bg-primary hover:text-white transition-all mt-10">
+                <Link href="/donate" className="w-full h-12 rounded-full border-2 border-primary/20 bg-primary/5 text-primary font-black text-sm hover:bg-primary hover:text-white transition-all mt-10 flex items-center justify-center">
                   Donate to Unlock Pro
-                </button>
+                </Link>
               </div>
 
               {/* Lifetime Supporter (Fixed Price) */}
@@ -633,9 +633,44 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                <button className="w-full h-12 rounded-full bg-amber-500 text-white font-black text-sm hover:bg-amber-600 hover:shadow-xl hover:-translate-y-0.5 transition-all mt-10">
+                <Link href="/donate" className="w-full h-11 rounded-full bg-amber-500 text-white font-black text-xs hover:bg-amber-600 hover:shadow-xl hover:-translate-y-0.5 transition-all mt-10 flex items-center justify-center">
                   Become a Supporter
-                </button>
+                </Link>
+              </div>
+
+              {/* Direct Sadaqah (100%) */}
+              <div className="reveal reveal-scale md:reveal-d3 flex flex-col justify-between p-8 rounded-[2.5rem] border border-emerald-500/20 bg-emerald-500/5 shadow-sm hover:shadow-xl hover:border-emerald-500/40 transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-bl-2xl">
+                  Sadaqah
+                </div>
+                <div className="space-y-6 relative z-10">
+                  <div className="h-14 w-14 rounded-2xl bg-emerald-600/10 text-emerald-600 flex items-center justify-center">
+                    <Heart className="h-7 w-7 fill-emerald-600/10" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black">Direct Sadaqah</h3>
+                    <p className="text-xs text-muted-foreground mt-2 leading-relaxed font-medium">100% Pure Charitable Gift. Every single IDR goes directly to those in need. No fees, no overhead.</p>
+                  </div>
+                  <div className="flex items-baseline gap-1 pt-2">
+                    <span className="text-3xl font-black">100%</span>
+                    <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">To Causes</span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      "Mosque Construction",
+                      "Humanitarian Aid",
+                      "Islamic Education",
+                      "Purely Not-for-Profit",
+                    ].map((feat) => (
+                      <div key={feat} className="flex items-center gap-2.5 text-xs font-bold">
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-600" /> {feat}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Link href="/sadaqah" className="w-full h-11 rounded-full border-2 border-emerald-500/20 bg-emerald-500/5 text-emerald-700 font-black text-xs hover:bg-emerald-600 hover:text-white transition-all mt-10 flex items-center justify-center">
+                  Donate Sadaqah
+                </Link>
               </div>
             </div>
           </div>
