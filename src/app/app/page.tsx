@@ -200,22 +200,6 @@ export default function AppDashboard() {
         </div>
       )}
 
-      {/* ── Daily Challenge card ─────────────────────────── */}
-      <div className="group relative rounded-3xl border border-amber-200 bg-linear-to-br from-amber-50 to-orange-50/30 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition-all">
-        <div className="flex items-center gap-6 text-center md:text-left">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-200 group-hover:scale-110 transition-transform">
-            <Sparkles className="h-8 w-8" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-xl font-black text-amber-900 flex items-center gap-2">Daily Challenge <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-900/10 text-[10px] text-amber-900">+50 XP</span></h2>
-            <p className="text-amber-800/70 text-sm font-medium">Complete one juz of the Quran to earn the <strong>'Consistency'</strong> badge!</p>
-          </div>
-        </div>
-        <button className="h-12 px-8 rounded-full bg-amber-900 text-white text-sm font-black hover:bg-amber-950 shadow-md shadow-amber-900/20 active:scale-95 transition-all">
-          Accept Challenge
-        </button>
-      </div>
-
       {/* ── Active Goals & Progress ───────────────────────── */}
       <div className="space-y-4 pt-4">
         <h2 className="text-xl font-bold px-1">Your Progress</h2>

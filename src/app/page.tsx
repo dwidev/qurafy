@@ -43,7 +43,7 @@ export default function Home() {
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
             <Link href="#preview" className="hover:text-foreground transition-colors">Preview</Link>
-            <Link href="#pricing" className="hover:text-foreground transition-colors">Support</Link>
+            <Link href="/app/read" className="hover:text-foreground transition-colors">Quran</Link>
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/login" className="hidden sm:block text-sm font-medium border border-border rounded-full px-4 py-2 hover:bg-muted transition-colors">
@@ -86,8 +86,8 @@ export default function Home() {
             <Link href="/app" className="inline-flex items-center justify-center gap-2 h-12 rounded-full bg-foreground text-background px-8 text-sm font-semibold hover:bg-foreground/90 transition-colors shadow">
               Get Started — it&apos;s free <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="#preview" className="inline-flex items-center justify-center h-12 rounded-full border border-input bg-card px-8 text-sm font-medium hover:bg-muted transition-colors shadow-sm">
-              See how it works
+            <Link href="#pricing" className="inline-flex items-center justify-center gap-2 h-12 rounded-full border border-input bg-card px-8 text-sm font-medium hover:bg-muted transition-colors shadow-sm">
+              <Heart className="h-4 w-4 text-rose-500 fill-rose-500/20" /> Support our Mission
             </Link>
           </div>
 
@@ -560,7 +560,7 @@ export default function Home() {
             <div className="reveal reveal-up text-center space-y-4">
               <h2 className="text-4xl md:text-5xl font-black tracking-tight">Support Our Mission</h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium">
-                Qurafy is built by a small team dedicated to helping Muslims worldwide build better habits. Support us to keep the platform ad-free.
+                Qurafy is built by a small team dedicated to helping Muslims worldwide build better habits. Support us to keep the be app better.
               </p>
             </div>
 
@@ -579,8 +579,8 @@ export default function Home() {
                     <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-medium">Support our mission with any amount and unlock all Pro features as a gift of appreciation.</p>
                   </div>
                   <div className="flex items-baseline gap-1 pt-2">
-                    <span className="text-4xl font-black">Any</span>
-                    <span className="text-muted-foreground text-sm font-bold">amount</span>
+                    <span className="text-4xl font-black">Any Amount</span>
+                    <span className="text-muted-foreground text-sm font-bold">/ month</span>
                   </div>
                   <div className="space-y-3">
                     {[
@@ -615,8 +615,8 @@ export default function Home() {
                     <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-medium">Be a pillar of our community. A one-time fixed contribution for permanent founding status.</p>
                   </div>
                   <div className="flex items-baseline gap-1 pt-2">
-                    <span className="text-4xl font-black">$49.00</span>
-                    <span className="text-muted-foreground text-sm font-bold">one-time</span>
+                    <span className="text-4xl font-black">IDR 200K</span>
+                    <span className="text-muted-foreground text-sm font-bold">/ year</span>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-sm font-bold">
