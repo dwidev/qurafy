@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { sadaqahPresets } from "@/constants/mock-data";
+import { LoadingPopup } from "@/components/ui/LoadingPopup";
 
 export default function SadaqahPage() {
     const [amount, setAmount] = useState<string>("50000");
@@ -165,6 +166,7 @@ export default function SadaqahPage() {
                     </div>
                 </div>
             </div>
+            <LoadingPopup show={isLoading} message="Processing sadaqah..." />
         </div>
     );
 }

@@ -18,6 +18,7 @@ import {
     Lock
 } from "lucide-react";
 import Link from "next/link";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState("general");
@@ -79,12 +80,11 @@ export default function SettingsPage() {
                             {tab.label}
                         </button>
                     ))}
-                    <div className="pt-4 border-t border-border mt-4">
-                        <Link href="/" className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-destructive hover:bg-destructive/10 transition-all">
-                            <LogOut className="h-4 w-4" />
-                            Sign Out
-                        </Link>
-                    </div>
+                    <LogoutButton
+                        showLabel
+                        className="w-full rounded-b-[1.25rem] p-4 text-sm font-bold text-destructive hover:bg-muted/50 transition-colors"
+                        iconClassName="h-4 w-4"
+                    />
                 </div>
 
                 {/* ── Main Content Area ───────────────────────────── */}

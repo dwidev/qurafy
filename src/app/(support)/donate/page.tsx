@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { monthlyPresets, yearlyPresets } from "@/constants/mock-data";
+import { LoadingPopup } from "@/components/ui/LoadingPopup";
 
 export default function DonatePage() {
     const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
@@ -202,6 +203,7 @@ export default function DonatePage() {
                     </div>
                 </div>
             </div>
+            <LoadingPopup show={isLoading} message="Processing donation..." />
         </div>
     );
 }
