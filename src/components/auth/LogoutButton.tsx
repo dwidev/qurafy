@@ -19,7 +19,7 @@ export function LogoutButton({
   className,
   iconClassName,
   onDone,
-  redirectTo = "/login",
+  redirectTo = "/",
   showLabel = false,
 }: LogoutButtonProps) {
   const router = useRouter();

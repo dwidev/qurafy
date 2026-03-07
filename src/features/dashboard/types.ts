@@ -37,3 +37,13 @@ export type DashboardViewData = {
   khatamCard: DashboardProgressCard | null;
   recentItems: RecentActivityItem[];
 };
+
+export type DashboardMeData = {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    createdAt: string;
+  };
+  dashboard: DashboardViewData;
+};

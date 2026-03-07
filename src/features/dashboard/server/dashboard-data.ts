@@ -1,4 +1,5 @@
 import { and, desc, eq, sql } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 import { db } from "@/db";
 import { khatamPlans, memorizationGoals, memorizationProgress } from "@/db/schema";
 import { dailyVerseQuotes } from "@/features/dashboard/constants/daily-verses";
@@ -46,7 +47,7 @@ function getDailyVerse(date: Date) {
   return dailyVerseQuotes[index];
 }
 
-export async function getDashboardViewData(userId: string): Promise<DashboardViewData> {
+async function getDashboardViewDataUncached(userId: string): Promise<DashboardViewData> {
   const now = new Date();
   const [stats, activeGoal, activePlan] = await Promise.all([
     getProfileStats(userId),
@@ -181,4 +182,15 @@ export async function getDashboardViewData(userId: string): Promise<DashboardVie
     khatamCard,
     recentItems,
   };
+}
+
+export async function getDashboardViewData(userId: string): Promise<DashboardViewData> {
+  return unstable_cache(
+    async () => getDashboardViewDataUncached(userId),
+    ["dashboard-view-data", userId],
+    {
+      revalidate: 60,
+      tags: [`dashboard-view-data:${userId}`],
+    },
+  )();
 }

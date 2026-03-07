@@ -8,6 +8,9 @@ import type { DashboardPrayerData, PrayerName } from "@/features/dashboard/praye
 export const dynamic = "force-dynamic";
 
 const prayerOrder: PrayerName[] = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+const GEO_REVALIDATE_SECONDS = 12 * 60 * 60;
+const PRAYER_REVALIDATE_SECONDS = 5 * 60;
+const QIBLA_REVALIDATE_SECONDS = 30 * 24 * 60 * 60;
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -57,13 +60,16 @@ function buildLocationLabel(city: string | null | undefined, country: string | n
 }
 
 async function geocodeLocation(locationQuery: string) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(locationQuery)}`;
+  const normalizedQuery = locationQuery.trim().toLowerCase();
+  const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(normalizedQuery)}`;
   const response = await fetch(url, {
     headers: {
       "User-Agent": "Qurafy/1.0",
       Accept: "application/json",
     },
-    cache: "no-store",
+    next: {
+      revalidate: GEO_REVALIDATE_SECONDS,
+    },
   });
 
   if (!response.ok) {
@@ -107,9 +113,13 @@ async function geocodeLocation(locationQuery: string) {
 }
 
 async function reverseGeocode(latitude: number, longitude: number) {
-  const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`;
+  const normalizedLatitude = Number(latitude.toFixed(4));
+  const normalizedLongitude = Number(longitude.toFixed(4));
+  const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${normalizedLatitude}&longitude=${normalizedLongitude}&localityLanguage=en`;
   const response = await fetch(url, {
-    cache: "no-store",
+    next: {
+      revalidate: GEO_REVALIDATE_SECONDS,
+    },
   });
 
   if (!response.ok) {
@@ -131,9 +141,13 @@ async function reverseGeocode(latitude: number, longitude: number) {
 }
 
 async function fetchPrayerTimings(latitude: number, longitude: number) {
-  const url = `https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=2`;
+  const normalizedLatitude = Number(latitude.toFixed(4));
+  const normalizedLongitude = Number(longitude.toFixed(4));
+  const url = `https://api.aladhan.com/v1/timings?latitude=${normalizedLatitude}&longitude=${normalizedLongitude}&method=2`;
   const response = await fetch(url, {
-    cache: "no-store",
+    next: {
+      revalidate: PRAYER_REVALIDATE_SECONDS,
+    },
   });
 
   if (!response.ok) {
@@ -169,9 +183,13 @@ async function fetchPrayerTimings(latitude: number, longitude: number) {
 }
 
 async function fetchQiblaDirection(latitude: number, longitude: number) {
-  const url = `https://api.aladhan.com/v1/qibla/${latitude}/${longitude}`;
+  const normalizedLatitude = Number(latitude.toFixed(4));
+  const normalizedLongitude = Number(longitude.toFixed(4));
+  const url = `https://api.aladhan.com/v1/qibla/${normalizedLatitude}/${normalizedLongitude}`;
   const response = await fetch(url, {
-    cache: "no-store",
+    next: {
+      revalidate: QIBLA_REVALIDATE_SECONDS,
+    },
   });
 
   if (!response.ok) {
