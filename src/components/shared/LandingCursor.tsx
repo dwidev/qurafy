@@ -204,13 +204,13 @@ export function LandingCursor() {
       {/* Particle canvas */}
       <canvas
         ref={canvasRef}
-        className="cursor-canvas pointer-events-none fixed inset-0 z-[9998]"
+        className="cursor-canvas pointer-events-none fixed inset-0 z-9998"
       />
 
       {/* Main cursor dot */}
       <div
         ref={cursorRef}
-        className="custom-cursor pointer-events-none fixed z-[9999]"
+        className="custom-cursor pointer-events-none fixed z-9999"
         style={{
           left: -100,
           top: -100,
