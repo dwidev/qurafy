@@ -16,6 +16,7 @@ import {
   useDashboardMeQuery,
 } from "@/features/dashboard/api/client";
 import { DashboardPageSkeleton } from "@/features/dashboard/components/DashboardPageSkeleton";
+import { PageHeader } from "./PageHeader";
 
 export function DashboardPage() {
   const router = useRouter();
@@ -49,36 +50,13 @@ export function DashboardPage() {
     return <DashboardPageSkeleton />;
   }
 
-  const displayName = data.user.name.trim() || "User";
+  const displayName = data.user.name.split(' ')[0].trim() || "User";
   const dashboard = data.dashboard;
 
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-32">
       <PrayerTimesBar />
-
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-        <div>
-          <h1 className="text-2xl md:text-4xl font-black tracking-tight flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 shadow-inner">
-              <span className="text-primary text-xl">👋</span>
-            </span>
-            Assalamu&apos;alaikum, {displayName}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1.5 font-medium">
-            {dashboard.dateInfo.gregorian} • {dashboard.dateInfo.hijri}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="h-10 w-10 flex items-center justify-center rounded-full border border-border bg-card shadow-sm hover:shadow-md transition-all">
-            <History className="h-4 w-4 text-muted-foreground" />
-          </button>
-          <Link href="/app/settings" className="h-10 w-10 flex items-center justify-center rounded-full border border-border bg-card shadow-sm hover:shadow-md transition-all">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </Link>
-        </div>
-      </div>
-
+      <PageHeader displayName={displayName} dateInfo={dashboard.dateInfo} />
       <QuickStats isNewUser={dashboard.isNewUser} stats={dashboard.quickStats} />
       <DailyInspiration quote={dashboard.dailyVerse} />
       <ContinueReading

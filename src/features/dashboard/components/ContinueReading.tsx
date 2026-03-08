@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen, ChevronRight } from "lucide-react";
 import type { ReadingData } from "@/types";
+import { log } from "console";
 
 interface ContinueReadingProps {
     readingQuranData: ReadingData | null;
@@ -8,6 +9,7 @@ interface ContinueReadingProps {
 }
 
 export function ContinueReading({ readingQuranData, khatamProgressData }: ContinueReadingProps) {
+    console.log(readingQuranData, khatamProgressData);
     if (!readingQuranData && !khatamProgressData) {
         return (
             <div className="group relative rounded-3xl border border-primary/20 bg-linear-to-br from-card to-primary/5 p-6 md:p-10 shadow-sm hover:shadow-md hover:border-primary/40 transition-all overflow-hidden text-center flex flex-col items-center justify-center space-y-5">
