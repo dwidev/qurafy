@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { dashboardQueryKeys } from "@/features/dashboard/api/client";
 import type {
   CompleteMemorizeSessionPayload,
   CreateMemorizeGoalPayload,
@@ -100,7 +101,10 @@ export function useCompleteMemorizeSessionMutation() {
   return useMutation({
     mutationFn: postCompleteSession,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me }),
+      ]);
     },
   });
 }

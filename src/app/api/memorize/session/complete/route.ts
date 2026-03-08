@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getServerSession } from "@/features/auth/server/session";
 import { completeMemorizeSession } from "@/features/memorize/server/memorize-data";
 import type { CompleteMemorizeSessionPayload } from "@/features/memorize/types";
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await completeMemorizeSession(session.user.id, payload);
+    revalidateTag(`dashboard-view-data:${session.user.id}`);
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof Error) {
