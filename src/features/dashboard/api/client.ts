@@ -13,7 +13,9 @@ class DashboardApiError extends Error {
 }
 
 async function fetchDashboardMe(): Promise<DashboardMeData> {
-  const response = await fetch("/api/dashboard/me");
+  const response = await fetch("/api/dashboard/me", {
+    cache: "no-store",
+  });
   const payload = (await response.json()) as DashboardMeData & { error?: string };
 
   if (!response.ok) {
@@ -33,6 +35,8 @@ export function useDashboardMeQuery(options?: { initialData?: DashboardMeData })
     queryFn: fetchDashboardMe,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
     retry: (failureCount, error) => {
       if (error instanceof DashboardApiError && (error.status === 401 || error.status === 403)) {
         return false;

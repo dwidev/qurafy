@@ -16,7 +16,13 @@ export async function GET() {
   try {
     const payload = await getMemorizeMeData(session.user.id);
     return NextResponse.json(payload);
-  } catch {
+  } catch (error) {
+    console.error("[api/memorize/me] Failed to load memorize data", error);
+
+    if (process.env.NODE_ENV !== "production" && error instanceof Error) {
+      return jsonError(error.message, 500);
+    }
+
     return jsonError("Failed to load memorize data.", 500);
   }
 }

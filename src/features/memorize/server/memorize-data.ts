@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { memorizationGoals, memorizationProgress } from "@/db/schema";
 import { getQuranReadContentData, getQuranReadListData } from "@/features/read/server/quran-api";
@@ -8,6 +8,7 @@ import type {
   MemorizeActiveGoal,
   MemorizeMeData,
 } from "@/features/memorize/types";
+
 
 function buildRangeLabel(surahName: string, startVerse: number, endVerse: number) {
   if (startVerse === endVerse) {
@@ -49,21 +50,30 @@ function buildDailyTargets(totalVerses: number, targetDays: number) {
   });
 }
 
+function buildPlannedRows(targets: ReturnType<typeof buildDailyTargets>, completedDaysCount: number) {
+  return targets.map((target) => ({
+    ...target,
+    isCompleted: target.dayNumber <= completedDaysCount,
+  }));
+}
+
 export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData> {
-  const [quranList, activeGoalRow] = await Promise.all([
-    getQuranReadListData(),
+  const [quranListResult, activeGoalRow] = await Promise.all([
+    getQuranReadListData().catch(() => null),
     db.query.memorizationGoals.findFirst({
       where: and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "active")),
       orderBy: [desc(memorizationGoals.id)],
     }),
   ]);
 
-  const surahs = quranList.surahs.map((surah) => ({
-    n: surah.n,
-    en: surah.en,
-    ar: surah.ar,
-    verses: surah.verses,
-  }));
+  const surahs = quranListResult
+    ? quranListResult.surahs.map((surah) => ({
+      n: surah.n,
+      en: surah.en,
+      ar: surah.ar,
+      verses: surah.verses,
+    }))
+    : [];
 
   if (!activeGoalRow) {
     return {
@@ -72,51 +82,53 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
     };
   }
 
-  const surahMeta = surahs.find((item) => item.n === activeGoalRow.surahNumber);
-  const surahData = await getQuranReadContentData(`surah-${activeGoalRow.surahNumber}`);
+  const progressRow = await db.query.memorizationProgress.findFirst({
+    where: eq(memorizationProgress.goalId, activeGoalRow.id),
+  });
 
-  if (!surahMeta || !surahData) {
-    return {
-      surahs,
-      activeGoal: null,
-    };
+  const fallbackSurahMeta = {
+    n: activeGoalRow.surahNumber,
+    en: `Surah ${activeGoalRow.surahNumber}`,
+    ar: "",
+    verses: Math.max(1, activeGoalRow.totalVerses),
+  };
+
+  const surahMeta = surahs.find((item) => item.n === activeGoalRow.surahNumber) ?? fallbackSurahMeta;
+  const hasSurahOption = surahs.some((item) => item.n === activeGoalRow.surahNumber);
+
+  if (!hasSurahOption) {
+    surahs.push(surahMeta);
   }
 
-  const progressRows = await db
-    .select({
-      dayNumber: memorizationProgress.dayNumber,
-      startVerse: memorizationProgress.startVerse,
-      endVerse: memorizationProgress.endVerse,
-      versesCount: memorizationProgress.versesCount,
-      isCompleted: memorizationProgress.isCompleted,
-    })
-    .from(memorizationProgress)
-    .where(eq(memorizationProgress.goalId, activeGoalRow.id))
-    .orderBy(asc(memorizationProgress.dayNumber));
+  const surahData = await getQuranReadContentData(`surah-${activeGoalRow.surahNumber}`).catch(() => null);
 
-  const plannedRows = progressRows.length > 0 ? progressRows : buildDailyTargets(surahMeta.verses, activeGoalRow.targetDays);
-  const totalVerses = Math.max(
-    plannedRows.reduce((sum, row) => sum + Math.max(0, row.versesCount), 0),
-    surahMeta.verses,
-    1,
-  );
-  const completedVerses = plannedRows.reduce(
-    (sum, row) => sum + (row.isCompleted ? Math.max(0, row.versesCount) : 0),
+  const totalVersesFromGoal = Math.max(1, activeGoalRow.totalVerses || surahMeta.verses);
+
+  const dailyTargets = buildDailyTargets(totalVersesFromGoal, activeGoalRow.targetDays);
+  const completedDaysCount = Math.max(
     0,
+    Math.min(progressRow?.completedDays ?? 0, dailyTargets.length),
+  );
+  const plannedRows = buildPlannedRows(dailyTargets, completedDaysCount);
+  const totalVerses = totalVersesFromGoal;
+  const completedVerses = Math.max(
+    0,
+    Math.min(progressRow?.completedVerses ?? 0, totalVerses),
   );
 
   const todayIndex = plannedRows.findIndex((row) => !row.isCompleted);
   const hasPendingDay = todayIndex >= 0;
   const todayRow = hasPendingDay ? plannedRows[todayIndex] : null;
+  const plannedDays = dailyTargets.length;
   const passedDays = todayRow
     ? Math.max(1, Math.min(activeGoalRow.targetDays, todayRow.dayNumber))
-    : Math.max(1, Math.min(activeGoalRow.targetDays, plannedRows.length));
+    : Math.max(1, Math.min(activeGoalRow.targetDays, plannedDays));
   const remainingDays = Math.max(0, activeGoalRow.targetDays - passedDays);
   const progressPct = Math.min(100, Math.round((completedVerses / totalVerses) * 100));
 
   let todayTarget: MemorizeActiveGoal["todayTarget"] = null;
 
-  if (todayRow) {
+  if (todayRow && surahData) {
     const verses = surahData.verses.filter(
       (verse) => verse.n >= todayRow.startVerse && verse.n <= todayRow.endVerse,
     );
@@ -132,10 +144,10 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
 
   const upcomingTargets = hasPendingDay
     ? plannedRows.slice(todayIndex + 1, todayIndex + 4).map((row) => ({
-        dayLabel: `Day ${row.dayNumber}`,
-        rangeLabel: buildRangeLabel(surahMeta.en, row.startVerse, row.endVerse),
-        count: row.versesCount,
-      }))
+      dayLabel: `Day ${row.dayNumber}`,
+      rangeLabel: buildRangeLabel(surahMeta.en, row.startVerse, row.endVerse),
+      count: row.versesCount,
+    }))
     : [];
 
   const dailyTargetCount = todayRow
@@ -204,6 +216,7 @@ export async function createMemorizeGoal(userId: string, payload: CreateMemorize
         userId,
         title: normalizedTitle,
         surahNumber: payload.surahNumber,
+        totalVerses: surah.verses,
         targetDays,
         repsPerVerse,
         status: "active",
@@ -214,18 +227,11 @@ export async function createMemorizeGoal(userId: string, payload: CreateMemorize
       throw new Error("Unable to create goal.");
     }
 
-    const progressRows = buildDailyTargets(surah.verses, targetDays).map((target) => ({
+    await tx.insert(memorizationProgress).values({
       goalId: createdGoal.id,
-      dayNumber: target.dayNumber,
-      startVerse: target.startVerse,
-      endVerse: target.endVerse,
-      versesCount: target.versesCount,
-      isCompleted: false,
-    }));
-
-    if (progressRows.length > 0) {
-      await tx.insert(memorizationProgress).values(progressRows);
-    }
+      completedDays: 0,
+      completedVerses: 0,
+    });
 
     return createdGoal.id;
   });
@@ -250,32 +256,112 @@ export async function completeMemorizeSession(userId: string, payload: CompleteM
     throw new Error("Goal not found.");
   }
 
-  const updatedRows = await db
-    .update(memorizationProgress)
-    .set({ isCompleted: true })
-    .where(and(eq(memorizationProgress.goalId, payload.goalId), eq(memorizationProgress.dayNumber, dayNumber)))
-    .returning({ id: memorizationProgress.id });
+  if (goal.status === "completed") {
+    return {
+      completed: true,
+      isGoalCompleted: true,
+    };
+  }
 
-  if (updatedRows.length === 0) {
+  const progress = await db.query.memorizationProgress.findFirst({
+    where: eq(memorizationProgress.goalId, goal.id),
+  });
+
+  const dailyTargets = buildDailyTargets(goal.totalVerses, goal.targetDays);
+  const completedDaysCount = Math.max(
+    0,
+    Math.min(progress?.completedDays ?? 0, dailyTargets.length),
+  );
+  const isGoalCompleted = completedDaysCount >= dailyTargets.length;
+  const expectedDayNumber = completedDaysCount + 1;
+
+  if (dayNumber < expectedDayNumber) {
+    return {
+      completed: true,
+      isGoalCompleted,
+    };
+  }
+
+  if (isGoalCompleted) {
+    return {
+      completed: true,
+      isGoalCompleted: true,
+    };
+  }
+
+  if (dayNumber !== expectedDayNumber) {
+    throw new Error("Invalid day target. Please complete your current day first.");
+  }
+
+  const dayTarget = dailyTargets[completedDaysCount];
+
+  if (!dayTarget) {
     throw new Error("Day target not found.");
   }
 
-  const [remainingRow] = await db
-    .select({ total: sql<number>`count(*)` })
-    .from(memorizationProgress)
-    .where(and(eq(memorizationProgress.goalId, payload.goalId), eq(memorizationProgress.isCompleted, false)));
+  const completion = await db.transaction(async (tx) => {
+    if (!progress) {
+      await tx
+        .insert(memorizationProgress)
+        .values({
+          goalId: payload.goalId,
+          completedDays: 0,
+          completedVerses: 0,
+        })
+        .onConflictDoNothing({ target: memorizationProgress.goalId });
+    }
 
-  const remaining = Number(remainingRow?.total ?? 0);
+    const nextCompletedDays = completedDaysCount + 1;
+    const nextCompletedVerses = Math.min(
+      goal.totalVerses,
+      (progress?.completedVerses ?? 0) + dayTarget.versesCount,
+    );
+    const nextGoalStatus = nextCompletedDays >= dailyTargets.length ? "completed" : goal.status;
 
-  if (remaining === 0) {
-    await db
-      .update(memorizationGoals)
-      .set({ status: "completed" })
-      .where(eq(memorizationGoals.id, payload.goalId));
-  }
+    const [updatedProgress] = await tx
+      .update(memorizationProgress)
+      .set({
+        completedDays: nextCompletedDays,
+        completedVerses: nextCompletedVerses,
+      })
+      .where(
+        and(
+          eq(memorizationProgress.goalId, payload.goalId),
+          eq(memorizationProgress.completedDays, completedDaysCount),
+        ),
+      )
+      .returning({
+        completedDays: memorizationProgress.completedDays,
+      });
+
+    if (!updatedProgress) {
+      const latestProgress = await tx.query.memorizationProgress.findFirst({
+        where: eq(memorizationProgress.goalId, payload.goalId),
+      });
+
+      const latestCompletedDays = Math.max(0, Math.min(latestProgress?.completedDays ?? 0, dailyTargets.length));
+
+      return {
+        completed: true,
+        isGoalCompleted: latestCompletedDays >= dailyTargets.length,
+      };
+    }
+
+    if (nextGoalStatus === "completed") {
+      await tx
+        .update(memorizationGoals)
+        .set({ status: "completed" })
+        .where(eq(memorizationGoals.id, payload.goalId));
+    }
+
+    return {
+      completed: true,
+      isGoalCompleted: updatedProgress.completedDays >= dailyTargets.length,
+    };
+  });
 
   return {
-    completed: true,
-    isGoalCompleted: remaining === 0,
+    completed: completion.completed,
+    isGoalCompleted: completion.isGoalCompleted,
   };
 }

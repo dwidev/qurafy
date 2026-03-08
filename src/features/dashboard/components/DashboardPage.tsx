@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Calendar, History } from "lucide-react";
 import { PrayerTimesBar } from "@/features/dashboard/components/PrayerTimesBar";
 import { QuickStats } from "@/features/dashboard/components/QuickStats";
@@ -11,6 +12,7 @@ import { ContinueReading } from "@/features/dashboard/components/ContinueReading
 import { ProgressSection } from "@/features/dashboard/components/ProgressSection";
 import { RecentActivity } from "@/features/dashboard/components/RecentActivity";
 import {
+  dashboardQueryKeys,
   getDashboardErrorMessage,
   isUnauthorizedDashboardError,
   useDashboardMeQuery,
@@ -18,8 +20,11 @@ import {
 import { DashboardPageSkeleton } from "@/features/dashboard/components/DashboardPageSkeleton";
 import { PageHeader } from "./PageHeader";
 
+const DASHBOARD_FORCE_RELOAD_STORAGE_KEY = "dashboard.reload.after-memorize";
+
 export function DashboardPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error, refetch } = useDashboardMeQuery();
 
   useEffect(() => {
@@ -27,6 +32,18 @@ export function DashboardPage() {
       router.replace("/login");
     }
   }, [error, router]);
+
+  useEffect(() => {
+    const shouldForceReload = window.localStorage.getItem(DASHBOARD_FORCE_RELOAD_STORAGE_KEY);
+
+    if (!shouldForceReload) {
+      return;
+    }
+
+    window.localStorage.removeItem(DASHBOARD_FORCE_RELOAD_STORAGE_KEY);
+    void queryClient.removeQueries({ queryKey: dashboardQueryKeys.me });
+    void refetch();
+  }, [queryClient, refetch]);
 
   if (isError) {
     return (

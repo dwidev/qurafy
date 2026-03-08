@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -134,6 +135,7 @@ export const memorizationGoals = pgTable(
       .notNull(),
     title: text("title").notNull(),
     surahNumber: integer("surah_number").notNull(),
+    totalVerses: integer("total_verses").notNull(),
     targetDays: integer("target_days").notNull(),
     repsPerVerse: integer("reps_per_verse").default(3).notNull(),
     status: goalStatusEnum("status").default("active").notNull(),
@@ -151,16 +153,11 @@ export const memorizationProgress = pgTable(
     goalId: uuid("goal_id")
       .references(() => memorizationGoals.id, { onDelete: "cascade" })
       .notNull(),
-    dayNumber: integer("day_number").notNull(),
-    startVerse: integer("start_verse").notNull(),
-    endVerse: integer("end_verse").notNull(),
-    versesCount: integer("verses_count").notNull().default(1),
-    isCompleted: boolean("is_completed").default(false).notNull(),
+    completedDays: integer("completed_days").default(0).notNull(),
+    completedVerses: integer("completed_verses").default(0).notNull(),
   },
   (table) => [
-    index("memorization_progress_goal_id_idx").on(table.goalId),
-    index("memorization_progress_goal_completed_idx").on(table.goalId, table.isCompleted),
-    index("memorization_progress_goal_day_idx").on(table.goalId, table.dayNumber),
+    uniqueIndex("memorization_progress_goal_unique_idx").on(table.goalId),
   ],
 );
 

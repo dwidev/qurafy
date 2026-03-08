@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check, Mic, Play, Target, Volume2, X } from "lucide-react";
+import { dashboardQueryKeys } from "@/features/dashboard/api/client";
 import {
   getMemorizeErrorMessage,
   isUnauthorizedMemorizeError,
@@ -12,6 +14,7 @@ import {
 import { MemorizePageSkeleton } from "@/features/memorize/components/MemorizePageSkeleton";
 
 const MEMORIZE_SESSION_DONE_STORAGE_KEY = "memorize.session.done";
+const DASHBOARD_FORCE_RELOAD_STORAGE_KEY = "dashboard.reload.after-memorize";
 
 function getLocalDateKey() {
   const now = new Date();
@@ -23,6 +26,7 @@ function getLocalDateKey() {
 
 export default function MemorizeSessionPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const memorizeQuery = useMemorizeMeQuery();
   const completeSessionMutation = useCompleteMemorizeSessionMutation();
 
@@ -68,6 +72,8 @@ export default function MemorizeSessionPage() {
       dayNumber: todayTarget.dayNumber,
     });
 
+    await queryClient.removeQueries({ queryKey: dashboardQueryKeys.me });
+    window.localStorage.setItem(DASHBOARD_FORCE_RELOAD_STORAGE_KEY, String(Date.now()));
     setSessionDone(true);
     await memorizeQuery.refetch();
   }

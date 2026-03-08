@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await completeMemorizeSession(session.user.id, payload);
-    revalidateTag(`dashboard-view-data:${session.user.id}`);
+    revalidateTag(`dashboard-view-data:${session.user.id}`, "max");
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof Error) {

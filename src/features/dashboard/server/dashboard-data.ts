@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db } from "@/db";
 import { khatamPlans, memorizationGoals, memorizationProgress } from "@/db/schema";
@@ -86,19 +86,12 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   let readingQuranData: DashboardViewData["readingQuranData"] = null;
 
   if (activeGoal) {
-    const [goalTotalRow, goalDoneRow] = await Promise.all([
-      db
-        .select({ total: sql<number>`coalesce(sum(${memorizationProgress.versesCount}), 0)` })
-        .from(memorizationProgress)
-        .where(eq(memorizationProgress.goalId, activeGoal.id)),
-      db
-        .select({ total: sql<number>`coalesce(sum(${memorizationProgress.versesCount}), 0)` })
-        .from(memorizationProgress)
-        .where(and(eq(memorizationProgress.goalId, activeGoal.id), eq(memorizationProgress.isCompleted, true))),
-    ]);
+    const activeGoalProgress = await db.query.memorizationProgress.findFirst({
+      where: eq(memorizationProgress.goalId, activeGoal.id),
+    });
 
-    const totalGoalVerses = Math.max(Number(goalTotalRow[0]?.total ?? 0), 1);
-    const completedGoalVerses = Number(goalDoneRow[0]?.total ?? 0);
+    const totalGoalVerses = Math.max(activeGoal.totalVerses, 1);
+    const completedGoalVerses = Math.min(totalGoalVerses, activeGoalProgress?.completedVerses ?? 0);
     const progressPct = Math.min(100, Math.round((completedGoalVerses / totalGoalVerses) * 100));
 
     memorizationCard = {

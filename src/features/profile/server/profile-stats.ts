@@ -20,10 +20,10 @@ export async function getProfileStats(userId: string) {
       .from(memorizationGoals)
       .where(and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "active"))),
     db
-      .select({ total: sql<number>`coalesce(sum(${memorizationProgress.versesCount}), 0)` })
+      .select({ total: sql<number>`coalesce(sum(${memorizationProgress.completedVerses}), 0)` })
       .from(memorizationProgress)
       .innerJoin(memorizationGoals, eq(memorizationProgress.goalId, memorizationGoals.id))
-      .where(and(eq(memorizationGoals.userId, userId), eq(memorizationProgress.isCompleted, true))),
+      .where(eq(memorizationGoals.userId, userId)),
   ]);
 
   const completedKhatam = Number(khatamCountRow[0]?.total ?? 0);
