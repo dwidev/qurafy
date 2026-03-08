@@ -13,6 +13,7 @@ export type DashboardProgressCard = {
   progressPct: number;
   targetLabel: string;
   statusLabel: string;
+  stateLabel?: string;
 };
 
 export type DashboardDateInfo = {

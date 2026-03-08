@@ -13,6 +13,7 @@ import { ProgressSection } from "@/features/dashboard/components/ProgressSection
 import { RecentActivity } from "@/features/dashboard/components/RecentActivity";
 import {
   dashboardQueryKeys,
+  fetchDashboardMe,
   getDashboardErrorMessage,
   isUnauthorizedDashboardError,
   useDashboardMeQuery,
@@ -41,7 +42,13 @@ export function DashboardPage() {
     }
 
     window.localStorage.removeItem(DASHBOARD_FORCE_RELOAD_STORAGE_KEY);
-    void queryClient.removeQueries({ queryKey: dashboardQueryKeys.me });
+    void queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me });
+    void queryClient.refetchQueries({ queryKey: dashboardQueryKeys.me, type: "all" });
+    void queryClient.fetchQuery({
+      queryKey: dashboardQueryKeys.me,
+      queryFn: fetchDashboardMe,
+      staleTime: 0,
+    });
     void refetch();
   }, [queryClient, refetch]);
 

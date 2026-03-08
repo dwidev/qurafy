@@ -12,7 +12,7 @@ class DashboardApiError extends Error {
   }
 }
 
-async function fetchDashboardMe(): Promise<DashboardMeData> {
+export async function fetchDashboardMe(): Promise<DashboardMeData> {
   const response = await fetch("/api/dashboard/me", {
     cache: "no-store",
   });

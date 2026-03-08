@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { dashboardQueryKeys } from "@/features/dashboard/api/client";
+import { dashboardQueryKeys, fetchDashboardMe } from "@/features/dashboard/api/client";
 import type {
   CompleteMemorizeSessionPayload,
   CreateMemorizeGoalPayload,
@@ -105,6 +105,17 @@ export function useCompleteMemorizeSessionMutation() {
         queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
         queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me }),
       ]);
+
+      await queryClient.refetchQueries({
+        queryKey: dashboardQueryKeys.me,
+        type: "all",
+      });
+
+      await queryClient.fetchQuery({
+        queryKey: dashboardQueryKeys.me,
+        queryFn: fetchDashboardMe,
+        staleTime: 0,
+      });
     },
   });
 }

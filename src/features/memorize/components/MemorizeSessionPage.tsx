@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check, Mic, Play, Target, Volume2, X } from "lucide-react";
-import { dashboardQueryKeys } from "@/features/dashboard/api/client";
+import { dashboardQueryKeys, fetchDashboardMe } from "@/features/dashboard/api/client";
 import {
   getMemorizeErrorMessage,
   isUnauthorizedMemorizeError,
@@ -72,7 +72,13 @@ export default function MemorizeSessionPage() {
       dayNumber: todayTarget.dayNumber,
     });
 
-    await queryClient.removeQueries({ queryKey: dashboardQueryKeys.me });
+    await queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me });
+    await queryClient.refetchQueries({ queryKey: dashboardQueryKeys.me, type: "all" });
+    await queryClient.fetchQuery({
+      queryKey: dashboardQueryKeys.me,
+      queryFn: fetchDashboardMe,
+      staleTime: 0,
+    });
     window.localStorage.setItem(DASHBOARD_FORCE_RELOAD_STORAGE_KEY, String(Date.now()));
     setSessionDone(true);
     await memorizeQuery.refetch();

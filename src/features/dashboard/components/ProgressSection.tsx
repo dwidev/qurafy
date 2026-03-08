@@ -37,7 +37,7 @@ export function ProgressSection({ isNewUser, memorizationCard, khatamCard }: Pro
                                 <div>
                                     <h3 className="font-bold text-lg leading-tight">Memorization</h3>
                                     <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                                        <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span> Active Target
+                                        <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span> {memorizationCard.stateLabel ?? "Active Target"}
                                     </p>
                                 </div>
                             </div>

@@ -49,10 +49,14 @@ function getDailyVerse(date: Date) {
 
 async function getDashboardViewDataUncached(userId: string): Promise<DashboardViewData> {
   const now = new Date();
-  const [stats, activeGoal, activePlan] = await Promise.all([
+  const [stats, activeGoal, latestCompletedGoal, activePlan] = await Promise.all([
     getProfileStats(userId),
     db.query.memorizationGoals.findFirst({
       where: and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "active")),
+      orderBy: [desc(memorizationGoals.id)],
+    }),
+    db.query.memorizationGoals.findFirst({
+      where: and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "completed")),
       orderBy: [desc(memorizationGoals.id)],
     }),
     db.query.khatamPlans.findFirst({
@@ -60,12 +64,13 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
       orderBy: [desc(khatamPlans.targetDate)],
     }),
   ]);
+  const latestMemorizationGoal = activeGoal ?? latestCompletedGoal ?? null;
 
   const isNewUser =
     stats.completedVerses === 0 &&
     stats.completedKhatam === 0 &&
     stats.activeGoals === 0 &&
-    !activeGoal &&
+    !latestMemorizationGoal &&
     !activePlan;
 
   const dateInfo = {
@@ -85,26 +90,32 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   let memorizationCard: DashboardViewData["memorizationCard"] = null;
   let readingQuranData: DashboardViewData["readingQuranData"] = null;
 
-  if (activeGoal) {
-    const activeGoalProgress = await db.query.memorizationProgress.findFirst({
-      where: eq(memorizationProgress.goalId, activeGoal.id),
+  if (latestMemorizationGoal) {
+    const latestGoalProgress = await db.query.memorizationProgress.findFirst({
+      where: eq(memorizationProgress.goalId, latestMemorizationGoal.id),
     });
 
-    const totalGoalVerses = Math.max(activeGoal.totalVerses, 1);
-    const completedGoalVerses = Math.min(totalGoalVerses, activeGoalProgress?.completedVerses ?? 0);
+    const totalGoalVerses = Math.max(latestMemorizationGoal.totalVerses, 1);
+    const completedGoalVerses = Math.min(totalGoalVerses, latestGoalProgress?.completedVerses ?? 0);
     const progressPct = Math.min(100, Math.round((completedGoalVerses / totalGoalVerses) * 100));
+    const isCompletedGoal = latestMemorizationGoal.status === "completed";
 
     memorizationCard = {
-      title: activeGoal.title,
-      subtitle: `Surah ${activeGoal.surahNumber}`,
+      title: latestMemorizationGoal.title,
+      subtitle: `Surah ${latestMemorizationGoal.surahNumber}`,
       progressPct,
-      targetLabel: `Goal: ${activeGoal.targetDays} days`,
+      targetLabel: isCompletedGoal
+        ? `Completed in ${latestMemorizationGoal.targetDays} days`
+        : `Goal: ${latestMemorizationGoal.targetDays} days`,
       statusLabel: `${completedGoalVerses}/${totalGoalVerses} verses`,
+      stateLabel: isCompletedGoal ? "Completed Goal" : "Active Target",
     };
 
     readingQuranData = {
-      surah: activeGoal.title,
-      verse: `Surah ${activeGoal.surahNumber} • Active memorization`,
+      surah: latestMemorizationGoal.title,
+      verse: isCompletedGoal
+        ? `Surah ${latestMemorizationGoal.surahNumber} • Memorization completed`
+        : `Surah ${latestMemorizationGoal.surahNumber} • Active memorization`,
       arabic: "وَرَتِّلِ ٱلْقُرْءَانَ تَرْتِيلًا",
       link: "/app/memorize",
     };
@@ -135,12 +146,15 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   }
 
   const recentItems = [
-    ...(activeGoal
+    ...(latestMemorizationGoal
       ? [
           {
-            surah: activeGoal.title,
-            verse: `Surah ${activeGoal.surahNumber} memorization active`,
-            time: "Active goal",
+            surah: latestMemorizationGoal.title,
+            verse:
+              latestMemorizationGoal.status === "completed"
+                ? `Surah ${latestMemorizationGoal.surahNumber} memorization completed`
+                : `Surah ${latestMemorizationGoal.surahNumber} memorization active`,
+            time: latestMemorizationGoal.status === "completed" ? "Completed goal" : "Active goal",
           },
         ]
       : []),
