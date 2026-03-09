@@ -26,7 +26,7 @@ export type ReadListData = {
   juzs: QuranJuzSummary[];
 };
 
-export type ReadContentType = "surah" | "juz";
+export type ReadContentType = "surah" | "juz" | "range";
 
 export type ReadContentData = {
   id: string;

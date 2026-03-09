@@ -1,4 +1,4 @@
-import type { QuranVerse, ReadContentData, ReadContentType, ReadListData } from "@/features/read/types";
+import type { QuranVerse, ReadContentData, ReadListData } from "@/features/read/types";
 
 const QURAN_API_BASE_URL = "https://api.quran.com/api/v4";
 const QURAN_API_REVALIDATE_SECONDS = 12 * 60 * 60;
@@ -133,7 +133,51 @@ async function fetchAllVerses(pathBuilder: (page: number) => string): Promise<Qu
   return firstVerses.concat(...remainingPages.map((page) => page.verses ?? []));
 }
 
-function parseReadId(id: string): { type: ReadContentType; number: number } | null {
+type ParsedStandardReadId = {
+  type: "surah" | "juz";
+  number: number;
+};
+
+type ParsedRangeReadId = {
+  type: "range";
+  startSurahNumber: number;
+  startVerse: number;
+  endSurahNumber: number;
+  endVerse: number;
+};
+
+function parseReadId(id: string): ParsedStandardReadId | ParsedRangeReadId | null {
+  const rangeMatch = id.match(/^range-(\d+)-(\d+)-(\d+)-(\d+)$/);
+
+  if (rangeMatch) {
+    const [, startSurahRaw, startVerseRaw, endSurahRaw, endVerseRaw] = rangeMatch;
+    const startSurahNumber = Number(startSurahRaw);
+    const startVerse = Number(startVerseRaw);
+    const endSurahNumber = Number(endSurahRaw);
+    const endVerse = Number(endVerseRaw);
+
+    if (
+      !Number.isInteger(startSurahNumber) ||
+      !Number.isInteger(startVerse) ||
+      !Number.isInteger(endSurahNumber) ||
+      !Number.isInteger(endVerse) ||
+      startSurahNumber <= 0 ||
+      startVerse <= 0 ||
+      endSurahNumber <= 0 ||
+      endVerse <= 0
+    ) {
+      return null;
+    }
+
+    return {
+      type: "range",
+      startSurahNumber,
+      startVerse,
+      endSurahNumber,
+      endVerse,
+    };
+  }
+
   const [rawType, rawNumber] = id.split("-");
 
   if (rawType !== "surah" && rawType !== "juz") {
@@ -147,6 +191,14 @@ function parseReadId(id: string): { type: ReadContentType; number: number } | nu
   }
 
   return { type: rawType, number };
+}
+
+function isRangeOrdered(parsed: ParsedRangeReadId) {
+  if (parsed.startSurahNumber !== parsed.endSurahNumber) {
+    return parsed.startSurahNumber < parsed.endSurahNumber;
+  }
+
+  return parsed.startVerse <= parsed.endVerse;
 }
 
 export async function getQuranReadListData(): Promise<ReadListData> {
@@ -197,6 +249,87 @@ export async function getQuranReadContentData(id: string): Promise<ReadContentDa
 
   if (!parsed) {
     return null;
+  }
+
+  if (parsed.type === "range") {
+    if (
+      parsed.startSurahNumber > 114 ||
+      parsed.endSurahNumber > 114 ||
+      !isRangeOrdered(parsed)
+    ) {
+      return null;
+    }
+
+    const quranList = await getQuranReadListData();
+    const surahMap = new Map(quranList.surahs.map((surah) => [surah.n, surah] as const));
+    const startSurah = surahMap.get(parsed.startSurahNumber);
+    const endSurah = surahMap.get(parsed.endSurahNumber);
+
+    if (!startSurah || !endSurah) {
+      return null;
+    }
+
+    if (parsed.startVerse > startSurah.verses || parsed.endVerse > endSurah.verses) {
+      return null;
+    }
+
+    const surahNumbers = Array.from(
+      { length: parsed.endSurahNumber - parsed.startSurahNumber + 1 },
+      (_, index) => parsed.startSurahNumber + index,
+    );
+    const versesBySurah = await Promise.all(
+      surahNumbers.map((surahNumber) =>
+        fetchAllVerses(
+          (page) =>
+            `/verses/by_chapter/${surahNumber}?language=en&words=true&word_fields=text_uthmani,transliteration&translations=${ENGLISH_TRANSLATION_ID}&per_page=300&page=${page}`,
+        ),
+      ),
+    );
+
+    const verses = versesBySurah
+      .flatMap((surahVerses, index) => {
+        const surahNumber = surahNumbers[index];
+
+        if (surahNumber === undefined) {
+          return [];
+        }
+
+        return surahVerses.filter((verse) => {
+          if (surahNumber === parsed.startSurahNumber && verse.verse_number < parsed.startVerse) {
+            return false;
+          }
+
+          if (surahNumber === parsed.endSurahNumber && verse.verse_number > parsed.endVerse) {
+            return false;
+          }
+
+          return true;
+        });
+      })
+      .map(mapVerse);
+
+    if (verses.length === 0) {
+      return null;
+    }
+
+    const chapterResponse =
+      parsed.startVerse === 1
+        ? await fetchQuranApiJson<QuranApiChapterResponse>(`/chapters/${parsed.startSurahNumber}?language=en`)
+        : null;
+    const sameSurah = parsed.startSurahNumber === parsed.endSurahNumber;
+    const subtitle = sameSurah
+      ? `${startSurah.en} • Verses ${parsed.startVerse}-${parsed.endVerse} • ${verses.length} Verses`
+      : `${startSurah.en} ${parsed.startSurahNumber}:${parsed.startVerse} to ${endSurah.en} ${parsed.endSurahNumber}:${parsed.endVerse} • ${verses.length} Verses`;
+
+    return {
+      id,
+      type: "range",
+      number: parsed.startSurahNumber,
+      title: sameSurah ? startSurah.en : "Khatam Reading",
+      subtitle,
+      bismillah: parsed.startVerse === 1 && chapterResponse?.chapter.bismillah_pre ? BISMILLAH : null,
+      verses,
+    };
   }
 
   if (parsed.type === "surah") {

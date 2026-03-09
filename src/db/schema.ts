@@ -123,7 +123,25 @@ export const khatamProgress = pgTable(
     date: timestamp("date").notNull(),
     isDone: boolean("is_done").default(false).notNull(),
   },
-  (table) => [index("khatam_progress_plan_id_idx").on(table.planId)],
+  (table) => [
+    index("khatam_progress_plan_id_idx").on(table.planId),
+    uniqueIndex("khatam_progress_plan_date_unique_idx").on(table.planId, table.date),
+  ],
+);
+
+export const khatamPlanProgress = pgTable(
+  "khatam_plan_progress",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    planId: uuid("plan_id")
+      .references(() => khatamPlans.id, { onDelete: "cascade" })
+      .notNull(),
+    completedDays: integer("completed_days").default(0).notNull(),
+    completedJuz: integer("completed_juz").default(0).notNull(),
+  },
+  (table) => [
+    uniqueIndex("khatam_plan_progress_plan_unique_idx").on(table.planId),
+  ],
 );
 
 export const memorizationGoals = pgTable(

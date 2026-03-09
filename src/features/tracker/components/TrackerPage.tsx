@@ -1,57 +1,27 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ChevronRight, Play, CheckCircle2,
   Edit2, Clock, Plus, X, Trophy, Flame,
   Calendar,
   RotateCcw, BookOpen
 } from "lucide-react";
-
-// ─── Quran data ───────────────────────────────────────────────────────────────
-const JUZ_DATA: { juz: number; start: string; end: string; pages: number }[] = [
-  { juz: 1, start: "Al-Fatihah 1:1", end: "Al-Baqarah 2:141", pages: 20 },
-  { juz: 2, start: "Al-Baqarah 2:142", end: "Al-Baqarah 2:252", pages: 20 },
-  { juz: 3, start: "Al-Baqarah 2:253", end: "Ali 'Imran 3:92", pages: 20 },
-  { juz: 4, start: "Ali 'Imran 3:93", end: "An-Nisa 4:23", pages: 20 },
-  { juz: 5, start: "An-Nisa 4:24", end: "An-Nisa 4:147", pages: 20 },
-  { juz: 6, start: "An-Nisa 4:148", end: "Al-Ma'idah 5:81", pages: 20 },
-  { juz: 7, start: "Al-Ma'idah 5:82", end: "Al-An'am 6:110", pages: 20 },
-  { juz: 8, start: "Al-An'am 6:111", end: "Al-A'raf 7:87", pages: 20 },
-  { juz: 9, start: "Al-A'raf 7:88", end: "Al-Anfal 8:40", pages: 20 },
-  { juz: 10, start: "Al-Anfal 8:41", end: "At-Tawbah 9:92", pages: 20 },
-  { juz: 11, start: "At-Tawbah 9:93", end: "Hud 11:5", pages: 20 },
-  { juz: 12, start: "Hud 11:6", end: "Yusuf 12:52", pages: 20 },
-  { juz: 13, start: "Yusuf 12:53", end: "Ibrahim 14:52", pages: 20 },
-  { juz: 14, start: "Al-Hijr 15:1", end: "An-Nahl 16:128", pages: 20 },
-  { juz: 15, start: "Al-Isra 17:1", end: "Al-Kahf 18:74", pages: 20 },
-  { juz: 16, start: "Al-Kahf 18:75", end: "Ta-Ha 20:135", pages: 20 },
-  { juz: 17, start: "Al-Anbya 21:1", end: "Al-Hajj 22:78", pages: 20 },
-  { juz: 18, start: "Al-Mu'minun 23:1", end: "Al-Furqan 25:20", pages: 20 },
-  { juz: 19, start: "Al-Furqan 25:21", end: "An-Naml 27:55", pages: 20 },
-  { juz: 20, start: "An-Naml 27:56", end: "Al-Ankabut 29:45", pages: 20 },
-  { juz: 21, start: "Al-Ankabut 29:46", end: "Al-Ahzab 33:30", pages: 20 },
-  { juz: 22, start: "Al-Ahzab 33:31", end: "Ya-Sin 36:27", pages: 20 },
-  { juz: 23, start: "Ya-Sin 36:28", end: "Az-Zumar 39:31", pages: 20 },
-  { juz: 24, start: "Az-Zumar 39:32", end: "Fussilat 41:46", pages: 20 },
-  { juz: 25, start: "Fussilat 41:47", end: "Al-Jathiyah 45:37", pages: 20 },
-  { juz: 26, start: "Al-Ahqaf 46:1", end: "Az-Zariyat 51:30", pages: 20 },
-  { juz: 27, start: "Az-Zariyat 51:31", end: "Al-Hadid 57:29", pages: 20 },
-  { juz: 28, start: "Al-Mujadila 58:1", end: "At-Tahrim 66:12", pages: 20 },
-  { juz: 29, start: "Al-Mulk 67:1", end: "Al-Mursalat 77:50", pages: 20 },
-  { juz: 30, start: "An-Naba 78:1", end: "An-Nas 114:6", pages: 20 },
-];
+import {
+  getKhatamErrorMessage,
+  isUnauthorizedKhatamError,
+  useCreateKhatamPlanMutation,
+  useDeleteKhatamPlanMutation,
+  useKhatamMeQuery,
+  useToggleKhatamDayMutation,
+  useUpdateKhatamPlanMutation,
+} from "@/features/tracker/api/client";
+import type { KhatamActivePlan } from "@/features/tracker/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface KhatamPlan {
-  name: string;
-  startJuz: number;
-  startDate: string;
-  targetDate: string;
-  completedDays: string[];
-  createdAt: string;
-}
+type KhatamPlan = KhatamActivePlan;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function toDateStr(d: Date) {
@@ -86,38 +56,15 @@ function formatShortDate(dateStr: string) {
   });
 }
 
+function formatBoundaryLabel(surahName: string, surahNumber: number, verse: number) {
+  return `${surahName} ${surahNumber}:${verse}`;
+}
+
 function computeSchedule(plan: KhatamPlan) {
-  const totalDays = daysBetween(plan.startDate, plan.targetDate) + 1;
-  const juzLeft = 30 - (plan.startJuz - 1);
-  const juzPerDay = juzLeft / totalDays;
-
-  const days: {
-    day: number;
-    date: string;
-    juzFrom: number;
-    juzTo: number;
-    label: string;
-    isCompleted: boolean;
-    isToday: boolean;
-    isPast: boolean;
-  }[] = [];
-
-  for (let i = 0; i < totalDays; i++) {
-    const date = addDays(plan.startDate, i);
-    const juzStart = plan.startJuz + i * juzPerDay;
-    const juzEnd = plan.startJuz + (i + 1) * juzPerDay;
-    const juzFromInt = Math.floor(juzStart) + 1;
-    const juzToInt = Math.min(30, Math.ceil(juzEnd));
-    const isCompleted = plan.completedDays.includes(date);
-    const isToday = date === today();
-    const isPast = date < today();
-    const label =
-      juzFromInt === juzToInt
-        ? `Juz ${juzFromInt}`
-        : `Juz ${juzFromInt} & ${juzToInt}`;
-    days.push({ day: i + 1, date, juzFrom: juzFromInt, juzTo: juzToInt, label, isCompleted, isToday, isPast });
-  }
-  return { days, totalDays, juzPerDay };
+  return {
+    days: plan.dailyTargets,
+    totalDays: plan.totalDays,
+  };
 }
 
 function computeStats(plan: KhatamPlan) {
@@ -128,6 +75,10 @@ function computeStats(plan: KhatamPlan) {
   const completedCount = plan.completedDays.length;
   const pct = Math.round((completedCount / totalDays) * 100);
   const todayEntry = days.find((d) => d.date === todayStr);
+  const nextUpcomingEntry = days.find((d) => d.date > todayStr && !d.isCompleted);
+  const primaryReadEntry = todayEntry && !todayEntry.isCompleted
+    ? todayEntry
+    : nextUpcomingEntry ?? todayEntry ?? days.at(-1);
   const daysLeft = daysBetween(todayStr, plan.targetDate);
   // Streak
   let streak = 0;
@@ -136,7 +87,7 @@ function computeStats(plan: KhatamPlan) {
     streak++;
     checkDate = addDays(checkDate, -1);
   }
-  return { currentDay, totalDays, completedCount, pct, todayEntry, daysLeft, streak };
+  return { currentDay, totalDays, completedCount, pct, todayEntry, nextUpcomingEntry, primaryReadEntry, daysLeft, streak };
 }
 
 // ─── Welcome Page ─────────────────────────────────────────────────────────────
@@ -169,7 +120,7 @@ function WelcomeState({ onOpenSetup }: { onOpenSetup: () => void }) {
         <div className="space-y-2">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">2</div>
           <h3 className="font-semibold text-foreground">Daily Schedule</h3>
-          <p className="text-sm text-muted-foreground">We calculate exactly which Juz and pages you need to read every single day.</p>
+          <p className="text-sm text-muted-foreground">We split your remaining Quran reading into exact daily verse ranges based on your target date.</p>
         </div>
         <div className="space-y-2">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">3</div>
@@ -182,7 +133,15 @@ function WelcomeState({ onOpenSetup }: { onOpenSetup: () => void }) {
 }
 
 // ─── Setup Modal ──────────────────────────────────────────────────────────────
-function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; onClose: () => void }) {
+function SetupModal({
+  onSave,
+  onClose,
+  isSubmitting,
+}: {
+  onSave: (payload: { name: string; startJuz: number; targetDate: string }) => Promise<void>;
+  onClose: () => void;
+  isSubmitting: boolean;
+}) {
   const [name, setName] = useState("Ramadan Challenge");
   const [startJuz, setStartJuz] = useState(1);
   const [targetDays, setTargetDays] = useState(30);
@@ -214,20 +173,12 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
     setTargetDays(daysBetween(today(), val) + 1);
   };
 
-  const juzLeft = 30 - (startJuz - 1);
-  const pagesPerDay = ((juzLeft * 20) / targetDays).toFixed(1);
-
   const handleSave = () => {
-    const plan: KhatamPlan = {
+    void onSave({
       name: name.trim() || "My Khatam",
       startJuz,
-      startDate: today(),
       targetDate,
-      completedDays: [],
-      createdAt: today(),
-    };
-    localStorage.setItem("khatam_plan", JSON.stringify(plan));
-    onSave(plan);
+    });
   };
 
   return (
@@ -317,10 +268,14 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
           {/* Clean Summary */}
           <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5 mt-4">
             <div className="flex justify-between items-center mb-1">
-              <span className="text-sm font-medium">Daily Target</span>
-              <span className="text-primary font-bold">{pagesPerDay} pages</span>
+              <span className="text-sm font-medium">Reading Style</span>
+              <span className="text-primary font-bold">Verse-based targets</span>
             </div>
             <div className="flex justify-between items-center text-sm text-muted-foreground">
+              <span>Distribution</span>
+              <span>Auto-split across {targetDays} days</span>
+            </div>
+            <div className="flex justify-between items-center text-sm text-muted-foreground mt-1">
               <span>Goal</span>
               <span>Complete by {formatDate(targetDate)}</span>
             </div>
@@ -328,9 +283,10 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
 
           <button
             onClick={handleSave}
+            disabled={isSubmitting}
             className="w-full h-12 rounded-full bg-primary text-primary-foreground font-medium text-base shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4"
           >
-            Start Plan
+            {isSubmitting ? "Starting..." : "Start Plan"}
           </button>
         </div>
       </div>
@@ -341,18 +297,28 @@ function SetupModal({ onSave, onClose }: { onSave: (plan: KhatamPlan) => void; o
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
 function EditModal({ plan, onSave, onClose, onReset }: {
   plan: KhatamPlan;
-  onSave: (p: KhatamPlan) => void;
+  onSave: (payload: { planId: string; name: string; targetDate: string }) => Promise<void>;
   onClose: () => void;
-  onReset: () => void;
+  onReset: (payload: { planId: string }) => Promise<void>;
 }) {
   const [name, setName] = useState(plan.name);
   const [targetDate, setTargetDate] = useState(plan.targetDate);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSave = () => {
-    const updated: KhatamPlan = { ...plan, name, targetDate };
-    localStorage.setItem("khatam_plan", JSON.stringify(updated));
-    onSave(updated);
+    setIsSaving(true);
+    void onSave({
+      planId: plan.id,
+      name,
+      targetDate,
+    }).finally(() => setIsSaving(false));
+  };
+
+  const handleDelete = () => {
+    setIsDeleting(true);
+    void onReset({ planId: plan.id }).finally(() => setIsDeleting(false));
   };
 
   return (
@@ -391,9 +357,10 @@ function EditModal({ plan, onSave, onClose, onReset }: {
 
           <button
             onClick={handleSave}
+            disabled={isSaving || isDeleting}
             className="w-full h-12 mt-2 rounded-full bg-primary text-primary-foreground font-medium text-base shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
           >
-            Save Changes
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
 
@@ -410,7 +377,9 @@ function EditModal({ plan, onSave, onClose, onReset }: {
               <p className="text-sm text-center text-muted-foreground">This deletes all progress. Are you sure?</p>
               <div className="flex gap-3">
                 <button onClick={() => setConfirmReset(false)} className="flex-1 h-10 rounded-full bg-secondary text-foreground text-sm font-medium hover:bg-secondary/80 transition-colors">Cancel</button>
-                <button onClick={onReset} className="flex-1 h-10 rounded-full bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 transition-colors">Confirm Delete</button>
+                <button onClick={handleDelete} disabled={isDeleting || isSaving} className="flex-1 h-10 rounded-full bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-60">
+                  {isDeleting ? "Deleting..." : "Confirm Delete"}
+                </button>
               </div>
             </div>
           )}
@@ -436,7 +405,7 @@ function CalendarHeatmap({ plan }: { plan: KhatamPlan }) {
           return (
             <div
               key={d.date}
-              title={`Day ${d.day}: ${formatShortDate(d.date)} — ${d.label}${d.isCompleted ? " ✓" : ""}`}
+              title={`Day ${d.dayNumber}: ${formatShortDate(d.date)} — ${d.rangeLabel}${d.isCompleted ? " ✓" : ""}`}
               className={`h-4 w-4 rounded-[4px] ${bg} transition-colors cursor-default hover:scale-110`}
             />
           );
@@ -453,45 +422,74 @@ function CalendarHeatmap({ plan }: { plan: KhatamPlan }) {
 
 // ─── Main Tracker Page ────────────────────────────────────────────────────────
 export default function TrackerPage() {
-  const [plan, setPlan] = useState<KhatamPlan | null>(() => {
-    if (typeof window === "undefined") return null;
-    const saved = window.localStorage.getItem("khatam_plan");
-    if (!saved) return null;
-    try {
-      return JSON.parse(saved) as KhatamPlan;
-    } catch {
-      return null;
-    }
-  });
+  const router = useRouter();
+  const khatamQuery = useKhatamMeQuery();
+  const createPlanMutation = useCreateKhatamPlanMutation();
+  const updatePlanMutation = useUpdateKhatamPlanMutation();
+  const deletePlanMutation = useDeleteKhatamPlanMutation();
+  const toggleDayMutation = useToggleKhatamDayMutation();
   const [showSetup, setShowSetup] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [tab, setTab] = useState<"overview" | "schedule">("overview");
+  const plan = khatamQuery.data?.activePlan ?? null;
 
-  const handlePlanSave = useCallback((p: KhatamPlan) => {
-    setPlan(p);
+  useEffect(() => {
+    if (khatamQuery.error && isUnauthorizedKhatamError(khatamQuery.error)) {
+      router.replace("/login");
+    }
+  }, [khatamQuery.error, router]);
+
+  const handleCreatePlan = useCallback(async (payload: { name: string; startJuz: number; targetDate: string }) => {
+    await createPlanMutation.mutateAsync(payload);
     setShowSetup(false);
     setShowEdit(false);
-  }, []);
+  }, [createPlanMutation]);
 
-  const handleReset = useCallback(() => {
-    localStorage.removeItem("khatam_plan");
-    setPlan(null);
+  const handleUpdatePlan = useCallback(async (payload: { planId: string; name: string; targetDate: string }) => {
+    await updatePlanMutation.mutateAsync(payload);
     setShowEdit(false);
-  }, []);
+  }, [updatePlanMutation]);
 
-  const toggleToday = useCallback(() => {
+  const handleDeletePlan = useCallback(async (payload: { planId: string }) => {
+    await deletePlanMutation.mutateAsync(payload);
+    setShowEdit(false);
+  }, [deletePlanMutation]);
+
+  const toggleToday = useCallback(async () => {
     if (!plan) return;
-    const t = today();
-    const already = plan.completedDays.includes(t);
-    const updated: KhatamPlan = {
-      ...plan,
-      completedDays: already
-        ? plan.completedDays.filter((d) => d !== t)
-        : [...plan.completedDays, t],
-    };
-    localStorage.setItem("khatam_plan", JSON.stringify(updated));
-    setPlan(updated);
-  }, [plan]);
+    await toggleDayMutation.mutateAsync({ planId: plan.id });
+  }, [plan, toggleDayMutation]);
+
+  if (khatamQuery.isError) {
+    return (
+      <div className="flex-1 p-4 md:p-8 pt-6 max-w-3xl mx-auto pb-24">
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 space-y-4">
+          <h2 className="text-lg font-black">Could not load khatam planner</h2>
+          <p className="text-sm text-muted-foreground">{getKhatamErrorMessage(khatamQuery.error)}</p>
+          <button
+            type="button"
+            onClick={() => khatamQuery.refetch()}
+            className="h-10 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (khatamQuery.isLoading || !khatamQuery.data) {
+    return (
+      <div className="flex-1 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-24">
+        <div className="rounded-3xl border border-border bg-card p-6 md:p-8 animate-pulse space-y-5">
+          <div className="h-8 w-56 bg-secondary rounded-lg" />
+          <div className="h-4 w-80 bg-secondary rounded" />
+          <div className="h-32 w-full bg-secondary rounded-2xl" />
+          <div className="h-32 w-full bg-secondary rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-24">
@@ -529,6 +527,10 @@ export default function TrackerPage() {
             const { days } = computeSchedule(plan);
             const isComplete = stats.pct >= 100;
             const todayDone = plan.completedDays.includes(today());
+            const focusEntry = stats.primaryReadEntry ?? stats.todayEntry;
+            const isShowingUpcomingTarget = Boolean(
+              focusEntry && stats.todayEntry && focusEntry.date !== stats.todayEntry.date,
+            );
             const upcoming = days.filter((d) => d.date > today()).slice(0, 5);
             const past = days.filter((d) => d.date < today()).slice(-5).reverse();
 
@@ -588,11 +590,17 @@ export default function TrackerPage() {
                   </div>
 
                   {/* ── Today's Focus Card */}
-                  {stats.todayEntry && (
+                  {focusEntry && (
                     <div className="rounded-4xl border border-border bg-card p-6 md:p-8 flex flex-col">
                       <div className="flex items-center justify-between mb-6">
-                        <span className="text-xs font-semibold text-foreground uppercase tracking-widest">Today</span>
-                        {todayDone ? (
+                        <span className="text-xs font-semibold text-foreground uppercase tracking-widest">
+                          {isShowingUpcomingTarget ? "Next Target" : "Today"}
+                        </span>
+                        {isShowingUpcomingTarget ? (
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
+                            Upcoming
+                          </span>
+                        ) : todayDone ? (
                           <span className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
                             <CheckCircle2 className="h-3 w-3" /> Done
                           </span>
@@ -605,13 +613,18 @@ export default function TrackerPage() {
 
                       <div className="flex-1 space-y-6">
                         <div>
-                          <h3 className="text-xl font-bold text-primary mb-3">{stats.todayEntry.label}</h3>
+                          <h3 className="text-xl font-bold text-primary mb-3">{focusEntry.rangeLabel}</h3>
 
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                             <div className="flex-1 rounded-xl bg-secondary/30 px-3.5 py-2 border border-border/50">
                               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-0.5">Start</p>
-                              <p className="text-xs font-semibold">{JUZ_DATA[stats.todayEntry.juzFrom - 1]?.start.split(" ").slice(0, -1).join(" ")}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{JUZ_DATA[stats.todayEntry.juzFrom - 1]?.start.split(" ").pop()}</p>
+                              <p className="text-xs font-semibold">
+                                {formatBoundaryLabel(
+                                  focusEntry.startSurahName,
+                                  focusEntry.startSurahNumber,
+                                  focusEntry.startVerse,
+                                )}
+                              </p>
                             </div>
 
                             <div className="hidden sm:flex shrink-0 items-center justify-center text-muted-foreground/50">
@@ -620,35 +633,47 @@ export default function TrackerPage() {
 
                             <div className="flex-1 rounded-xl bg-secondary/30 px-3.5 py-2 border border-border/50">
                               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-0.5">End</p>
-                              <p className="text-xs font-semibold">{JUZ_DATA[Math.min(30, stats.todayEntry.juzTo) - 1]?.end.split(" ").slice(0, -1).join(" ")}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{JUZ_DATA[Math.min(30, stats.todayEntry.juzTo) - 1]?.end.split(" ").pop()}</p>
+                              <p className="text-xs font-semibold">
+                                {formatBoundaryLabel(
+                                  focusEntry.endSurahName,
+                                  focusEntry.endSurahNumber,
+                                  focusEntry.endVerse,
+                                )}
+                              </p>
                             </div>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-4 w-4" />
-                          <span>Est. {Math.round((stats.todayEntry.juzTo - stats.todayEntry.juzFrom + 1) * 45)} mins</span>
+                          <span>Est. {Math.max(5, Math.round(focusEntry.versesCount * 1.5))} mins</span>
                         </div>
                       </div>
 
                       <div className="flex gap-2 pt-6">
-                        <Link
-                          href={`/app/read/juz-${stats.todayEntry.juzFrom}?khatam=true`}
-                          className="flex-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
-                        >
-                          <Play className="mr-2 h-4 w-4 fill-white" /> Read
-                        </Link>
-                        <button
-                          onClick={toggleToday}
-                          title={todayDone ? "Mark as not done" : "Mark as done"}
-                          className={`h-12 w-12 shrink-0 flex items-center justify-center rounded-xl border transition-all active:scale-95 ${todayDone
-                            ? "bg-primary/10 border-primary/30 text-primary"
-                            : "bg-secondary border-transparent hover:bg-muted text-muted-foreground"
-                            }`}
-                        >
-                          <CheckCircle2 className="h-5 w-5" />
-                        </button>
+                        {focusEntry && (
+                          <Link
+                            href={`/app/read/${focusEntry.readId}?khatam=true&planId=${plan.id}&scheduledDate=${focusEntry.date}&returnTo=/app/tracker`}
+                            className="flex-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98] transition-all"
+                          >
+                            <Play className="mr-2 h-4 w-4 fill-white" /> Continue
+                          </Link>
+                        )}
+                        {!isShowingUpcomingTarget && (
+                          <button
+                            onClick={() => {
+                              void toggleToday();
+                            }}
+                            disabled={toggleDayMutation.isPending}
+                            title={todayDone ? "Mark as not done" : "Mark as done"}
+                            className={`h-12 w-12 shrink-0 flex items-center justify-center rounded-xl border transition-all active:scale-95 ${todayDone
+                              ? "bg-primary/10 border-primary/30 text-primary"
+                              : "bg-secondary border-transparent hover:bg-muted text-muted-foreground"
+                              }`}
+                          >
+                            <CheckCircle2 className="h-5 w-5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
@@ -682,13 +707,22 @@ export default function TrackerPage() {
                             <div key={item.date} className="flex items-center justify-between p-4 rounded-2xl border border-border bg-card hover:border-primary/30 transition-colors group">
                               <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                  <span className="font-bold">{item.day}</span>
+                                  <span className="font-bold">{item.dayNumber}</span>
                                 </div>
                                 <div>
-                                  <p className="font-bold text-sm">{item.label}</p>
+                                  <p className="font-bold text-sm">{item.rangeLabel}</p>
+                                  <p className="text-[11px] text-primary/80 mt-0.5">
+                                    {item.surahLabel}
+                                  </p>
+                                  <p className="text-[11px] text-muted-foreground/80 mt-0.5">
+                                    {item.versesCount} verses
+                                  </p>
                                   <p className="text-xs text-muted-foreground mt-0.5">{formatShortDate(item.date)}</p>
                                 </div>
                               </div>
+                              {item.isCompleted && (
+                                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                              )}
                             </div>
                           ))}
                           {past.length > 0 && (
@@ -698,10 +732,16 @@ export default function TrackerPage() {
                                 <div key={item.date} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/30 opacity-80 border border-transparent">
                                   <div className="flex items-center gap-4">
                                     <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-background text-muted-foreground">
-                                      <span className="font-medium text-sm">{item.day}</span>
+                                      <span className="font-medium text-sm">{item.dayNumber}</span>
                                     </div>
                                     <div>
-                                      <p className="font-medium text-sm text-muted-foreground">{item.label}</p>
+                                      <p className="font-medium text-sm text-muted-foreground">{item.rangeLabel}</p>
+                                      <p className="text-[11px] text-muted-foreground/80 mt-0.5">
+                                        {item.surahLabel}
+                                      </p>
+                                      <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+                                        {item.versesCount} verses
+                                      </p>
                                       <p className="text-xs text-muted-foreground/70 mt-0.5">{formatShortDate(item.date)}</p>
                                     </div>
                                   </div>
@@ -718,30 +758,29 @@ export default function TrackerPage() {
                       ) : (
                         <div className="max-h-[500px] overflow-y-auto space-y-3 pr-2">
                           {days.map((item) => {
-                            const juzCount = Math.max(1, item.juzTo - item.juzFrom + 1);
                             const status = item.isToday
                               ? {
-                                  label: "Today",
-                                  badge: "bg-primary/10 text-primary border border-primary/20",
-                                  icon: "bg-primary/10 text-primary",
-                                }
+                                label: "Today",
+                                badge: "bg-primary/10 text-primary border border-primary/20",
+                                icon: "bg-primary/10 text-primary",
+                              }
                               : item.isCompleted
                                 ? {
-                                    label: "Done",
-                                    badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-                                    icon: "bg-emerald-50 text-emerald-600",
-                                  }
+                                  label: "Done",
+                                  badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+                                  icon: "bg-emerald-50 text-emerald-600",
+                                }
                                 : item.isPast
                                   ? {
-                                      label: "Missed",
-                                      badge: "bg-destructive/10 text-destructive border border-destructive/20",
-                                      icon: "bg-destructive/10 text-destructive",
-                                    }
+                                    label: "Missed",
+                                    badge: "bg-destructive/10 text-destructive border border-destructive/20",
+                                    icon: "bg-destructive/10 text-destructive",
+                                  }
                                   : {
-                                      label: "Upcoming",
-                                      badge: "bg-secondary text-muted-foreground border border-border",
-                                      icon: "bg-secondary text-muted-foreground",
-                                    };
+                                    label: "Upcoming",
+                                    badge: "bg-secondary text-muted-foreground border border-border",
+                                    icon: "bg-secondary text-muted-foreground",
+                                  };
 
                             return (
                               <div
@@ -750,19 +789,29 @@ export default function TrackerPage() {
                               >
                                 <div className="flex items-center gap-4">
                                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${status.icon}`}>
-                                    <Calendar className="h-5 w-5" />
+                                    {item.isCompleted ? (
+                                      <CheckCircle2 className="h-5 w-5" />
+                                    ) : (
+                                      <Calendar className="h-5 w-5" />
+                                    )}
                                   </div>
                                   <div>
                                     <p className="text-xs font-medium text-muted-foreground">
-                                      Day {item.day}{item.isToday ? " · Today" : ""}
+                                      Day {item.dayNumber}{item.isToday ? " · Today" : ""}
                                     </p>
-                                    <p className="font-semibold mt-0.5">{item.label}</p>
+                                    <p className="font-semibold mt-0.5">{item.rangeLabel}</p>
+                                    <p className="text-[11px] text-primary/80 mt-0.5">
+                                      {item.surahLabel}
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground/80 mt-0.5">
+                                      {item.versesCount} verses
+                                    </p>
                                     <p className="text-xs text-muted-foreground mt-0.5">{formatShortDate(item.date)}</p>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
-                                    {juzCount} juz
+                                    {item.versesCount} ayat
                                   </span>
                                   <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${status.badge}`}>
                                     {status.label}
@@ -792,8 +841,21 @@ export default function TrackerPage() {
       )}
 
       {/* Modals outside the main flow */}
-      {showSetup && <SetupModal onSave={handlePlanSave} onClose={() => setShowSetup(false)} />}
-      {showEdit && plan && <EditModal plan={plan} onSave={handlePlanSave} onClose={() => setShowEdit(false)} onReset={handleReset} />}
+      {showSetup && (
+        <SetupModal
+          onSave={handleCreatePlan}
+          onClose={() => setShowSetup(false)}
+          isSubmitting={createPlanMutation.isPending}
+        />
+      )}
+      {showEdit && plan && (
+        <EditModal
+          plan={plan}
+          onSave={handleUpdatePlan}
+          onClose={() => setShowEdit(false)}
+          onReset={handleDeletePlan}
+        />
+      )}
     </div>
   );
 }

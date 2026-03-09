@@ -1,7 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db } from "@/db";
-import { khatamPlans, memorizationGoals, memorizationProgress } from "@/db/schema";
+import { khatamPlanProgress, khatamPlans, memorizationGoals, memorizationProgress } from "@/db/schema";
 import { dailyVerseQuotes } from "@/features/dashboard/constants/daily-verses";
 import { getProfileStats } from "@/features/profile/server/profile-stats";
 import { getQuranReadContentData } from "@/features/read/server/quran-api";
@@ -136,7 +136,7 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   };
 
   let memorizationCard: DashboardViewData["memorizationCard"] = null;
-  let readingQuranData: DashboardViewData["readingQuranData"] = null;
+  const readingQuranData: DashboardViewData["readingQuranData"] = null;
   let khatamProgressData: DashboardViewData["khatamProgressData"] = null;
 
   if (latestMemorizationGoal) {
@@ -189,8 +189,11 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
 
   if (activePlan) {
     const totalDays = Math.max(1, daysBetween(activePlan.startDate, activePlan.targetDate) + 1);
-    const elapsedDays = Math.max(0, Math.min(totalDays, daysBetween(activePlan.startDate, now) + 1));
-    const progressPct = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDays) * 100)));
+    const planProgress = await db.query.khatamPlanProgress.findFirst({
+      where: eq(khatamPlanProgress.planId, activePlan.id),
+    });
+    const completedDays = Math.max(0, Math.min(totalDays, planProgress?.completedDays ?? 0));
+    const progressPct = Math.min(100, Math.max(0, Math.round((completedDays / totalDays) * 100)));
     const khatamContent = await getQuranReadContentData(`juz-${activePlan.startJuz}`).catch(() => null);
     const khatamArabic = khatamContent ? buildArabicExcerpt(khatamContent.verses) : "";
 
@@ -199,7 +202,7 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
       subtitle: `Start Juz ${activePlan.startJuz}`,
       progressPct,
       targetLabel: `Target: ${totalDays} days`,
-      statusLabel: `Day ${Math.max(1, elapsedDays)} of ${totalDays}`,
+      statusLabel: `${completedDays} / ${totalDays} days done`,
     };
 
     khatamProgressData = {

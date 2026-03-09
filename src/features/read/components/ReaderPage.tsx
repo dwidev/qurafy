@@ -19,6 +19,7 @@ import {
   useReadContentQuery,
 } from "@/features/read/api/client";
 import { ReaderPageSkeleton } from "@/features/read/components/ReaderPageSkeleton";
+import { getKhatamErrorMessage, useToggleKhatamDayMutation } from "@/features/tracker/api/client";
 
 function ReaderContent() {
   const router = useRouter();
@@ -27,9 +28,14 @@ function ReaderContent() {
 
   const idStr = typeof params?.id === "string" ? params.id : "";
   const isKhatamMode = searchParams?.get("khatam") === "true";
+  const khatamPlanId = searchParams?.get("planId") ?? "";
+  const scheduledDate = searchParams?.get("scheduledDate") ?? "";
+  const returnTo = searchParams?.get("returnTo") ?? "/app/tracker";
   const { data, isLoading, isError, error, refetch } = useReadContentQuery(idStr);
+  const toggleKhatamDayMutation = useToggleKhatamDayMutation();
 
   const [showSettings, setShowSettings] = useState(false);
+  const [khatamCompleteError, setKhatamCompleteError] = useState<string | null>(null);
   const [settings, setSettings] = useState({
     mode: "verse",
     showTranslation: true,
@@ -47,21 +53,24 @@ function ReaderContent() {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleKhatamComplete = () => {
-    const saved = localStorage.getItem("khatam_plan");
-    if (saved) {
-      try {
-        const plan = JSON.parse(saved) as { completedDays: string[] };
-        const todayStr = new Date().toISOString().split("T")[0];
-        if (!plan.completedDays.includes(todayStr)) {
-          plan.completedDays.push(todayStr);
-          localStorage.setItem("khatam_plan", JSON.stringify(plan));
-        }
-      } catch (caughtError) {
-        console.error("Failed to update khatam plan", caughtError);
-      }
+  const handleKhatamComplete = async () => {
+    setKhatamCompleteError(null);
+
+    if (!khatamPlanId) {
+      setKhatamCompleteError("Missing khatam plan context. Please return to tracker and continue from there.");
+      return;
     }
-    router.push("/app/tracker");
+
+    try {
+      await toggleKhatamDayMutation.mutateAsync({
+        planId: khatamPlanId,
+        scheduledDate: scheduledDate || undefined,
+        forceDone: true,
+      });
+      router.push(returnTo);
+    } catch (caughtError) {
+      setKhatamCompleteError(getKhatamErrorMessage(caughtError));
+    }
   };
 
   const arabicScale = ["text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-6xl", "text-7xl", "text-8xl"];
@@ -336,14 +345,20 @@ function ReaderContent() {
             </div>
             <h3 className="text-xl font-bold mb-2">Finished Today&apos;s Reading?</h3>
             <p className="text-muted-foreground text-sm mb-6">
-              Mark this Juz as complete to update your Khatam Planner streak.
+              Mark this verse target as complete to update your Khatam Planner progress.
             </p>
             <button
-              onClick={handleKhatamComplete}
+              onClick={() => {
+                void handleKhatamComplete();
+              }}
+              disabled={toggleKhatamDayMutation.isPending}
               className="w-full h-12 rounded-full bg-primary text-primary-foreground font-bold shadow-sm hover:bg-primary/90 active:scale-95 transition-all text-sm"
             >
-              Mark Completed & Return
+              {toggleKhatamDayMutation.isPending ? "Marking..." : "Mark Completed & Return"}
             </button>
+            {khatamCompleteError && (
+              <p className="mt-3 text-xs text-destructive">{khatamCompleteError}</p>
+            )}
           </div>
         )}
       </div>
