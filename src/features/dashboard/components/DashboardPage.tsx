@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Calendar, History } from "lucide-react";
 import { PrayerTimesBar } from "@/features/dashboard/components/PrayerTimesBar";
 import { QuickStats } from "@/features/dashboard/components/QuickStats";
 import { DailyInspiration } from "@/features/dashboard/components/DailyInspiration";
@@ -13,7 +11,6 @@ import { ProgressSection } from "@/features/dashboard/components/ProgressSection
 import { RecentActivity } from "@/features/dashboard/components/RecentActivity";
 import {
   dashboardQueryKeys,
-  fetchDashboardMe,
   getDashboardErrorMessage,
   isUnauthorizedDashboardError,
   useDashboardMeQuery,
@@ -42,15 +39,11 @@ export function DashboardPage() {
     }
 
     window.localStorage.removeItem(DASHBOARD_FORCE_RELOAD_STORAGE_KEY);
-    void queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me });
-    void queryClient.refetchQueries({ queryKey: dashboardQueryKeys.me, type: "all" });
-    void queryClient.fetchQuery({
-      queryKey: dashboardQueryKeys.me,
-      queryFn: fetchDashboardMe,
-      staleTime: 0,
-    });
-    void refetch();
-  }, [queryClient, refetch]);
+    void queryClient.invalidateQueries(
+      { queryKey: dashboardQueryKeys.me, refetchType: "active" },
+      { cancelRefetch: false },
+    );
+  }, [queryClient]);
 
   if (isError) {
     return (
