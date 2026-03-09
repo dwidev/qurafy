@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { BookOpen, ChevronRight } from "lucide-react";
 import type { ReadingData } from "@/types";
-import { log } from "console";
 
 interface ContinueReadingProps {
     readingQuranData: ReadingData | null;
@@ -9,7 +8,8 @@ interface ContinueReadingProps {
 }
 
 export function ContinueReading({ readingQuranData, khatamProgressData }: ContinueReadingProps) {
-    console.log(readingQuranData, khatamProgressData);
+    const secondaryBadgeLabel = khatamProgressData?.link === "/app/memorize" ? "Memorization" : "Khatam Progress";
+
     if (!readingQuranData && !khatamProgressData) {
         return (
             <div className="group relative rounded-3xl border border-primary/20 bg-linear-to-br from-card to-primary/5 p-6 md:p-10 shadow-sm hover:shadow-md hover:border-primary/40 transition-all overflow-hidden text-center flex flex-col items-center justify-center space-y-5">
@@ -39,7 +39,7 @@ export function ContinueReading({ readingQuranData, khatamProgressData }: Contin
 
             {/* Reading Quran Side */}
             {readingQuranData && (
-                <div className={`relative z-10 flex flex-col justify-between p-6 md:p-8 ${khatamProgressData ? 'md:w-1/2 border-b md:border-b-0 md:border-r border-primary/10' : 'w-full flex-col md:flex-row md:items-center gap-6'}`}>
+                <div className={`relative z-10 flex flex-col justify-between p-6 md:p-8 ${!readingQuranData ? 'md:w-1/2 border-b md:border-b-0 md:border-r border-primary/10' : 'w-full flex-col md:flex-row md:items-center gap-6'}`}>
                     <div className="space-y-4 mb-6 md:mb-0 max-w-lg">
                         <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
@@ -53,7 +53,7 @@ export function ContinueReading({ readingQuranData, khatamProgressData }: Contin
                             {readingQuranData.arabic}
                         </p>
                     </div>
-                    <div className={khatamProgressData ? "mt-4" : "shrink-0"}>
+                    <div className={!readingQuranData ? "mt-4" : "shrink-0"}>
                         <Link
                             href={readingQuranData.link}
                             className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
@@ -66,11 +66,11 @@ export function ContinueReading({ readingQuranData, khatamProgressData }: Contin
 
             {/* Khatam Progress Side */}
             {khatamProgressData && (
-                <div className={`relative z-10 flex flex-col justify-between p-6 md:p-8 ${readingQuranData ? 'md:w-1/2' : 'w-full flex-col md:flex-row md:items-center gap-6'}`}>
+                <div className={`relative z-10 flex flex-col justify-between p-6 md:p-8 ${!khatamProgressData ? 'md:w-1/2' : 'w-full flex-col md:flex-row md:items-center gap-6'}`}>
                     <div className="space-y-4 mb-6 md:mb-0 max-w-lg">
                         <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                            Continue Reading | <span className="text-orange-500">Khatam Progress</span>
+                            Continue Reading | <span className="text-orange-500">{secondaryBadgeLabel}</span>
                         </div>
                         <div className="space-y-1">
                             <h2 className="text-2xl md:text-3xl font-bold truncate">{khatamProgressData.surah}</h2>
@@ -80,7 +80,7 @@ export function ContinueReading({ readingQuranData, khatamProgressData }: Contin
                             {khatamProgressData.arabic}
                         </p>
                     </div>
-                    <div className={readingQuranData ? "mt-4" : "shrink-0"}>
+                    <div className={!readingQuranData ? "mt-4" : "shrink-0"}>
                         <Link
                             href={khatamProgressData.link}
                             className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
