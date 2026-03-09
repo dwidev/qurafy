@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ChevronRight, Play, CheckCircle2,
   Edit2, Clock, Plus, X, Trophy, Flame,
+  Calendar,
   RotateCcw, BookOpen
 } from "lucide-react";
 
@@ -715,22 +716,61 @@ export default function TrackerPage() {
                           )}
                         </>
                       ) : (
-                        <div className="max-h-[500px] overflow-y-auto space-y-2 pr-2">
-                          {days.map((item) => (
-                            <div key={item.date} className={`flex items-center justify-between p-3 rounded-xl border ${item.isToday ? "border-primary bg-primary/5 dark:bg-primary/10" : "border-transparent bg-secondary/50 hover:bg-secondary"
-                              }`}>
-                              <div className="flex items-center gap-4">
-                                <span className={`w-8 text-center text-xs font-bold ${item.isToday ? "text-primary" : "text-muted-foreground"}`}>{item.day}</span>
-                                <div>
-                                  <p className="font-medium text-sm">{item.label}</p>
-                                  <p className="text-[11px] text-muted-foreground">{formatShortDate(item.date)}</p>
+                        <div className="max-h-[500px] overflow-y-auto space-y-3 pr-2">
+                          {days.map((item) => {
+                            const juzCount = Math.max(1, item.juzTo - item.juzFrom + 1);
+                            const status = item.isToday
+                              ? {
+                                  label: "Today",
+                                  badge: "bg-primary/10 text-primary border border-primary/20",
+                                  icon: "bg-primary/10 text-primary",
+                                }
+                              : item.isCompleted
+                                ? {
+                                    label: "Done",
+                                    badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+                                    icon: "bg-emerald-50 text-emerald-600",
+                                  }
+                                : item.isPast
+                                  ? {
+                                      label: "Missed",
+                                      badge: "bg-destructive/10 text-destructive border border-destructive/20",
+                                      icon: "bg-destructive/10 text-destructive",
+                                    }
+                                  : {
+                                      label: "Upcoming",
+                                      badge: "bg-secondary text-muted-foreground border border-border",
+                                      icon: "bg-secondary text-muted-foreground",
+                                    };
+
+                            return (
+                              <div
+                                key={item.date}
+                                className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-4 hover:border-primary/30 hover:shadow-sm transition-all"
+                              >
+                                <div className="flex items-center gap-4">
+                                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${status.icon}`}>
+                                    <Calendar className="h-5 w-5" />
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                      Day {item.day}{item.isToday ? " · Today" : ""}
+                                    </p>
+                                    <p className="font-semibold mt-0.5">{item.label}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{formatShortDate(item.date)}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
+                                    {juzCount} juz
+                                  </span>
+                                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${status.badge}`}>
+                                    {status.label}
+                                  </span>
                                 </div>
                               </div>
-                              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-background border border-border">
-                                {item.isToday ? "Today" : item.isCompleted ? "✓ Done" : item.isPast ? "Missed" : "Upcoming"}
-                              </span>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
