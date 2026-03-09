@@ -12,37 +12,37 @@ export function PricingSection() {
 
             <div className="container max-w-6xl mx-auto space-y-16">
                 <div className="reveal reveal-up text-center space-y-4">
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight">Support Our Mission</h2>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tight">Choose Your Support Path</h2>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium">
-                        Qurafy is built by a small team dedicated to helping Muslims worldwide build better habits. Support us to keep the be app better.
+                        Qurafy keeps core Quran access free. Choose a 70/30 supporter plan that includes Pro access, or give separately through Pure Sadaqah.
                     </p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                    {/* Pro Plan */}
+                    {/* Monthly Supporter */}
                     <div className="reveal reveal-scale flex flex-col justify-between p-8 rounded-[2.5rem] border border-border bg-card shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group overflow-hidden relative">
                         <div className="absolute top-0 right-0 px-4 py-1.5 bg-secondary text-muted-foreground text-[10px] font-black uppercase tracking-widest rounded-bl-2xl">
-                            Sadaqah
+                            70 / 30
                         </div>
                         <div className="space-y-6 relative z-10">
                             <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                                 <Sparkles className="h-7 w-7" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black">Qurafy Pro</h3>
-                                <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-medium">Sustain the app and build a better future for the Ummah. 30% of your support goes directly to Sadaqah.</p>
+                                <h3 className="text-2xl font-black">Monthly Supporter</h3>
+                                <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-medium">Choose your monthly amount. 70% sustains Qurafy and 30% is allocated to charity, while you receive full Pro access.</p>
                             </div>
                             <div className="flex items-baseline gap-1 pt-2">
-                                <span className="text-4xl font-black">Any Amount</span>
+                                <span className="text-4xl font-black">From IDR 25K</span>
                                 <span className="text-muted-foreground text-sm font-bold">/ month</span>
                             </div>
                             <div className="space-y-3">
                                 {[
-                                    "Unlimited Memorization Goals",
-                                    "Advanced Analytics & Charts",
-                                    "Exclusive Premium Reciters",
-                                    "Custom Theme Personalization",
-                                    "Support our Mission",
+                                    "Includes Full Pro Access",
+                                    "70% Platform Sustainability",
+                                    "30% Charity Allocation",
+                                    "Flexible Monthly Amount",
+                                    "Advanced Qurafy Productivity Tools",
                                 ].map((feat) => (
                                     <div key={feat} className="flex items-center gap-3 text-sm font-bold">
                                         <CheckCircle className="h-4 w-4 text-primary" /> {feat}
@@ -51,44 +51,44 @@ export function PricingSection() {
                             </div>
                         </div>
                         <Link href="/donate" className="w-full h-12 rounded-full border-2 border-primary/20 bg-primary/5 text-primary font-black text-sm hover:bg-primary hover:text-white transition-all mt-10 flex items-center justify-center">
-                            Donate to Unlock Pro
+                            Choose Monthly Plan
                         </Link>
                     </div>
 
-                    {/* Lifetime Supporter */}
+                    {/* Yearly Supporter */}
                     <div className="reveal reveal-scale md:reveal-d2 flex flex-col justify-between p-8 rounded-[2.5rem] border-2 border-amber-500 bg-amber-500/5 shadow-2xl shadow-amber-500/10 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 px-4 py-1.5 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-bl-2xl">
-                            Lifetime
+                            70 / 30
                         </div>
                         <div className="space-y-6 relative z-10">
                             <div className="h-14 w-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
                                 <Heart className="h-7 w-7 fill-white" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black">Lifetime Supporter</h3>
-                                <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-medium">Be a pillar of our community. A one-time fixed contribution for permanent founding status.</p>
+                                <h3 className="text-2xl font-black">Yearly Supporter</h3>
+                                <p className="text-sm text-muted-foreground mt-2 leading-relaxed font-medium">A discounted annual supporter plan with the same 70/30 split, full Pro access, and stronger yearly impact.</p>
                             </div>
                             <div className="flex items-baseline gap-1 pt-2">
-                                <span className="text-4xl font-black">IDR 200K</span>
+                                <span className="text-4xl font-black">From IDR 200K</span>
                                 <span className="text-muted-foreground text-sm font-bold">/ year</span>
                             </div>
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3 text-sm font-bold">
-                                    <CheckCircle className="h-4 w-4 text-amber-500" /> Everything in Pro Access
+                                    <CheckCircle className="h-4 w-4 text-amber-500" /> Includes Full Pro Access
                                 </div>
                                 <div className="flex items-center gap-3 text-sm font-bold">
-                                    <CheckCircle className="h-4 w-4 text-amber-500" /> Exclusive &apos;Founding&apos; Badge
+                                    <CheckCircle className="h-4 w-4 text-amber-500" /> Discounted Annual Billing
                                 </div>
                                 <div className="flex items-center gap-3 text-sm font-bold">
-                                    <CheckCircle className="h-4 w-4 text-amber-500" /> Private Discord Channel
+                                    <CheckCircle className="h-4 w-4 text-amber-500" /> Larger Annual Charity Allocation
                                 </div>
                                 <div className="flex items-center gap-3 text-sm font-bold">
-                                    <CheckCircle className="h-4 w-4 text-amber-500" /> Future Beta Access
+                                    <CheckCircle className="h-4 w-4 text-amber-500" /> Optional Supporter Badge
                                 </div>
                             </div>
                         </div>
                         <Link href="/donate" className="w-full h-11 rounded-full bg-amber-500 text-white font-black text-xs hover:bg-amber-600 hover:shadow-xl hover:-translate-y-0.5 transition-all mt-10 flex items-center justify-center">
-                            Become a Supporter
+                            Choose Yearly Plan
                         </Link>
                     </div>
 
@@ -103,18 +103,18 @@ export function PricingSection() {
                             </div>
                             <div>
                                 <h3 className="text-xl font-black">Direct Sadaqah</h3>
-                                <p className="text-xs text-muted-foreground mt-2 leading-relaxed font-medium">100% Pure Charitable Gift. Every single IDR goes directly to those in need. No fees, no overhead.</p>
+                                <p className="text-xs text-muted-foreground mt-2 leading-relaxed font-medium">A separate charitable giving flow for users who want 100% of their contribution treated as charity without Pro access or supporter benefits.</p>
                             </div>
                             <div className="flex items-baseline gap-1 pt-2">
                                 <span className="text-3xl font-black">100%</span>
-                                <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">To Causes</span>
+                                <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Separate Flow</span>
                             </div>
                             <div className="space-y-2">
                                 {[
-                                    "Mosque Construction",
-                                    "Humanitarian Aid",
-                                    "Islamic Education",
-                                    "Purely Not-for-Profit",
+                                    "Separate from Pro Subscription",
+                                    "No Product Entitlements",
+                                    "Dedicated Charitable Intent",
+                                    "Kept Distinct from Platform Revenue",
                                 ].map((feat) => (
                                     <div key={feat} className="flex items-center gap-2.5 text-xs font-bold">
                                         <CheckCircle className="h-3.5 w-3.5 text-emerald-600" /> {feat}
