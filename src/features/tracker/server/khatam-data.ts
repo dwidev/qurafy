@@ -1,8 +1,9 @@
-import { and, count, desc, eq, gte, lt, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lt, lte } from "drizzle-orm";
 import { db } from "@/db";
 import { khatamPlanProgress, khatamPlans, khatamProgress } from "@/db/schema";
 import { getQuranReadListData } from "@/features/read/server/quran-api";
 import { QURAN_JUZ_BOUNDARIES } from "@/features/tracker/constants/juz-boundaries";
+import { buildStreakSummary, startOfUtcDay, toUtcDateKey } from "@/lib/streaks";
 import type {
   CreateKhatamPlanPayload,
   DeleteKhatamPlanPayload,
@@ -26,10 +27,6 @@ function dateKey(date: Date) {
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const day = String(date.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-function startOfUtcDay(input: Date) {
-  return new Date(Date.UTC(input.getUTCFullYear(), input.getUTCMonth(), input.getUTCDate()));
 }
 
 function addDays(input: Date, days: number) {
@@ -239,20 +236,18 @@ function buildDailyTargets(
   };
 }
 
-async function countDoneDaysForRange(tx: Tx, planId: string, startDate: Date, targetDate: Date) {
-  const [doneRows] = await tx
-    .select({ total: count() })
-    .from(khatamProgress)
-    .where(
-      and(
-        eq(khatamProgress.planId, planId),
-        eq(khatamProgress.isDone, true),
-        gte(khatamProgress.date, startDate),
-        lte(khatamProgress.date, targetDate),
-      ),
-    );
+async function getDoneDateKeysForRange(tx: Tx, planId: string, startDate: Date, targetDate: Date) {
+  const rows = await tx.query.khatamProgress.findMany({
+    where: and(
+      eq(khatamProgress.planId, planId),
+      eq(khatamProgress.isDone, true),
+      gte(khatamProgress.date, startDate),
+      lte(khatamProgress.date, targetDate),
+    ),
+    orderBy: [asc(khatamProgress.date)],
+  });
 
-  return Number(doneRows?.total ?? 0);
+  return Array.from(new Set(rows.map((row) => toUtcDateKey(row.date))));
 }
 
 async function syncPlanSummary(
@@ -260,13 +255,15 @@ async function syncPlanSummary(
   plan: { id: string; startJuz: number; startDate: Date; targetDate: Date },
 ) {
   const totalDays = Math.max(1, daysBetween(startOfUtcDay(plan.startDate), startOfUtcDay(plan.targetDate)) + 1);
-  const completedDays = await countDoneDaysForRange(
+  const completedDateKeys = await getDoneDateKeysForRange(
     tx,
     plan.id,
     startOfUtcDay(plan.startDate),
     startOfUtcDay(plan.targetDate),
   );
+  const completedDays = completedDateKeys.length;
   const completedJuz = computeCompletedJuz(plan.startJuz, totalDays, completedDays);
+  const streakSummary = buildStreakSummary(completedDateKeys);
   const isCompleted = completedDays >= totalDays;
 
   await tx
@@ -275,12 +272,18 @@ async function syncPlanSummary(
       planId: plan.id,
       completedDays,
       completedJuz,
+      currentStreak: streakSummary.currentStreak,
+      bestStreak: streakSummary.bestStreak,
+      lastCompletedAt: streakSummary.lastCompletedAt,
     })
     .onConflictDoUpdate({
       target: khatamPlanProgress.planId,
       set: {
         completedDays,
         completedJuz,
+        currentStreak: streakSummary.currentStreak,
+        bestStreak: streakSummary.bestStreak,
+        lastCompletedAt: streakSummary.lastCompletedAt,
       },
     });
 
@@ -292,6 +295,8 @@ async function syncPlanSummary(
   return {
     completedDays,
     completedJuz,
+    currentStreak: streakSummary.currentStreak,
+    bestStreak: streakSummary.bestStreak,
     isCompleted,
     totalDays,
   };
@@ -322,13 +327,25 @@ export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
   });
 
   const completedDays = Array.from(new Set(progressRows.map((row) => dateKey(startOfUtcDay(row.date))))).sort();
-  const quranList = await getQuranReadListData();
-  const surahs = quranList.surahs.map((surah) => ({
-    n: surah.n,
-    en: surah.en,
-    verses: surah.verses,
-  }));
-  const schedule = buildDailyTargets(surahs, activePlan.startJuz, startDate, targetDate, completedDays);
+  const streakSummary = buildStreakSummary(completedDays);
+  const quranList = await getQuranReadListData().catch(() => null);
+  const schedule = quranList
+    ? buildDailyTargets(
+        quranList.surahs.map((surah) => ({
+          n: surah.n,
+          en: surah.en,
+          verses: surah.verses,
+        })),
+        activePlan.startJuz,
+        startDate,
+        targetDate,
+        completedDays,
+      )
+    : {
+        totalVerses: 0,
+        totalDays: Math.max(1, daysBetween(startDate, targetDate) + 1),
+        dailyTargets: [],
+      };
 
   return {
     activePlan: {
@@ -338,6 +355,8 @@ export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
       startDate: dateKey(startDate),
       targetDate: dateKey(targetDate),
       completedDays,
+      currentStreak: streakSummary.currentStreak,
+      bestStreak: streakSummary.bestStreak,
       totalVerses: schedule.totalVerses,
       totalDays: schedule.totalDays,
       dailyTargets: schedule.dailyTargets,
@@ -387,6 +406,9 @@ export async function createKhatamPlan(userId: string, payload: CreateKhatamPlan
         planId: newPlan.id,
         completedDays: 0,
         completedJuz: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        lastCompletedAt: null,
       })
       .onConflictDoNothing({ target: khatamPlanProgress.planId });
 

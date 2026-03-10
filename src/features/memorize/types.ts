@@ -35,6 +35,8 @@ export type MemorizeActiveGoal = {
   passedDays: number;
   remainingDays: number;
   dailyTargetCount: number;
+  currentStreak: number;
+  bestStreak: number;
   todayTarget: MemorizeTodayTarget | null;
   upcomingTargets: MemorizeUpcomingTarget[];
 };
@@ -49,6 +51,10 @@ export type CreateMemorizeGoalPayload = {
   surahNumber: number;
   targetDays: number;
   repsPerVerse: number;
+};
+
+export type DeleteMemorizeGoalPayload = {
+  goalId: string;
 };
 
 export type CompleteMemorizeSessionPayload = {

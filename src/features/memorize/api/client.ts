@@ -5,6 +5,7 @@ import { dashboardQueryKeys, fetchDashboardMe } from "@/features/dashboard/api/c
 import type {
   CompleteMemorizeSessionPayload,
   CreateMemorizeGoalPayload,
+  DeleteMemorizeGoalPayload,
   MemorizeMeData,
 } from "@/features/memorize/types";
 
@@ -44,6 +45,24 @@ async function postCreateGoal(data: CreateMemorizeGoalPayload): Promise<{ goalId
   }
 
   return { goalId: payload.goalId };
+}
+
+async function deleteGoal(data: DeleteMemorizeGoalPayload): Promise<{ deleted: boolean }> {
+  const response = await fetch("/api/memorize/goal", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const payload = (await response.json()) as { deleted?: boolean; error?: string };
+
+  if (!response.ok || !payload.deleted) {
+    throw new MemorizeApiError(payload.error ?? "Failed to delete goal.", response.status);
+  }
+
+  return { deleted: true };
 }
 
 async function postCompleteSession(data: CompleteMemorizeSessionPayload): Promise<{ completed: boolean }> {
@@ -91,6 +110,20 @@ export function useCreateMemorizeGoalMutation() {
     mutationFn: postCreateGoal,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me });
+    },
+  });
+}
+
+export function useDeleteMemorizeGoalMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteGoal,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me }),
+      ]);
     },
   });
 }

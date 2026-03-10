@@ -94,6 +94,21 @@ export const userProfile = pgTable("user_profile", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const userLoginDays = pgTable(
+  "user_login_days",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    date: timestamp("date").notNull(),
+  },
+  (table) => [
+    index("user_login_days_user_id_idx").on(table.userId),
+    uniqueIndex("user_login_days_user_date_unique_idx").on(table.userId, table.date),
+  ],
+);
+
 export const khatamPlans = pgTable(
   "khatam_plans",
   {
@@ -138,6 +153,9 @@ export const khatamPlanProgress = pgTable(
       .notNull(),
     completedDays: integer("completed_days").default(0).notNull(),
     completedJuz: integer("completed_juz").default(0).notNull(),
+    currentStreak: integer("current_streak").default(0).notNull(),
+    bestStreak: integer("best_streak").default(0).notNull(),
+    lastCompletedAt: timestamp("last_completed_at"),
   },
   (table) => [
     uniqueIndex("khatam_plan_progress_plan_unique_idx").on(table.planId),
@@ -173,9 +191,29 @@ export const memorizationProgress = pgTable(
       .notNull(),
     completedDays: integer("completed_days").default(0).notNull(),
     completedVerses: integer("completed_verses").default(0).notNull(),
+    currentStreak: integer("current_streak").default(0).notNull(),
+    bestStreak: integer("best_streak").default(0).notNull(),
+    lastCompletedAt: timestamp("last_completed_at"),
   },
   (table) => [
     uniqueIndex("memorization_progress_goal_unique_idx").on(table.goalId),
+  ],
+);
+
+export const memorizationDayCompletions = pgTable(
+  "memorization_day_completions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    goalId: uuid("goal_id")
+      .references(() => memorizationGoals.id, { onDelete: "cascade" })
+      .notNull(),
+    dayNumber: integer("day_number").notNull(),
+    date: timestamp("date").notNull(),
+  },
+  (table) => [
+    index("memorization_day_completions_goal_id_idx").on(table.goalId),
+    uniqueIndex("memorization_day_completions_goal_date_unique_idx").on(table.goalId, table.date),
+    uniqueIndex("memorization_day_completions_goal_day_unique_idx").on(table.goalId, table.dayNumber),
   ],
 );
 

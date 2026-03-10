@@ -14,8 +14,10 @@ import {
   ChevronDown,
   Play,
   Check,
+  Trash2,
 } from "lucide-react";
 import {
+  useDeleteMemorizeGoalMutation,
   getMemorizeErrorMessage,
   isUnauthorizedMemorizeError,
   useCreateMemorizeGoalMutation,
@@ -133,6 +135,7 @@ export default function MemorizePage() {
   const router = useRouter();
   const memorizeQuery = useMemorizeMeQuery();
   const createGoalMutation = useCreateMemorizeGoalMutation();
+  const deleteGoalMutation = useDeleteMemorizeGoalMutation();
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [form, setForm] = useState({ title: "", surahIdx: 0, days: 30, reps: 3 });
   const [sessionDoneMarker, setSessionDoneMarker] = useState<MemorizeSessionDoneMarker | null>(() =>
@@ -228,6 +231,23 @@ export default function MemorizePage() {
     await memorizeQuery.refetch();
   }
 
+  async function handleDeleteGoal() {
+    if (!activeGoal) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(`Delete "${activeGoal.title}"? This will reset its memorization streak.`);
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    await deleteGoalMutation.mutateAsync({ goalId: activeGoal.id });
+    clearMemorizeSessionDoneMarker();
+    setSessionDoneMarker(null);
+    await memorizeQuery.refetch();
+  }
+
   if (memorizeQuery.isError) {
     return (
       <div className="flex-1 p-4 md:p-8 pt-6 max-w-3xl mx-auto pb-24">
@@ -265,12 +285,24 @@ export default function MemorizePage() {
           <p className="text-sm text-muted-foreground mt-1">Track your Quran memorization progress</p>
         </div>
         {hasActiveGoal && (
-          <button
-            onClick={() => setShowGoalModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Plus className="h-4 w-4" /> New Goal
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                void handleDeleteGoal();
+              }}
+              disabled={deleteGoalMutation.isPending}
+              className="flex items-center gap-2 rounded-full border border-destructive/20 bg-destructive/5 px-4 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Trash2 className="h-4 w-4" /> {deleteGoalMutation.isPending ? "Deleting..." : "Delete Goal"}
+            </button>
+            <button
+              onClick={() => setShowGoalModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" /> New Goal
+            </button>
+          </div>
         )}
       </div>
 
@@ -318,7 +350,7 @@ export default function MemorizePage() {
           {/* Quick stats row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-in fade-in duration-500">
             {[
-              { icon: Flame, label: "Day Streak", value: "1 days", color: "text-orange-500", bg: "bg-orange-50" },
+              { icon: Flame, label: "Day Streak", value: `${activeGoal?.currentStreak ?? 0} days`, color: "text-orange-500", bg: "bg-orange-50" },
               { icon: BookOpen, label: "Verses Done", value: `${goal.doneVerses}/${goal.totalVerses}`, color: "text-blue-600", bg: "bg-blue-50" },
               { icon: Clock, label: "Days Remaining", value: `${remaining} days`, color: "text-emerald-600", bg: "bg-emerald-50" },
               { icon: TrendingUp, label: "Overall Progress", value: `${pct}%`, color: "text-primary", bg: "bg-primary/10" },

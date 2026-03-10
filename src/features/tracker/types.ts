@@ -23,6 +23,8 @@ export type KhatamActivePlan = {
   startDate: string;
   targetDate: string;
   completedDays: string[];
+  currentStreak: number;
+  bestStreak: number;
   totalVerses: number;
   totalDays: number;
   dailyTargets: KhatamDailyTarget[];

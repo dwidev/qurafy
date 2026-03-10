@@ -80,14 +80,17 @@ function computeStats(plan: KhatamPlan) {
     ? todayEntry
     : nextUpcomingEntry ?? todayEntry ?? days.at(-1);
   const daysLeft = daysBetween(todayStr, plan.targetDate);
-  // Streak
-  let streak = 0;
-  let checkDate = todayStr;
-  while (plan.completedDays.includes(checkDate)) {
-    streak++;
-    checkDate = addDays(checkDate, -1);
-  }
-  return { currentDay, totalDays, completedCount, pct, todayEntry, nextUpcomingEntry, primaryReadEntry, daysLeft, streak };
+  return {
+    currentDay,
+    totalDays,
+    completedCount,
+    pct,
+    todayEntry,
+    nextUpcomingEntry,
+    primaryReadEntry,
+    daysLeft,
+    streak: plan.currentStreak,
+  };
 }
 
 // ─── Welcome Page ─────────────────────────────────────────────────────────────

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getServerSession } from "@/features/auth/server/session";
+import { touchUserLoginDay } from "@/features/dashboard/server/login-streak";
 import { getDashboardViewData } from "@/features/dashboard/server/dashboard-data";
 import type { DashboardMeData } from "@/features/dashboard/types";
 
@@ -12,6 +14,16 @@ export async function GET() {
 
   if (!session) {
     return jsonError("Unauthorized", 401);
+  }
+
+  try {
+    const createdLoginDay = await touchUserLoginDay(session.user.id);
+
+    if (createdLoginDay) {
+      revalidateTag(`dashboard-view-data:${session.user.id}`, "max");
+    }
+  } catch (error) {
+    console.error("[api/dashboard/me] Failed to touch login streak", error);
   }
 
   const dashboard = await getDashboardViewData(session.user.id);
