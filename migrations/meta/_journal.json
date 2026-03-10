@@ -71,6 +71,13 @@
       "when": 1773248400000,
       "tag": "0009_streak_schema_repair",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1773252000000,
+      "tag": "0010_khatam_progress_completed_verses",
+      "breakpoints": true
     }
   ]
 }

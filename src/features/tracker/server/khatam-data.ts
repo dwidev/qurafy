@@ -536,12 +536,15 @@ export async function toggleKhatamToday(userId: string, payload: ToggleKhatamDay
     });
 
     const nextIsDone = payload.forceDone ? true : !(existing?.isDone ?? false);
+    const nextCompletedVerses = nextIsDone
+      ? Math.max(0, Math.floor(payload.completedVerses ?? existing?.completedVerses ?? 0))
+      : 0;
 
     if (existing) {
-      if (existing.isDone !== nextIsDone) {
+      if (existing.isDone !== nextIsDone || existing.completedVerses !== nextCompletedVerses) {
         await tx
           .update(khatamProgress)
-          .set({ isDone: nextIsDone, date: progressDate })
+          .set({ isDone: nextIsDone, date: progressDate, completedVerses: nextCompletedVerses })
           .where(eq(khatamProgress.id, existing.id));
       }
     } else {
@@ -549,6 +552,7 @@ export async function toggleKhatamToday(userId: string, payload: ToggleKhatamDay
         planId: plan.id,
         date: progressDate,
         isDone: true,
+        completedVerses: nextCompletedVerses,
       });
     }
 

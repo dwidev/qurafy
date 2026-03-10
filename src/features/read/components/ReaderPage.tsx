@@ -66,6 +66,7 @@ function ReaderContent() {
         planId: khatamPlanId,
         scheduledDate: scheduledDate || undefined,
         forceDone: true,
+        completedVerses: data?.verses.length ?? 0,
       });
       router.push(returnTo);
     } catch (caughtError) {

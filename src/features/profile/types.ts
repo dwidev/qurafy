@@ -23,6 +23,7 @@ export type ProfileMeData = {
     completedKhatam: number;
     activeGoals: number;
     completedVerses: number;
+    totalVersesRead: number;
     estimatedStreakDays: number;
     rank: string;
   };

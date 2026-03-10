@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { khatamPlans, memorizationGoals, memorizationProgress } from "@/db/schema";
+import { khatamPlans, khatamProgress, memorizationGoals, memorizationProgress } from "@/db/schema";
 import { getUserLoginStreak } from "@/features/dashboard/server/login-streak";
 
 export function getRankLabel(completedKhatam: number, completedVerses: number) {
@@ -11,7 +11,7 @@ export function getRankLabel(completedKhatam: number, completedVerses: number) {
 }
 
 export async function getProfileStats(userId: string) {
-  const [khatamCountRow, activeGoalsRow, completedVersesRow, loginStreak] = await Promise.all([
+  const [khatamCountRow, activeGoalsRow, completedVersesRow, completedKhatamVerses, loginStreak] = await Promise.all([
     db
       .select({ total: sql<number>`count(*)` })
       .from(khatamPlans)
@@ -25,6 +25,13 @@ export async function getProfileStats(userId: string) {
       .from(memorizationProgress)
       .innerJoin(memorizationGoals, eq(memorizationProgress.goalId, memorizationGoals.id))
       .where(eq(memorizationGoals.userId, userId)),
+    db
+      .select({ total: sql<number>`coalesce(sum(${khatamProgress.completedVerses}), 0)` })
+      .from(khatamProgress)
+      .innerJoin(khatamPlans, eq(khatamProgress.planId, khatamPlans.id))
+      .where(and(eq(khatamPlans.userId, userId), eq(khatamProgress.isDone, true)))
+      .then((rows) => Number(rows[0]?.total ?? 0))
+      .catch(() => 0),
     getUserLoginStreak(userId).catch(() => ({
       currentStreak: 0,
       bestStreak: 0,
@@ -35,12 +42,14 @@ export async function getProfileStats(userId: string) {
   const completedKhatam = Number(khatamCountRow[0]?.total ?? 0);
   const activeGoals = Number(activeGoalsRow[0]?.total ?? 0);
   const completedVerses = Number(completedVersesRow[0]?.total ?? 0);
+  const totalVersesRead = completedVerses + completedKhatamVerses;
 
   return {
     completedKhatam,
     activeGoals,
     completedVerses,
+    totalVersesRead,
     estimatedStreakDays: loginStreak.currentStreak,
-    rank: getRankLabel(completedKhatam, completedVerses),
+    rank: getRankLabel(completedKhatam, totalVersesRead),
   };
 }

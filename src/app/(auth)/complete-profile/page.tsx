@@ -28,6 +28,7 @@ export default async function CompleteProfilePage() {
       completedKhatam: 0,
       activeGoals: 0,
       completedVerses: 0,
+      totalVersesRead: 0,
       estimatedStreakDays: 1,
       rank: "New Explorer",
     },

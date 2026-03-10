@@ -54,4 +54,5 @@ export type ToggleKhatamDayPayload = {
   planId: string;
   scheduledDate?: string;
   forceDone?: boolean;
+  completedVerses?: number;
 };

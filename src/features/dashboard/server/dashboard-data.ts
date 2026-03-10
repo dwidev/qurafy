@@ -115,7 +115,7 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   const latestMemorizationGoal = activeGoal ?? latestCompletedGoal ?? null;
 
   const isNewUser =
-    stats.completedVerses === 0 &&
+    stats.totalVersesRead === 0 &&
     stats.completedKhatam === 0 &&
     stats.activeGoals === 0 &&
     !latestMemorizationGoal &&
@@ -127,12 +127,12 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   };
   const dailyVerse = getDailyVerse(now);
 
-  const totalMinutesRead = stats.completedVerses * 2;
+  const totalMinutesRead = stats.totalVersesRead * 2;
   const quickStats = {
     streakDays: isNewUser ? 0 : stats.estimatedStreakDays,
     timeReadLabel: isNewUser ? "0h 0m" : formatReadTime(totalMinutesRead),
-    versesRead: stats.completedVerses,
-    weeklyGoalPct: isNewUser ? 0 : Math.min(100, Math.max(5, Math.round((stats.completedVerses / 100) * 100))),
+    versesRead: stats.totalVersesRead,
+    weeklyGoalPct: isNewUser ? 0 : Math.min(100, Math.max(5, Math.round((stats.totalVersesRead / 100) * 100))),
   };
 
   let memorizationCard: DashboardViewData["memorizationCard"] = null;
@@ -235,11 +235,11 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
           },
         ]
       : []),
-    ...(stats.completedVerses > 0
+    ...(stats.totalVersesRead > 0
       ? [
           {
-            surah: "Memorization Progress",
-            verse: `${stats.completedVerses} verses completed`,
+            surah: "Reading Progress",
+            verse: `${stats.totalVersesRead} verses completed`,
             time: "Latest stats",
           },
         ]

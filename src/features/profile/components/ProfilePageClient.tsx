@@ -138,7 +138,7 @@ export function ProfilePageClient() {
     joinedDate,
     stats: {
       streak: data.stats.estimatedStreakDays,
-      versesRead: data.stats.completedVerses,
+      versesRead: data.stats.totalVersesRead,
       khatamDone: data.stats.completedKhatam,
       activeGoals: data.stats.activeGoals,
       rank: data.stats.rank,

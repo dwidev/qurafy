@@ -137,6 +137,7 @@ export const khatamProgress = pgTable(
       .notNull(),
     date: timestamp("date").notNull(),
     isDone: boolean("is_done").default(false).notNull(),
+    completedVerses: integer("completed_verses").default(0).notNull(),
   },
   (table) => [
     index("khatam_progress_plan_id_idx").on(table.planId),
