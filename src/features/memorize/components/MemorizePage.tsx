@@ -90,6 +90,14 @@ function getLocalDateKey() {
   return `${year}-${month}-${day}`;
 }
 
+function formatLocalDateLabel(input = new Date()) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(input);
+}
+
 function readMemorizeSessionDoneMarker(): MemorizeSessionDoneMarker | null {
   if (typeof window === "undefined") {
     return null;
@@ -211,6 +219,17 @@ export default function MemorizePage() {
   const remaining = goal.totalDays - goal.passedDays;
 
   const targetReps = activeGoal?.repsPerVerse ?? (form.reps || 3);
+  const todayLabel = formatLocalDateLabel();
+
+  function startMemorizationSession() {
+    if (!activeGoal?.todayTarget) {
+      return;
+    }
+
+    clearMemorizeSessionDoneMarker();
+    setSessionDoneMarker(null);
+    router.push("/app/memorize/session");
+  }
 
   async function handleCreateGoal() {
     if (!form.title || !selectedSurah) {
@@ -415,8 +434,7 @@ export default function MemorizePage() {
                 <button
                   type="button"
                   onClick={() => {
-                    clearMemorizeSessionDoneMarker();
-                    setSessionDoneMarker(null);
+                    startMemorizationSession();
                   }}
                   className="ml-auto h-9 rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700"
                 >
@@ -437,11 +455,7 @@ export default function MemorizePage() {
               <div
                 className="relative group cursor-pointer pt-4"
                 onClick={() => {
-                  if (activeGoal?.todayTarget) {
-                    clearMemorizeSessionDoneMarker();
-                    setSessionDoneMarker(null);
-                    router.push("/app/memorize/session");
-                  }
+                  startMemorizationSession();
                 }}
               >
                 <div className="absolute inset-x-8 top-0 h-full bg-primary/10 rounded-3xl transition-transform duration-300 group-hover:-translate-y-2" />
@@ -450,7 +464,7 @@ export default function MemorizePage() {
                 <div className="relative rounded-3xl border border-border bg-linear-to-br from-card to-background p-6 md:p-8 shadow-md group-hover:shadow-xl transition-all flex flex-col sm:flex-row items-center justify-between gap-6 z-10 mt-4">
                   <div className="space-y-2 text-center sm:text-left">
                     <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-muted-foreground mb-1">
-                      <Calendar className="h-3.5 w-3.5" /> March 5, 2026
+                      <Calendar className="h-3.5 w-3.5" /> {todayLabel}
                     </div>
                     <h3 className="text-2xl font-bold">
                       {activeGoal?.surahName || selectedSurah?.en || "An-Naba"}, Verses{" "}

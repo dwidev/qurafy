@@ -1,8 +1,8 @@
-import { and, asc, desc, eq, gte, lt } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { memorizationDayCompletions, memorizationGoals, memorizationProgress } from "@/db/schema";
 import { getQuranReadContentData, getQuranReadListData } from "@/features/read/server/quran-api";
-import { addUtcDays, buildStreakSummary, startOfUtcDay, toUtcDateKey } from "@/lib/streaks";
+import { buildStreakSummary, toUtcDateKey } from "@/lib/streaks";
 import type {
   CompleteMemorizeSessionPayload,
   CreateMemorizeGoalPayload,
@@ -368,31 +368,16 @@ export async function completeMemorizeSession(userId: string, payload: CompleteM
   }
 
   const completion = await db.transaction(async (tx) => {
-    const today = startOfUtcDay(new Date());
-    const tomorrow = addUtcDays(today, 1);
-    const existingTodayCompletion = await tx.query.memorizationDayCompletions.findFirst({
-      where: and(
-        eq(memorizationDayCompletions.goalId, payload.goalId),
-        gte(memorizationDayCompletions.date, today),
-        lt(memorizationDayCompletions.date, tomorrow),
-      ),
-    });
-
-    if (existingTodayCompletion) {
-      return {
-        completed: true,
-        isGoalCompleted: completedDaysCount >= dailyTargets.length,
-      };
-    }
+    const completedAt = new Date();
 
     const [createdCompletion] = await tx
       .insert(memorizationDayCompletions)
       .values({
         goalId: payload.goalId,
         dayNumber,
-        date: today,
+        date: completedAt,
       })
-      .onConflictDoNothing({ target: [memorizationDayCompletions.goalId, memorizationDayCompletions.date] })
+      .onConflictDoNothing({ target: [memorizationDayCompletions.goalId, memorizationDayCompletions.dayNumber] })
       .returning({ id: memorizationDayCompletions.id });
 
     if (!createdCompletion) {
