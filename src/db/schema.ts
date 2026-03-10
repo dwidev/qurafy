@@ -201,23 +201,6 @@ export const memorizationProgress = pgTable(
   ],
 );
 
-export const memorizationDayCompletions = pgTable(
-  "memorization_day_completions",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    goalId: uuid("goal_id")
-      .references(() => memorizationGoals.id, { onDelete: "cascade" })
-      .notNull(),
-    dayNumber: integer("day_number").notNull(),
-    date: timestamp("date").notNull(),
-  },
-  (table) => [
-    index("memorization_day_completions_goal_id_idx").on(table.goalId),
-    uniqueIndex("memorization_day_completions_goal_date_unique_idx").on(table.goalId, table.date),
-    uniqueIndex("memorization_day_completions_goal_day_unique_idx").on(table.goalId, table.dayNumber),
-  ],
-);
-
 export const donations = pgTable("donations", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("user_id")
