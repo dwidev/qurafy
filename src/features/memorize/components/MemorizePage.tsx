@@ -227,11 +227,10 @@ function GoalSettingsModal({
                 <button
                   key={value}
                   onClick={() => setRepsPerVerse(value)}
-                  className={`rounded-xl border py-2.5 text-sm font-semibold transition-all ${
-                    repsPerVerse === value
-                      ? "scale-105 border-primary bg-primary text-primary-foreground shadow-md"
-                      : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:bg-muted/50"
-                  }`}
+                  className={`rounded-xl border py-2.5 text-sm font-semibold transition-all ${repsPerVerse === value
+                    ? "scale-105 border-primary bg-primary text-primary-foreground shadow-md"
+                    : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:bg-muted/50"
+                    }`}
                 >
                   {value}x
                 </button>
@@ -306,37 +305,37 @@ export default function MemorizePage() {
   const selectedSurah = SURAHS[safeSurahIdx];
   const showCompletionCard = Boolean(
     activeGoal &&
-      sessionDoneMarker &&
-      sessionDoneMarker.dateKey === getLocalDateKey() &&
-      sessionDoneMarker.goalId === activeGoal.id,
+    sessionDoneMarker &&
+    sessionDoneMarker.dateKey === getLocalDateKey() &&
+    sessionDoneMarker.goalId === activeGoal.id,
   );
   const TODAY_VERSES = activeGoal?.todayTarget
     ? activeGoal.todayTarget.verses.map((verse) => ({
-        n: verse.n,
-        ar: verse.ar,
-        tr: verse.en,
-      }))
+      n: verse.n,
+      ar: verse.ar,
+      tr: verse.en,
+    }))
     : DEFAULT_TODAY_VERSES;
   const baseUpcoming = activeGoal
     ? activeGoal.upcomingTargets.map((item) => ({
-        day: item.dayLabel,
-        range: item.rangeLabel,
-        count: item.count,
-      }))
+      day: item.dayLabel,
+      range: item.rangeLabel,
+      count: item.count,
+    }))
     : DEFAULT_UPCOMING;
   const UPCOMING =
     showCompletionCard && activeGoal?.todayTarget
       ? [
-          {
-            day: `Day ${activeGoal.todayTarget.dayNumber} · Next Target`,
-            range: buildRangeLabel(activeGoal.surahName, activeGoal.todayTarget.startVerse, activeGoal.todayTarget.endVerse),
-            count: Math.max(
-              1,
-              activeGoal.todayTarget.endVerse - activeGoal.todayTarget.startVerse + 1,
-            ),
-          },
-          ...baseUpcoming,
-        ].slice(0, 3)
+        {
+          day: `Day ${activeGoal.todayTarget.dayNumber} · Next Target`,
+          range: buildRangeLabel(activeGoal.surahName, activeGoal.todayTarget.startVerse, activeGoal.todayTarget.endVerse),
+          count: Math.max(
+            1,
+            activeGoal.todayTarget.endVerse - activeGoal.todayTarget.startVerse + 1,
+          ),
+        },
+        ...baseUpcoming,
+      ].slice(0, 3)
       : baseUpcoming;
 
   useEffect(() => {
@@ -348,21 +347,21 @@ export default function MemorizePage() {
   /* Active Goal Mock Data */
   const goal = activeGoal
     ? {
-        title: activeGoal.title,
-        surah: activeGoal.surahName,
-        totalDays: activeGoal.targetDays,
-        passedDays: activeGoal.passedDays,
-        totalVerses: activeGoal.totalVerses,
-        doneVerses: activeGoal.completedVerses,
-      }
+      title: activeGoal.title,
+      surah: activeGoal.surahName,
+      totalDays: activeGoal.targetDays,
+      passedDays: activeGoal.passedDays,
+      totalVerses: activeGoal.totalVerses,
+      doneVerses: activeGoal.completedVerses,
+    }
     : {
-        title: "Juz 30 — Amma",
-        surah: "An-Naba & beyond",
-        totalDays: 30,
-        passedDays: form.title ? 1 : 16,
-        totalVerses: selectedSurah?.verses || 110,
-        doneVerses: form.title ? 0 : 62,
-      };
+      title: "Juz 30 — Amma",
+      surah: "An-Naba & beyond",
+      totalDays: 30,
+      passedDays: form.title ? 1 : 16,
+      totalVerses: selectedSurah?.verses || 110,
+      doneVerses: form.title ? 0 : 62,
+    };
   const pct = Math.round((goal.doneVerses / goal.totalVerses) * 100) || 0;
   const remaining = goal.totalDays - goal.passedDays;
 
@@ -674,23 +673,6 @@ export default function MemorizePage() {
             </div>
 
             <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-              {hasActiveGoal && (
-                <div
-                  className={`rounded-xl border p-4 transition-colors ${
-                    confirmReplaceGoal
-                      ? "border-amber-300 bg-amber-50"
-                      : "border-amber-200 bg-amber-50/70"
-                  }`}
-                >
-                  <p className="text-sm font-semibold text-amber-900">Replace current memorization goal</p>
-                  <p className="mt-1 text-sm text-amber-800/80">
-                    Creating a new goal will reset your current memorization progress for
-                    {" "}
-                    <span className="font-semibold">{activeGoal?.title}</span>.
-                  </p>
-                </div>
-              )}
-
               {/* Goal Title */}
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold">Goal Title</label>

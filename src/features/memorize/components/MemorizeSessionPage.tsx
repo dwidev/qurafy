@@ -14,7 +14,6 @@ import {
 import { MemorizePageSkeleton } from "@/features/memorize/components/MemorizePageSkeleton";
 
 const MEMORIZE_SESSION_DONE_STORAGE_KEY = "memorize.session.done";
-const DASHBOARD_FORCE_RELOAD_STORAGE_KEY = "dashboard.reload.after-memorize";
 
 function getLocalDateKey() {
   const now = new Date();
@@ -72,16 +71,7 @@ export default function MemorizeSessionPage() {
       dayNumber: todayTarget.dayNumber,
     });
 
-    await queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me });
-    await queryClient.refetchQueries({ queryKey: dashboardQueryKeys.me, type: "all" });
-    await queryClient.fetchQuery({
-      queryKey: dashboardQueryKeys.me,
-      queryFn: fetchDashboardMe,
-      staleTime: 0,
-    });
-    window.localStorage.setItem(DASHBOARD_FORCE_RELOAD_STORAGE_KEY, String(Date.now()));
     setSessionDone(true);
-    await memorizeQuery.refetch();
   }
 
   function handleNext() {
@@ -283,7 +273,7 @@ export default function MemorizeSessionPage() {
                       disabled={completeSessionMutation.isPending}
                       className="py-4 rounded-2xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {currRep < targetReps ? "Next Repetition" : "Next Verse"} <ArrowRight className="h-4 w-4" />
+                      {currRep < targetReps ? "Next Repetition" : currRep == targetReps ? "Complete" : "Next Verse"} <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

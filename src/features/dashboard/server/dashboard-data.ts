@@ -168,10 +168,10 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
     const memorizationContent = await getQuranReadContentData(`surah-${latestMemorizationGoal.surahNumber}`).catch(() => null);
     const memorizationArabic = displayTarget && memorizationContent
       ? buildArabicExcerpt(
-          memorizationContent.verses.filter(
-            (verse) => verse.n >= displayTarget.startVerse && verse.n <= displayTarget.endVerse,
-          ),
-        )
+        memorizationContent.verses.filter(
+          (verse) => verse.n >= displayTarget.startVerse && verse.n <= displayTarget.endVerse,
+        ),
+      )
       : "";
 
     memorizationCard = {
@@ -228,33 +228,33 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   const recentItems = [
     ...(latestMemorizationGoal
       ? [
-          {
-            surah: latestMemorizationGoal.title,
-            verse:
-              latestMemorizationGoal.status === "completed"
-                ? `Surah ${latestMemorizationGoal.surahNumber} memorization completed`
-                : `Surah ${latestMemorizationGoal.surahNumber} memorization active`,
-            time: latestMemorizationGoal.status === "completed" ? "Completed goal" : "Active goal",
-          },
-        ]
+        {
+          surah: latestMemorizationGoal.title,
+          verse:
+            latestMemorizationGoal.status === "completed"
+              ? `Surah ${latestMemorizationGoal.surahNumber} memorization completed`
+              : `Surah ${latestMemorizationGoal.surahNumber} memorization active`,
+          time: latestMemorizationGoal.status === "completed" ? "Completed goal" : "Active goal",
+        },
+      ]
       : []),
     ...(activePlan
       ? [
-          {
-            surah: activePlan.name,
-            verse: `Khatam from Juz ${activePlan.startJuz}`,
-            time: `Target ${formatDateShort(activePlan.targetDate)}`,
-          },
-        ]
+        {
+          surah: activePlan.name,
+          verse: `Khatam from Juz ${activePlan.startJuz}`,
+          time: `Target ${formatDateShort(activePlan.targetDate)}`,
+        },
+      ]
       : []),
     ...(stats.totalVersesRead > 0
       ? [
-          {
-            surah: "Reading Progress",
-            verse: `${stats.totalVersesRead} verses completed`,
-            time: "Latest stats",
-          },
-        ]
+        {
+          surah: "Reading Progress",
+          verse: `${stats.totalVersesRead} verses completed`,
+          time: "Latest stats",
+        },
+      ]
       : []),
   ];
 

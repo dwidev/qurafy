@@ -35,7 +35,7 @@ export function useDashboardMeQuery(options?: { initialData?: DashboardMeData })
     queryFn: fetchDashboardMe,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    refetchOnMount: "always",
+    refetchOnMount: true,
     refetchOnReconnect: true,
     retry: (failureCount, error) => {
       if (error instanceof DashboardApiError && (error.status === 401 || error.status === 403)) {
