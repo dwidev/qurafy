@@ -34,6 +34,8 @@ export function DashboardPageErrorState({
 export function DashboardPageContent({ data }: { data: DashboardMeData }) {
   const displayName = getDashboardDisplayName(data.user.name);
   const dashboard = data.dashboard;
+  console.log(data);
+  
 
   return (
     <div className="flex-1 space-y-8 p-4 pb-32 pt-6 md:p-8 max-w-5xl mx-auto">

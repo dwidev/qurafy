@@ -30,13 +30,17 @@ export function LogoutButton({
 
     setIsLoading(true);
 
-    const result = await authClient.signOut();
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
 
-    if (result.error) {
+    if (!response.ok) {
       setIsLoading(false);
       return;
     }
 
+    authClient.$store.notify("$sessionSignal");
     onDone?.();
     router.replace(redirectTo);
     router.refresh();

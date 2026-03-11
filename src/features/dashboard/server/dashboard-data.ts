@@ -97,20 +97,12 @@ function getDailyVerse(date: Date) {
 
 async function getDashboardViewDataUncached(userId: string): Promise<DashboardViewData> {
   const now = new Date();
-  const [stats, activeGoal, latestCompletedGoal, activePlan] = await Promise.all([
+  const [stats, activeGoal, activePlan] = await Promise.all([
     getProfileStats(userId),
     db.query.memorizationGoals.findFirst({
       where: and(
         eq(memorizationGoals.userId, userId),
         eq(memorizationGoals.status, "active"),
-        isNull(memorizationGoals.deletedAt),
-      ),
-      orderBy: [desc(memorizationGoals.id)],
-    }),
-    db.query.memorizationGoals.findFirst({
-      where: and(
-        eq(memorizationGoals.userId, userId),
-        eq(memorizationGoals.status, "completed"),
         isNull(memorizationGoals.deletedAt),
       ),
       orderBy: [desc(memorizationGoals.id)],
@@ -124,24 +116,14 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
       orderBy: [desc(khatamPlans.targetDate)],
     }),
   ]);
-  const latestMemorizationGoal = activeGoal ?? latestCompletedGoal ?? null;
-
-  const isNewUser =
-    stats.totalVersesRead === 0 &&
-    stats.completedKhatam === 0 &&
-    stats.activeGoals === 0 &&
-    !latestMemorizationGoal &&
-    !activePlan;
-
-  const dateInfo = {
-    gregorian: formatGregorianDate(now),
-    hijri: formatHijriDate(now),
-  };
-  const dailyVerse = getDailyVerse(now);
+  const latestMemorizationGoal = activeGoal ?? null;
+  const latestKhatamPlan = activePlan ?? null;
+  
+  const isNewUser = !latestMemorizationGoal && !latestKhatamPlan;
 
   const totalMinutesRead = stats.totalVersesRead * 2;
   const quickStats = {
-    streakDays: isNewUser ? 0 : stats.estimatedStreakDays,
+    streakDays: stats.currentStreak,
     timeReadLabel: isNewUser ? "0h 0m" : formatReadTime(totalMinutesRead),
     versesRead: stats.totalVersesRead,
     weeklyGoalPct: isNewUser ? 0 : Math.min(100, Math.max(5, Math.round((stats.totalVersesRead / 100) * 100))),
@@ -257,6 +239,12 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
       ]
       : []),
   ];
+
+  const dateInfo = {
+    gregorian: formatGregorianDate(now),
+    hijri: formatHijriDate(now),
+  };
+  const dailyVerse = getDailyVerse(now);
 
   return {
     isNewUser,

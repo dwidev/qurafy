@@ -92,6 +92,13 @@
       "when": 1773417600000,
       "tag": "0012_soft_delete_goals_and_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1773504000000,
+      "tag": "0013_user_activity",
+      "breakpoints": true
     }
   ]
 }

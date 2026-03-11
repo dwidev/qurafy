@@ -16,8 +16,9 @@ export async function fetchDashboardMe(): Promise<DashboardMeData> {
   const response = await fetch("/api/dashboard/me", {
     cache: "no-store",
   });
+  console.log(response);
   const payload = (await response.json()) as DashboardMeData & { error?: string };
-
+  console.log(payload);
   if (!response.ok) {
     throw new DashboardApiError(payload.error ?? "Failed to fetch dashboard.", response.status);
   }

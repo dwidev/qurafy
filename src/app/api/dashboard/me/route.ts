@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { getServerSession } from "@/features/auth/server/session";
-import { touchUserLoginDay } from "@/features/dashboard/server/login-streak";
+import { touchUserActivityLogin } from "@/features/dashboard/server/login-streak";
 import { getDashboardViewData } from "@/features/dashboard/server/dashboard-data";
 import type { DashboardMeData } from "@/features/dashboard/types";
 
@@ -17,13 +17,13 @@ export async function GET() {
   }
 
   try {
-    const createdLoginDay = await touchUserLoginDay(session.user.id);
+    const createdLoginDay = await touchUserActivityLogin(session.user.id);
 
     if (createdLoginDay) {
       revalidateTag(`dashboard-view-data:${session.user.id}`, "max");
     }
   } catch (error) {
-    console.error("[api/dashboard/me] Failed to touch login streak", error);
+    console.error("[api/dashboard/me] Failed to touch user activity", error);
   }
 
   const dashboard = await getDashboardViewData(session.user.id);

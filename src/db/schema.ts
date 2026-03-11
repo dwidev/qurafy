@@ -94,18 +94,22 @@ export const userProfile = pgTable("user_profile", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const userLoginDays = pgTable(
-  "user_login_days",
+export const userActivity = pgTable(
+  "user_activity",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
     userId: text("user_id")
-      .references(() => user.id, { onDelete: "cascade" })
-      .notNull(),
-    date: timestamp("date").notNull(),
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    lastActivityDate: timestamp("last_activity_date"),
+    lastLoginTime: timestamp("last_login_time"),
+    lastLogoutTime: timestamp("last_logout_time"),
+    currentStreak: integer("current_streak").default(0).notNull(),
+    bestStreak: integer("best_streak").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
-    index("user_login_days_user_id_idx").on(table.userId),
-    uniqueIndex("user_login_days_user_date_unique_idx").on(table.userId, table.date),
+    index("user_activity_last_activity_date_idx").on(table.lastActivityDate),
   ],
 );
 

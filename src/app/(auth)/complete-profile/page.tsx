@@ -29,7 +29,8 @@ export default async function CompleteProfilePage() {
       activeGoals: 0,
       completedVerses: 0,
       totalVersesRead: 0,
-      estimatedStreakDays: 1,
+      currentStreak: 0,
+      bestStreak: 0,
       rank: "New Explorer",
     },
   };

@@ -1,7 +1,8 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { khatamPlans, khatamProgress, memorizationGoals, memorizationProgress } from "@/db/schema";
-import { getUserLoginStreak } from "@/features/dashboard/server/login-streak";
+import { getUserActivityStreak } from "@/features/dashboard/server/login-streak";
+import { ProfileStats } from "../types";
 
 export function getRankLabel(completedKhatam: number, completedVerses: number) {
   if (completedKhatam >= 3 || completedVerses >= 500) return "Qurafy Mentor";
@@ -10,7 +11,7 @@ export function getRankLabel(completedKhatam: number, completedVerses: number) {
   return "New Explorer";
 }
 
-export async function getProfileStats(userId: string) {
+export async function getProfileStats(userId: string) : Promise<ProfileStats> {
   const [khatamCountRow, activeGoalsRow, completedVersesRow, completedKhatamVerses, loginStreak] = await Promise.all([
     db
       .select({ total: sql<number>`count(*)` })
@@ -32,7 +33,7 @@ export async function getProfileStats(userId: string) {
       .where(and(eq(khatamPlans.userId, userId), eq(khatamProgress.isDone, true), isNull(khatamPlans.deletedAt)))
       .then((rows) => Number(rows[0]?.total ?? 0))
       .catch(() => 0),
-    getUserLoginStreak(userId).catch(() => ({
+    getUserActivityStreak(userId).catch(() => ({
       currentStreak: 0,
       bestStreak: 0,
       lastCompletedAt: null,
@@ -49,7 +50,8 @@ export async function getProfileStats(userId: string) {
     activeGoals,
     completedVerses,
     totalVersesRead,
-    estimatedStreakDays: loginStreak.currentStreak,
+    currentStreak: loginStreak.currentStreak,
+    bestStreak: loginStreak.bestStreak,
     rank: getRankLabel(completedKhatam, totalVersesRead),
   };
 }

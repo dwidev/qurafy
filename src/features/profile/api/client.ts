@@ -13,7 +13,9 @@ class ProfileApiError extends Error {
 }
 
 async function fetchProfileMe(): Promise<ProfileMeData> {
-  const response = await fetch("/api/profile/me");
+  const response = await fetch("/api/profile/me", {
+    cache: "no-store",
+  });
   const payload = (await response.json()) as ProfileMeData & { error?: string };
 
   if (!response.ok) {

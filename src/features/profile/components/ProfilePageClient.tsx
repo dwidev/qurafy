@@ -55,8 +55,8 @@ export function ProfilePageClient() {
 
   const stats = [
     {
-      label: "Day Streak",
-      value: data.stats.estimatedStreakDays,
+      label: "Best Day Streak",
+      value: data.stats.bestStreak,
       icon: profileStatIcons.Flame,
       color: "text-orange-500",
       bg: "bg-orange-50",
@@ -92,8 +92,8 @@ export function ProfilePageClient() {
       color: "text-orange-500",
       bg: "bg-orange-50",
       desc:
-        data.stats.estimatedStreakDays >= 7
-          ? `Current streak: ${data.stats.estimatedStreakDays} days`
+        data.stats.bestStreak >= 7
+          ? `Best streak: ${data.stats.bestStreak} days`
           : "Build your streak to 7 days",
     },
     {

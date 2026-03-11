@@ -19,14 +19,17 @@ export type ProfileMeData = {
     createdAt: string;
     updatedAt: string;
   } | null;
-  stats: {
-    completedKhatam: number;
-    activeGoals: number;
-    completedVerses: number;
-    totalVersesRead: number;
-    estimatedStreakDays: number;
-    rank: string;
-  };
+  stats: ProfileStats;
+};
+
+export type ProfileStats = {
+  completedKhatam: number;
+  activeGoals: number;
+  completedVerses: number;
+  totalVersesRead: number;
+  currentStreak: number;
+  bestStreak: number;
+  rank: string;
 };
 
 export type CompleteProfilePayload = {
