@@ -87,6 +87,20 @@ export const memorizeQueryKeys = {
   me: ["memorize", "me"] as const,
 };
 
+async function refreshDashboardQuery(queryClient: ReturnType<typeof useQueryClient>) {
+  await queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me });
+  await queryClient.refetchQueries({
+    queryKey: dashboardQueryKeys.me,
+    type: "all",
+  });
+
+  await queryClient.fetchQuery({
+    queryKey: dashboardQueryKeys.me,
+    queryFn: fetchDashboardMe,
+    staleTime: 0,
+  });
+}
+
 export function useMemorizeMeQuery() {
   return useQuery({
     queryKey: memorizeQueryKeys.me,
@@ -109,7 +123,10 @@ export function useCreateMemorizeGoalMutation() {
   return useMutation({
     mutationFn: postCreateGoal,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
+        refreshDashboardQuery(queryClient),
+      ]);
     },
   });
 }
@@ -122,7 +139,7 @@ export function useDeleteMemorizeGoalMutation() {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
-        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me }),
+        refreshDashboardQuery(queryClient),
       ]);
     },
   });
@@ -136,19 +153,8 @@ export function useCompleteMemorizeSessionMutation() {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
-        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.me }),
+        refreshDashboardQuery(queryClient),
       ]);
-
-      await queryClient.refetchQueries({
-        queryKey: dashboardQueryKeys.me,
-        type: "all",
-      });
-
-      await queryClient.fetchQuery({
-        queryKey: dashboardQueryKeys.me,
-        queryFn: fetchDashboardMe,
-        staleTime: 0,
-      });
     },
   });
 }
