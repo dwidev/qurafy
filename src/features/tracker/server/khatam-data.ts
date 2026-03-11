@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lt, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull, lt, lte } from "drizzle-orm";
 import { db } from "@/db";
 import { khatamPlanProgress, khatamPlans, khatamProgress } from "@/db/schema";
 import { getQuranReadListData } from "@/features/read/server/quran-api";
@@ -304,7 +304,11 @@ async function syncPlanSummary(
 
 export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
   const activePlan = await db.query.khatamPlans.findFirst({
-    where: and(eq(khatamPlans.userId, userId), eq(khatamPlans.isCompleted, false)),
+    where: and(
+      eq(khatamPlans.userId, userId),
+      eq(khatamPlans.isCompleted, false),
+      isNull(khatamPlans.deletedAt),
+    ),
     orderBy: [desc(khatamPlans.targetDate)],
   });
 
@@ -380,7 +384,13 @@ export async function createKhatamPlan(userId: string, payload: CreateKhatamPlan
     await tx
       .update(khatamPlans)
       .set({ isCompleted: true })
-      .where(and(eq(khatamPlans.userId, userId), eq(khatamPlans.isCompleted, false)));
+      .where(
+        and(
+          eq(khatamPlans.userId, userId),
+          eq(khatamPlans.isCompleted, false),
+          isNull(khatamPlans.deletedAt),
+        ),
+      );
 
     const [newPlan] = await tx
       .insert(khatamPlans)
@@ -429,6 +439,7 @@ export async function updateKhatamPlan(userId: string, payload: UpdateKhatamPlan
       eq(khatamPlans.id, payload.planId),
       eq(khatamPlans.userId, userId),
       eq(khatamPlans.isCompleted, false),
+      isNull(khatamPlans.deletedAt),
     ),
   });
 
@@ -481,14 +492,21 @@ export async function deleteKhatamPlan(userId: string, payload: DeleteKhatamPlan
   }
 
   const plan = await db.query.khatamPlans.findFirst({
-    where: and(eq(khatamPlans.id, payload.planId), eq(khatamPlans.userId, userId)),
+    where: and(
+      eq(khatamPlans.id, payload.planId),
+      eq(khatamPlans.userId, userId),
+      isNull(khatamPlans.deletedAt),
+    ),
   });
 
   if (!plan) {
     throw new Error("Plan not found.");
   }
 
-  await db.delete(khatamPlans).where(eq(khatamPlans.id, payload.planId));
+  await db
+    .update(khatamPlans)
+    .set({ deletedAt: new Date() })
+    .where(eq(khatamPlans.id, payload.planId));
 
   return {
     deleted: true,
@@ -505,6 +523,7 @@ export async function toggleKhatamToday(userId: string, payload: ToggleKhatamDay
       eq(khatamPlans.id, payload.planId),
       eq(khatamPlans.userId, userId),
       eq(khatamPlans.isCompleted, false),
+      isNull(khatamPlans.deletedAt),
     ),
   });
 

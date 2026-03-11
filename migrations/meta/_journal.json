@@ -85,6 +85,13 @@
       "when": 1773331200000,
       "tag": "0011_remove_memorization_day_completions",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1773417600000,
+      "tag": "0012_soft_delete_goals_and_plans",
+      "breakpoints": true
     }
   ]
 }

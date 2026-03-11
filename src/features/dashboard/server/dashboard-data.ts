@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db } from "@/db";
 import { khatamPlanProgress, khatamPlans, memorizationGoals, memorizationProgress } from "@/db/schema";
@@ -100,15 +100,27 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   const [stats, activeGoal, latestCompletedGoal, activePlan] = await Promise.all([
     getProfileStats(userId),
     db.query.memorizationGoals.findFirst({
-      where: and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "active")),
+      where: and(
+        eq(memorizationGoals.userId, userId),
+        eq(memorizationGoals.status, "active"),
+        isNull(memorizationGoals.deletedAt),
+      ),
       orderBy: [desc(memorizationGoals.id)],
     }),
     db.query.memorizationGoals.findFirst({
-      where: and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "completed")),
+      where: and(
+        eq(memorizationGoals.userId, userId),
+        eq(memorizationGoals.status, "completed"),
+        isNull(memorizationGoals.deletedAt),
+      ),
       orderBy: [desc(memorizationGoals.id)],
     }),
     db.query.khatamPlans.findFirst({
-      where: and(eq(khatamPlans.userId, userId), eq(khatamPlans.isCompleted, false)),
+      where: and(
+        eq(khatamPlans.userId, userId),
+        eq(khatamPlans.isCompleted, false),
+        isNull(khatamPlans.deletedAt),
+      ),
       orderBy: [desc(khatamPlans.targetDate)],
     }),
   ]);

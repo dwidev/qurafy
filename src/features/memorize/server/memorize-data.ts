@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { memorizationGoals, memorizationProgress } from "@/db/schema";
 import { getQuranReadContentData, getQuranReadListData } from "@/features/read/server/quran-api";
@@ -84,7 +84,11 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
   const [quranListResult, activeGoalRow] = await Promise.all([
     getQuranReadListData().catch(() => null),
     db.query.memorizationGoals.findFirst({
-      where: and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "active")),
+      where: and(
+        eq(memorizationGoals.userId, userId),
+        eq(memorizationGoals.status, "active"),
+        isNull(memorizationGoals.deletedAt),
+      ),
       orderBy: [desc(memorizationGoals.id)],
     }),
   ]);
@@ -226,7 +230,13 @@ export async function createMemorizeGoal(userId: string, payload: CreateMemorize
     await tx
       .update(memorizationGoals)
       .set({ status: "completed" })
-      .where(and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "active")));
+      .where(
+        and(
+          eq(memorizationGoals.userId, userId),
+          eq(memorizationGoals.status, "active"),
+          isNull(memorizationGoals.deletedAt),
+        ),
+      );
 
     const [createdGoal] = await tx
       .insert(memorizationGoals)
@@ -270,7 +280,11 @@ export async function completeMemorizeSession(userId: string, payload: CompleteM
   }
 
   const goal = await db.query.memorizationGoals.findFirst({
-    where: and(eq(memorizationGoals.id, payload.goalId), eq(memorizationGoals.userId, userId)),
+    where: and(
+      eq(memorizationGoals.id, payload.goalId),
+      eq(memorizationGoals.userId, userId),
+      isNull(memorizationGoals.deletedAt),
+    ),
   });
 
   if (!goal) {
@@ -385,7 +399,11 @@ export async function updateMemorizeGoal(userId: string, payload: UpdateMemorize
   }
 
   const goal = await db.query.memorizationGoals.findFirst({
-    where: and(eq(memorizationGoals.id, payload.goalId), eq(memorizationGoals.userId, userId)),
+    where: and(
+      eq(memorizationGoals.id, payload.goalId),
+      eq(memorizationGoals.userId, userId),
+      isNull(memorizationGoals.deletedAt),
+    ),
   });
 
   if (!goal) {
@@ -422,14 +440,21 @@ export async function deleteMemorizeGoal(userId: string, payload: DeleteMemorize
   }
 
   const goal = await db.query.memorizationGoals.findFirst({
-    where: and(eq(memorizationGoals.id, payload.goalId), eq(memorizationGoals.userId, userId)),
+    where: and(
+      eq(memorizationGoals.id, payload.goalId),
+      eq(memorizationGoals.userId, userId),
+      isNull(memorizationGoals.deletedAt),
+    ),
   });
 
   if (!goal) {
     throw new Error("Goal not found.");
   }
 
-  await db.delete(memorizationGoals).where(eq(memorizationGoals.id, payload.goalId));
+  await db
+    .update(memorizationGoals)
+    .set({ deletedAt: new Date() })
+    .where(eq(memorizationGoals.id, payload.goalId));
 
   return {
     deleted: true,

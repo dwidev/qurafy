@@ -121,6 +121,7 @@ export const khatamPlans = pgTable(
     startDate: timestamp("start_date").notNull(),
     targetDate: timestamp("target_date").notNull(),
     isCompleted: boolean("is_completed").default(false).notNull(),
+    deletedAt: timestamp("deleted_at"),
   },
   (table) => [
     index("khatam_plans_user_id_idx").on(table.userId),
@@ -176,6 +177,7 @@ export const memorizationGoals = pgTable(
     targetDays: integer("target_days").notNull(),
     repsPerVerse: integer("reps_per_verse").default(3).notNull(),
     status: goalStatusEnum("status").default("active").notNull(),
+    deletedAt: timestamp("deleted_at"),
   },
   (table) => [
     index("memorization_goals_user_id_idx").on(table.userId),

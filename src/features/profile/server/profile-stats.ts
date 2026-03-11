@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { khatamPlans, khatamProgress, memorizationGoals, memorizationProgress } from "@/db/schema";
 import { getUserLoginStreak } from "@/features/dashboard/server/login-streak";
@@ -15,21 +15,21 @@ export async function getProfileStats(userId: string) {
     db
       .select({ total: sql<number>`count(*)` })
       .from(khatamPlans)
-      .where(and(eq(khatamPlans.userId, userId), eq(khatamPlans.isCompleted, true))),
+      .where(and(eq(khatamPlans.userId, userId), eq(khatamPlans.isCompleted, true), isNull(khatamPlans.deletedAt))),
     db
       .select({ total: sql<number>`count(*)` })
       .from(memorizationGoals)
-      .where(and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "active"))),
+      .where(and(eq(memorizationGoals.userId, userId), eq(memorizationGoals.status, "active"), isNull(memorizationGoals.deletedAt))),
     db
       .select({ total: sql<number>`coalesce(sum(${memorizationProgress.completedVerses}), 0)` })
       .from(memorizationProgress)
       .innerJoin(memorizationGoals, eq(memorizationProgress.goalId, memorizationGoals.id))
-      .where(eq(memorizationGoals.userId, userId)),
+      .where(and(eq(memorizationGoals.userId, userId), isNull(memorizationGoals.deletedAt))),
     db
       .select({ total: sql<number>`coalesce(sum(${khatamProgress.completedVerses}), 0)` })
       .from(khatamProgress)
       .innerJoin(khatamPlans, eq(khatamProgress.planId, khatamPlans.id))
-      .where(and(eq(khatamPlans.userId, userId), eq(khatamProgress.isDone, true)))
+      .where(and(eq(khatamPlans.userId, userId), eq(khatamProgress.isDone, true), isNull(khatamPlans.deletedAt)))
       .then((rows) => Number(rows[0]?.total ?? 0))
       .catch(() => 0),
     getUserLoginStreak(userId).catch(() => ({
