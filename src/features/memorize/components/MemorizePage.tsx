@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Play,
   Check,
+  Settings2,
   Trash2,
 } from "lucide-react";
 import {
@@ -22,8 +23,10 @@ import {
   isUnauthorizedMemorizeError,
   useCreateMemorizeGoalMutation,
   useMemorizeMeQuery,
+  useUpdateMemorizeGoalMutation,
 } from "@/features/memorize/api/client";
 import { MemorizePageSkeleton } from "@/features/memorize/components/MemorizePageSkeleton";
+import type { MemorizeMeData } from "@/features/memorize/types";
 
 /* ─── Static Surah data ──────────────────────────────────────────────── */
 const DEFAULT_SURAHS = [
@@ -137,6 +140,148 @@ function clearMemorizeSessionDoneMarker() {
   window.localStorage.removeItem(MEMORIZE_SESSION_DONE_STORAGE_KEY);
 }
 
+function GoalSettingsModal({
+  goal,
+  onClose,
+  onSave,
+  onDelete,
+  isSaving,
+  isDeleting,
+}: {
+  goal: NonNullable<MemorizeMeData["activeGoal"]>;
+  onClose: () => void;
+  onSave: (payload: { goalId: string; targetDays: number; repsPerVerse: number }) => Promise<void>;
+  onDelete: () => Promise<void>;
+  isSaving: boolean;
+  isDeleting: boolean;
+}) {
+  const minimumTargetDays = Math.max(7, goal.todayTarget?.dayNumber ?? goal.passedDays);
+  const maximumTargetDays = Math.max(90, goal.targetDays, minimumTargetDays);
+  const [targetDays, setTargetDays] = useState(goal.targetDays);
+  const [repsPerVerse, setRepsPerVerse] = useState(goal.repsPerVerse);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const handleSave = () => {
+    void onSave({
+      goalId: goal.id,
+      targetDays,
+      repsPerVerse,
+    });
+  };
+
+  const handleDelete = () => {
+    void onDelete();
+  };
+
+  return (
+    <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+      <div className="relative z-201 w-full max-w-md rounded-4xl border border-border bg-card p-6 md:p-8 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 flex h-8 w-8 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold">Goal Settings</h2>
+          <p className="text-sm text-muted-foreground">Manage your active memorization goal.</p>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <div className="rounded-2xl border border-border bg-background/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Goal</p>
+            <p className="mt-1 text-base font-semibold">{goal.title}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {goal.surahName}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold">Target Duration</label>
+              <span className="font-bold text-primary">{targetDays} days</span>
+            </div>
+            <input
+              type="range"
+              min={minimumTargetDays}
+              max={maximumTargetDays}
+              step={1}
+              value={targetDays}
+              onChange={(e) => setTargetDays(Number(e.target.value))}
+              className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+            />
+            <p className="text-xs text-muted-foreground">
+              Minimum {minimumTargetDays} days based on your current progress.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold">Repetitions per Verse</label>
+              <span className="font-bold text-primary">{repsPerVerse}x</span>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {[1, 3, 5, 7, 10].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setRepsPerVerse(value)}
+                  className={`rounded-xl border py-2.5 text-sm font-semibold transition-all ${
+                    repsPerVerse === value
+                      ? "scale-105 border-primary bg-primary text-primary-foreground shadow-md"
+                      : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:bg-muted/50"
+                  }`}
+                >
+                  {value}x
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={isSaving || isDeleting}
+            className="h-11 w-full rounded-full bg-primary text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 disabled:opacity-60"
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+
+        <div className="mt-6 border-t border-border pt-6">
+          {!confirmDelete ? (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-full text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" /> Delete Goal
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-center text-sm text-muted-foreground">This deletes all progress. Are you sure?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="h-10 flex-1 rounded-full bg-secondary text-sm font-medium text-foreground transition-colors hover:bg-secondary/80"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting || isSaving}
+                  className="h-10 flex-1 rounded-full bg-destructive text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-60"
+                >
+                  {isDeleting ? "Deleting..." : "Confirm Delete"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main page ──────────────────────────────────────────────────────── */
 export default function MemorizePage() {
   /* ── State ── */
@@ -144,7 +289,10 @@ export default function MemorizePage() {
   const memorizeQuery = useMemorizeMeQuery();
   const createGoalMutation = useCreateMemorizeGoalMutation();
   const deleteGoalMutation = useDeleteMemorizeGoalMutation();
+  const updateGoalMutation = useUpdateMemorizeGoalMutation();
   const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [confirmReplaceGoal, setConfirmReplaceGoal] = useState(false);
   const [form, setForm] = useState({ title: "", surahIdx: 0, days: 30, reps: 3 });
   const [sessionDoneMarker, setSessionDoneMarker] = useState<MemorizeSessionDoneMarker | null>(() =>
     readMemorizeSessionDoneMarker(),
@@ -244,6 +392,7 @@ export default function MemorizePage() {
     });
 
     setShowGoalModal(false);
+    setConfirmReplaceGoal(false);
     setForm((prev) => ({ ...prev, title: "" }));
     clearMemorizeSessionDoneMarker();
     setSessionDoneMarker(null);
@@ -255,15 +404,16 @@ export default function MemorizePage() {
       return;
     }
 
-    const shouldDelete = window.confirm(`Delete "${activeGoal.title}"? This will reset its memorization streak.`);
-
-    if (!shouldDelete) {
-      return;
-    }
-
     await deleteGoalMutation.mutateAsync({ goalId: activeGoal.id });
+    setShowSettingsModal(false);
     clearMemorizeSessionDoneMarker();
     setSessionDoneMarker(null);
+    await memorizeQuery.refetch();
+  }
+
+  async function handleUpdateGoal(payload: { goalId: string; targetDays: number; repsPerVerse: number }) {
+    await updateGoalMutation.mutateAsync(payload);
+    setShowSettingsModal(false);
     await memorizeQuery.refetch();
   }
 
@@ -293,7 +443,7 @@ export default function MemorizePage() {
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-20">
 
       {/* ── Page Header ─────────────────────────────────── */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
@@ -304,24 +454,13 @@ export default function MemorizePage() {
           <p className="text-sm text-muted-foreground mt-1">Track your Quran memorization progress</p>
         </div>
         {hasActiveGoal && (
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                void handleDeleteGoal();
-              }}
-              disabled={deleteGoalMutation.isPending}
-              className="flex items-center gap-2 rounded-full border border-destructive/20 bg-destructive/5 px-4 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Trash2 className="h-4 w-4" /> {deleteGoalMutation.isPending ? "Deleting..." : "Delete Goal"}
-            </button>
-            <button
-              onClick={() => setShowGoalModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Plus className="h-4 w-4" /> New Goal
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowSettingsModal(true)}
+            className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Settings2 className="h-4 w-4" /> Goal Settings
+          </button>
         )}
       </div>
 
@@ -510,19 +649,47 @@ export default function MemorizePage() {
       {/* ── Create Goal Modal ── */}
       {showGoalModal && (
         <div className="fixed inset-0 z-200 flex items-end sm:items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowGoalModal(false)} />
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => {
+              setShowGoalModal(false);
+              setConfirmReplaceGoal(false);
+            }}
+          />
           <div className="relative z-10 w-full max-w-lg rounded-3xl border border-border bg-background shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4">
             <div className="flex items-center justify-between border-b border-border px-6 py-4 bg-muted/30">
               <div>
                 <h3 className="text-lg font-bold">Create New Goal</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Set up your personalized memorization plan</p>
               </div>
-              <button onClick={() => setShowGoalModal(false)} className="rounded-full p-2 hover:bg-muted transition-colors">
+              <button
+                onClick={() => {
+                  setShowGoalModal(false);
+                  setConfirmReplaceGoal(false);
+                }}
+                className="rounded-full p-2 hover:bg-muted transition-colors"
+              >
                 <X className="h-5 w-5 text-muted-foreground" />
               </button>
             </div>
 
             <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              {hasActiveGoal && (
+                <div
+                  className={`rounded-xl border p-4 transition-colors ${
+                    confirmReplaceGoal
+                      ? "border-amber-300 bg-amber-50"
+                      : "border-amber-200 bg-amber-50/70"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-amber-900">Replace current memorization goal</p>
+                  <p className="mt-1 text-sm text-amber-800/80">
+                    Creating a new goal will reset your current memorization progress for
+                    {" "}
+                    <span className="font-semibold">{activeGoal?.title}</span>.
+                  </p>
+                </div>
+              )}
 
               {/* Goal Title */}
               <div className="space-y-1.5">
@@ -603,23 +770,65 @@ export default function MemorizePage() {
 
             <div className="border-t border-border px-6 py-4 flex gap-3 bg-muted/20">
               <button
-                onClick={() => setShowGoalModal(false)}
+                onClick={() => {
+                  setShowGoalModal(false);
+                  setConfirmReplaceGoal(false);
+                }}
                 className="flex-1 rounded-xl border border-border py-3 text-sm font-semibold hover:bg-muted"
               >
                 Cancel
               </button>
-              <button
-                onClick={() => {
-                  void handleCreateGoal();
-                }}
-                disabled={!form.title || createGoalMutation.isPending}
-                className="flex-1 rounded-xl bg-primary text-primary-foreground py-3 font-bold shadow-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                {createGoalMutation.isPending ? "Starting..." : "Start Memorizing"}
-              </button>
+              {hasActiveGoal && confirmReplaceGoal ? (
+                <div className="flex flex-1 gap-3">
+                  <button
+                    onClick={() => setConfirmReplaceGoal(false)}
+                    className="flex-1 rounded-xl bg-secondary py-3 text-sm font-semibold text-foreground hover:bg-secondary/80"
+                  >
+                    Keep Current Goal
+                  </button>
+                  <button
+                    onClick={() => {
+                      void handleCreateGoal();
+                    }}
+                    disabled={!form.title || createGoalMutation.isPending}
+                    className="flex-1 rounded-xl bg-destructive py-3 text-sm font-bold text-destructive-foreground hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+                  >
+                    {createGoalMutation.isPending ? "Replacing..." : "Confirm Replace"}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (hasActiveGoal) {
+                      setConfirmReplaceGoal(true);
+                      return;
+                    }
+
+                    void handleCreateGoal();
+                  }}
+                  disabled={!form.title || createGoalMutation.isPending}
+                  className="flex-1 rounded-xl bg-primary text-primary-foreground py-3 font-bold shadow-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {createGoalMutation.isPending
+                    ? "Starting..."
+                    : hasActiveGoal
+                      ? "Replace Current Goal"
+                      : "Start Memorizing"}
+                </button>
+              )}
             </div>
           </div>
         </div>
+      )}
+      {showSettingsModal && activeGoal && (
+        <GoalSettingsModal
+          goal={activeGoal}
+          onClose={() => setShowSettingsModal(false)}
+          onSave={handleUpdateGoal}
+          onDelete={handleDeleteGoal}
+          isSaving={updateGoalMutation.isPending}
+          isDeleting={deleteGoalMutation.isPending}
+        />
       )}
     </div>
   );

@@ -7,6 +7,7 @@ import type {
   CreateMemorizeGoalPayload,
   DeleteMemorizeGoalPayload,
   MemorizeMeData,
+  UpdateMemorizeGoalPayload,
 } from "@/features/memorize/types";
 
 class MemorizeApiError extends Error {
@@ -63,6 +64,24 @@ async function deleteGoal(data: DeleteMemorizeGoalPayload): Promise<{ deleted: b
   }
 
   return { deleted: true };
+}
+
+async function patchUpdateGoal(data: UpdateMemorizeGoalPayload): Promise<{ updated: boolean }> {
+  const response = await fetch("/api/memorize/goal", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const payload = (await response.json()) as { updated?: boolean; error?: string };
+
+  if (!response.ok || !payload.updated) {
+    throw new MemorizeApiError(payload.error ?? "Failed to update goal.", response.status);
+  }
+
+  return { updated: true };
 }
 
 async function postCompleteSession(data: CompleteMemorizeSessionPayload): Promise<{ completed: boolean }> {
@@ -136,6 +155,20 @@ export function useDeleteMemorizeGoalMutation() {
 
   return useMutation({
     mutationFn: deleteGoal,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
+        refreshDashboardQuery(queryClient),
+      ]);
+    },
+  });
+}
+
+export function useUpdateMemorizeGoalMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: patchUpdateGoal,
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),

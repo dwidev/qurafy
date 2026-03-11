@@ -57,6 +57,12 @@ export type DeleteMemorizeGoalPayload = {
   goalId: string;
 };
 
+export type UpdateMemorizeGoalPayload = {
+  goalId: string;
+  targetDays: number;
+  repsPerVerse: number;
+};
+
 export type CompleteMemorizeSessionPayload = {
   goalId: string;
   dayNumber: number;

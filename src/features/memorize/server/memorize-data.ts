@@ -9,6 +9,7 @@ import type {
   DeleteMemorizeGoalPayload,
   MemorizeActiveGoal,
   MemorizeMeData,
+  UpdateMemorizeGoalPayload,
 } from "@/features/memorize/types";
 
 function buildRangeLabel(surahName: string, startVerse: number, endVerse: number) {
@@ -364,6 +365,54 @@ export async function completeMemorizeSession(userId: string, payload: CompleteM
   return {
     completed: completion.completed,
     isGoalCompleted: completion.isGoalCompleted,
+  };
+}
+
+export async function updateMemorizeGoal(userId: string, payload: UpdateMemorizeGoalPayload) {
+  const targetDays = clampPositive(payload.targetDays);
+  const repsPerVerse = clampPositive(payload.repsPerVerse);
+
+  if (!payload.goalId) {
+    throw new Error("Goal id is required.");
+  }
+
+  if (targetDays < 7 || targetDays > 365) {
+    throw new Error("Target days must be between 7 and 365.");
+  }
+
+  if (repsPerVerse < 1 || repsPerVerse > 10) {
+    throw new Error("Repetitions must be between 1 and 10.");
+  }
+
+  const goal = await db.query.memorizationGoals.findFirst({
+    where: and(eq(memorizationGoals.id, payload.goalId), eq(memorizationGoals.userId, userId)),
+  });
+
+  if (!goal) {
+    throw new Error("Goal not found.");
+  }
+
+  const progress = await db.query.memorizationProgress.findFirst({
+    where: eq(memorizationProgress.goalId, goal.id),
+  });
+
+  const completedDays = Math.max(0, progress?.completedDays ?? 0);
+  const minimumTargetDays = Math.max(7, completedDays + 1);
+
+  if (targetDays < minimumTargetDays) {
+    throw new Error(`Target days must be at least ${minimumTargetDays} based on your current progress.`);
+  }
+
+  await db
+    .update(memorizationGoals)
+    .set({
+      targetDays,
+      repsPerVerse,
+    })
+    .where(eq(memorizationGoals.id, goal.id));
+
+  return {
+    updated: true,
   };
 }
 
