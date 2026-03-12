@@ -99,6 +99,13 @@
       "when": 1773504000000,
       "tag": "0013_user_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1773590400000,
+      "tag": "0014_user_settings",
+      "breakpoints": true
     }
   ]
 }

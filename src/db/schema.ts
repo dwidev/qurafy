@@ -15,6 +15,8 @@ export const paymentStatusEnum = pgEnum("payment_status", ["pending", "confirmed
 export const donationTypeEnum = pgEnum("donation_type", ["recurring", "one_time"]);
 export const billingCycleEnum = pgEnum("billing_cycle", ["monthly", "yearly"]);
 export const goalStatusEnum = pgEnum("goal_status", ["active", "completed"]);
+export const themePreferenceEnum = pgEnum("theme_preference", ["light", "dark", "system"]);
+export const readerModeEnum = pgEnum("reader_mode", ["verse", "mushaf"]);
 
 // Better-Auth core tables (Drizzle adapter expects these model names).
 export const user = pgTable("user", {
@@ -90,6 +92,23 @@ export const userProfile = pgTable("user_profile", {
   location: text("location").notNull(),
   bio: text("bio").notNull(),
   dailyGoal: text("daily_goal").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userSettings = pgTable("user_settings", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  theme: themePreferenceEnum("theme").default("system").notNull(),
+  readerMode: readerModeEnum("reader_mode").default("verse").notNull(),
+  arabicFontSize: integer("arabic_font_size").default(4).notNull(),
+  showTranslation: boolean("show_translation").default(true).notNull(),
+  showTransliteration: boolean("show_transliteration").default(true).notNull(),
+  readingReminders: boolean("reading_reminders").default(true).notNull(),
+  hifzRepetitions: boolean("hifz_repetitions").default(true).notNull(),
+  khatamDaily: boolean("khatam_daily").default(true).notNull(),
+  marketing: boolean("marketing").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

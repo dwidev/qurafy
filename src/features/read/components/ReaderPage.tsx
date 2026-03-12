@@ -17,6 +17,7 @@ import {
   ReaderSettingsPanel,
   type ReaderSettings,
 } from "@/features/read/components/ReaderPageSections";
+import { settingsStorageKey } from "@/features/settings/constants";
 
 const arabicScale = ["text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-6xl", "text-7xl", "text-8xl"];
 
@@ -35,11 +36,46 @@ function ReaderContent() {
 
   const [showSettings, setShowSettings] = useState(false);
   const [khatamCompleteError, setKhatamCompleteError] = useState<string | null>(null);
-  const [settings, setSettings] = useState<ReaderSettings>({
-    mode: "verse",
-    showTranslation: true,
-    showTransliteration: true,
-    arabicSize: 4,
+  const [settings, setSettings] = useState<ReaderSettings>(() => {
+    if (typeof window === "undefined") {
+      return {
+        mode: "verse",
+        showTranslation: true,
+        showTransliteration: true,
+        arabicSize: 4,
+      };
+    }
+
+    const raw = window.localStorage.getItem(settingsStorageKey);
+
+    if (!raw) {
+      return {
+        mode: "verse",
+        showTranslation: true,
+        showTransliteration: true,
+        arabicSize: 4,
+      };
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as {
+        reading?: ReaderSettings;
+      };
+
+      return parsed.reading ?? {
+        mode: "verse",
+        showTranslation: true,
+        showTransliteration: true,
+        arabicSize: 4,
+      };
+    } catch {
+      return {
+        mode: "verse",
+        showTranslation: true,
+        showTransliteration: true,
+        arabicSize: 4,
+      };
+    }
   });
 
   useEffect(() => {

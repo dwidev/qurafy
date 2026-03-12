@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Bell,
   BookOpen,
@@ -9,28 +10,24 @@ import {
   HelpCircle,
   History,
   Lock,
+  Mail,
   Palette,
   Settings,
-  Shield,
   Smartphone,
+  Sparkles,
+  Trash2,
   User,
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
-
-export type SettingsTab = "general" | "account" | "appearance" | "notifications" | "reading" | "security" | "billing";
-
-export type NotificationSettings = {
-  readingReminders: boolean;
-  hifzRepetitions: boolean;
-  khatamDaily: boolean;
-  marketing: boolean;
-};
-
-export type AppearanceSettings = {
-  theme: "light" | "dark" | "system";
-  mushafMode: boolean;
-  fontSize: number;
-};
+import type {
+  AppearanceSettings,
+  NotificationSettings,
+  ReadingSettings,
+  SettingsAccountData,
+  SettingsBillingSummary,
+  SettingsSecuritySession,
+  SettingsTab,
+} from "@/features/settings/types";
 
 const settingsTabs: Array<{ id: SettingsTab; label: string; icon: typeof Smartphone }> = [
   { id: "general", label: "General", icon: Smartphone },
@@ -42,16 +39,38 @@ const settingsTabs: Array<{ id: SettingsTab; label: string; icon: typeof Smartph
   { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
+const dailyGoalOptions = [
+  { value: "build-consistency", label: "Build a daily reading habit" },
+  { value: "memorize-juz-amma", label: "Memorize Juz Amma" },
+  { value: "finish-khatam", label: "Complete a khatam plan" },
+  { value: "learn-tafsir", label: "Understand tafsir deeper" },
+] as const;
+
+const arabicPreviewScale = [
+  "text-xl",
+  "text-2xl",
+  "text-3xl",
+  "text-4xl",
+  "text-5xl",
+  "text-6xl",
+  "text-7xl",
+] as const;
+
 function SettingsCard({
   title,
+  description,
   children,
 }: {
   title: string;
+  description?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-6 rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
-      <h3 className="text-xl font-bold">{title}</h3>
+      <div className="space-y-1">
+        <h3 className="text-xl font-bold">{title}</h3>
+        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+      </div>
       {children}
     </div>
   );
@@ -69,10 +88,118 @@ function SettingsToggle({
       type="button"
       onClick={onToggle}
       className={`relative h-6.5 w-12 rounded-full transition-all ${checked ? "bg-primary" : "bg-secondary"}`}
+      aria-pressed={checked}
     >
       <div className={`absolute top-1 h-4.5 w-4.5 rounded-full bg-white transition-all ${checked ? "left-6.5" : "left-1"}`} />
     </button>
   );
+}
+
+function SectionActions({
+  isSaving,
+  isDisabled,
+  label = "Save Changes",
+}: {
+  isSaving: boolean;
+  isDisabled?: boolean;
+  label?: string;
+}) {
+  return (
+    <button
+      type="submit"
+      disabled={isSaving || isDisabled}
+      className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+    >
+      {isSaving ? "Saving..." : label}
+    </button>
+  );
+}
+
+function StatusText({
+  errorMessage,
+  successMessage,
+}: {
+  errorMessage?: string | null;
+  successMessage?: string | null;
+}) {
+  if (errorMessage) {
+    return <p className="text-sm font-medium text-destructive">{errorMessage}</p>;
+  }
+
+  if (successMessage) {
+    return <p className="text-sm font-medium text-emerald-600">{successMessage}</p>;
+  }
+
+  return null;
+}
+
+function InputField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  disabled = false,
+}: {
+  label: string;
+  value: string;
+  onChange?: (value: string) => void;
+  type?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange ? (event) => onChange(event.target.value) : undefined}
+        disabled={disabled}
+        className={`h-11 w-full rounded-xl border border-border px-4 text-sm font-medium outline-none transition-all ${
+          disabled ? "bg-secondary/50 text-muted-foreground" : "bg-transparent focus:border-primary"
+        }`}
+      />
+    </div>
+  );
+}
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
+function getDeviceLabel(session: SettingsSecuritySession) {
+  if (!session.userAgent) {
+    return "Unknown device";
+  }
+
+  if (session.userAgent.includes("iPhone")) {
+    return "iPhone";
+  }
+
+  if (session.userAgent.includes("Android")) {
+    return "Android";
+  }
+
+  if (session.userAgent.includes("Mac")) {
+    return "Mac";
+  }
+
+  if (session.userAgent.includes("Windows")) {
+    return "Windows";
+  }
+
+  return "Browser session";
 }
 
 export function SettingsHeader() {
@@ -84,7 +211,7 @@ export function SettingsHeader() {
         </span>
         Settings
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground">Manage your account and app preferences.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Manage your account, device preferences, billing, and security.</p>
     </div>
   );
 }
@@ -122,41 +249,52 @@ export function SettingsSidebar({
   );
 }
 
-export function GeneralSettingsSection() {
+export function GeneralSettingsSection({
+  appVersion,
+  cacheSizeLabel,
+  onClearCache,
+  cacheMessage,
+}: {
+  appVersion: string;
+  cacheSizeLabel: string;
+  onClearCache: () => void;
+  cacheMessage: string | null;
+}) {
   return (
     <div className="space-y-6">
-      <SettingsCard title="App Info">
+      <SettingsCard title="App Info" description="Device-level settings and cache state for this browser.">
         <div className="flex items-center justify-between py-2">
           <div className="space-y-0.5">
             <p className="text-sm font-bold">Version</p>
-            <p className="text-xs text-muted-foreground">v2.4.0 (Stable)</p>
+            <p className="text-xs text-muted-foreground">v{appVersion}</p>
           </div>
           <span className="rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-600">
-            Up to date
+            Current
           </span>
         </div>
         <div className="flex items-center justify-between py-2">
           <div className="space-y-0.5">
             <p className="text-sm font-bold">Workspace Storage</p>
-            <p className="text-xs text-muted-foreground">Local cache: 14.2 MB</p>
+            <p className="text-xs text-muted-foreground">Local cache: {cacheSizeLabel}</p>
           </div>
-          <button type="button" className="text-xs font-bold text-primary hover:underline">
+          <button type="button" onClick={onClearCache} className="text-xs font-bold text-primary hover:underline">
             Clear Cache
           </button>
         </div>
+        <StatusText successMessage={cacheMessage} />
       </SettingsCard>
 
-      <SettingsCard title="Support">
+      <SettingsCard title="Support & Shortcuts" description="Quick links to the areas users actually use today.">
         <div className="space-y-2">
           {[
-            { label: "Help Center & FAQs", icon: HelpCircle },
-            { label: "Give Feedback", icon: Globe },
-            { label: "Terms of Service", icon: Shield },
-            { label: "Privacy Policy", icon: Shield },
+            { label: "Supporter Plans", icon: Sparkles, href: "/donate" },
+            { label: "Pure Sadaqah", icon: Globe, href: "/sadaqah" },
+            { label: "Complete Profile", icon: User, href: "/complete-profile" },
+            { label: "Back to Dashboard", icon: HelpCircle, href: "/app" },
           ].map((item) => (
-            <button
+            <Link
               key={item.label}
-              type="button"
+              href={item.href}
               className="flex w-full items-center justify-between rounded-xl p-3 text-sm font-medium transition-colors hover:bg-muted"
             >
               <div className="flex items-center gap-3">
@@ -164,7 +302,7 @@ export function GeneralSettingsSection() {
                 {item.label}
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
-            </button>
+            </Link>
           ))}
         </div>
       </SettingsCard>
@@ -172,41 +310,102 @@ export function GeneralSettingsSection() {
   );
 }
 
-export function AccountSettingsSection() {
+export function AccountSettingsSection({
+  form,
+  onChange,
+  onSubmit,
+  isSaving,
+  isDirty,
+  errorMessage,
+  successMessage,
+  deleteConfirmation,
+  onDeleteConfirmationChange,
+  onDeleteAccount,
+  isDeleting,
+}: {
+  form: SettingsAccountData;
+  onChange: <K extends keyof SettingsAccountData>(key: K, value: SettingsAccountData[K]) => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  isSaving: boolean;
+  isDirty: boolean;
+  errorMessage: string | null;
+  successMessage: string | null;
+  deleteConfirmation: string;
+  onDeleteConfirmationChange: (value: string) => void;
+  onDeleteAccount: () => void;
+  isDeleting: boolean;
+}) {
   return (
     <div className="space-y-6">
-      <SettingsCard title="Personal Information">
-        <div className="grid gap-6 md:grid-cols-2">
+      <SettingsCard title="Personal Information" description="Update the profile and account details tied to your Qurafy account.">
+        <form onSubmit={onSubmit} className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <InputField label="Full Name" value={form.fullName} onChange={(value) => onChange("fullName", value)} />
+            <InputField label="Email Address" value={form.email} type="email" disabled />
+            <InputField label="Username" value={form.username} onChange={(value) => onChange("username", value)} />
+            <InputField label="Location" value={form.location} onChange={(value) => onChange("location", value)} />
+          </div>
+
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Full Name</label>
-            <input
-              type="text"
-              defaultValue="Ahmad Faris"
-              className="h-11 w-full rounded-xl border border-border bg-transparent px-4 text-sm font-medium outline-none focus:border-primary"
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Main Goal</label>
+            <select
+              value={form.dailyGoal}
+              onChange={(event) => onChange("dailyGoal", event.target.value as SettingsAccountData["dailyGoal"])}
+              className="h-11 w-full rounded-xl border border-border bg-transparent px-4 text-sm font-medium outline-none transition-all focus:border-primary"
+            >
+              {dailyGoalOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bio</label>
+            <textarea
+              value={form.bio}
+              onChange={(event) => onChange("bio", event.target.value)}
+              className="min-h-32 w-full rounded-2xl border border-border bg-transparent px-4 py-3 text-sm font-medium outline-none transition-all focus:border-primary"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</label>
-            <input
-              type="email"
-              defaultValue="faris@qurafy.io"
-              disabled
-              className="h-11 w-full rounded-xl border border-border bg-secondary/50 px-4 text-sm font-medium outline-none"
-            />
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-0.5 text-sm text-muted-foreground">
+              <p>Member since {formatDate(form.memberSince)}</p>
+              <p>{form.emailVerified ? "Email verified" : "Email not verified yet"}</p>
+            </div>
+            <SectionActions isSaving={isSaving} isDisabled={!isDirty} label="Save Account" />
           </div>
-        </div>
+
+          <StatusText errorMessage={errorMessage} successMessage={successMessage} />
+        </form>
       </SettingsCard>
 
-      <SettingsCard title="Danger Zone">
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Permanently delete your account and all your reading progress. This action cannot be undone.
-        </p>
-        <button
-          type="button"
-          className="rounded-full bg-destructive/10 px-6 py-3 text-sm font-bold text-destructive transition-all hover:bg-destructive hover:text-white"
-        >
-          Delete Account
-        </button>
+      <SettingsCard title="Danger Zone" description="Account deletion is permanent and removes your profile, progress, and session history.">
+        <div className="space-y-4">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Type <span className="font-black text-foreground">DELETE</span> to confirm permanent account removal.
+          </p>
+          <div className="flex flex-col gap-3 md:flex-row">
+            <input
+              type="text"
+              value={deleteConfirmation}
+              onChange={(event) => onDeleteConfirmationChange(event.target.value)}
+              placeholder="Type DELETE"
+              className="h-11 flex-1 rounded-xl border border-destructive/30 bg-destructive/5 px-4 text-sm font-medium outline-none transition-all focus:border-destructive"
+            />
+            <button
+              type="button"
+              onClick={onDeleteAccount}
+              disabled={isDeleting || deleteConfirmation !== "DELETE"}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-destructive px-5 text-sm font-bold text-white transition-all hover:bg-destructive/90 disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              {isDeleting ? "Deleting..." : "Delete Account"}
+            </button>
+          </div>
+        </div>
       </SettingsCard>
     </div>
   );
@@ -215,20 +414,30 @@ export function AccountSettingsSection() {
 export function NotificationSettingsSection({
   notifications,
   onToggle,
+  onSubmit,
+  isSaving,
+  isDirty,
+  errorMessage,
+  successMessage,
 }: {
   notifications: NotificationSettings;
   onToggle: (key: keyof NotificationSettings) => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  isSaving: boolean;
+  isDirty: boolean;
+  errorMessage: string | null;
+  successMessage: string | null;
 }) {
   return (
-    <SettingsCard title="Notification Prefs">
-      <div className="space-y-6">
+    <SettingsCard title="Notification Prefs" description="Control what Qurafy should remind you about.">
+      <form onSubmit={onSubmit} className="space-y-6">
         {[
-          { id: "readingReminders", label: "Reading Reminders", desc: "Get reminded if you haven't read for a while." },
-          { id: "hifzRepetitions", label: "Hifz Repetitions", desc: "Alerts for your scheduled hifz reviews." },
-          { id: "khatamDaily", label: "Daily Khatam Update", desc: "Notification when it's time for your daily juz." },
-          { id: "marketing", label: "Community & Updates", desc: "Stay informed about new app features." },
+          { id: "readingReminders", label: "Reading Reminders", desc: "Get reminded if you have not read for a while." },
+          { id: "hifzRepetitions", label: "Hifz Repetitions", desc: "Alerts for your scheduled memorization reviews." },
+          { id: "khatamDaily", label: "Daily Khatam Update", desc: "Know when it is time for your daily juz target." },
+          { id: "marketing", label: "Community & Updates", desc: "Product updates, new features, and support campaigns." },
         ].map((item) => (
-          <label key={item.id} className="flex cursor-pointer items-start justify-between">
+          <label key={item.id} className="flex cursor-pointer items-start justify-between gap-6">
             <div className="space-y-0.5">
               <p className="text-sm font-bold">{item.label}</p>
               <p className="max-w-sm text-xs text-muted-foreground">{item.desc}</p>
@@ -241,7 +450,12 @@ export function NotificationSettingsSection({
             </div>
           </label>
         ))}
-      </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <StatusText errorMessage={errorMessage} successMessage={successMessage} />
+          <SectionActions isSaving={isSaving} isDisabled={!isDirty} />
+        </div>
+      </form>
     </SettingsCard>
   );
 }
@@ -250,62 +464,428 @@ export function AppearanceSettingsSection({
   appearance,
   onThemeChange,
   onToggleMushafMode,
+  onSubmit,
+  isSaving,
+  isDirty,
+  errorMessage,
+  successMessage,
 }: {
   appearance: AppearanceSettings;
   onThemeChange: (theme: AppearanceSettings["theme"]) => void;
   onToggleMushafMode: () => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  isSaving: boolean;
+  isDirty: boolean;
+  errorMessage: string | null;
+  successMessage: string | null;
 }) {
   return (
-    <SettingsCard title="App Look & Feel">
-      <div className="space-y-4">
-        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Theme</p>
-        <div className="grid grid-cols-3 gap-4">
-          {["light", "dark", "system"].map((theme) => (
-            <button
-              key={theme}
-              type="button"
-              onClick={() => onThemeChange(theme as AppearanceSettings["theme"])}
-              className={`flex flex-col items-center gap-3 rounded-2xl border p-4 transition-all ${
-                appearance.theme === theme ? "border-primary bg-primary/5 text-primary" : "border-border bg-card hover:bg-muted"
-              }`}
-            >
-              <Palette className="h-5 w-5" />
-              <span className="text-xs font-bold capitalize">{theme}</span>
-            </button>
-          ))}
+    <SettingsCard title="App Look & Feel" description="Set your theme and the default reader presentation.">
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div className="space-y-4">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Theme</p>
+          <div className="grid grid-cols-3 gap-4">
+            {["light", "dark", "system"].map((theme) => (
+              <button
+                key={theme}
+                type="button"
+                onClick={() => onThemeChange(theme as AppearanceSettings["theme"])}
+                className={`flex flex-col items-center gap-3 rounded-2xl border p-4 transition-all ${
+                  appearance.theme === theme ? "border-primary bg-primary/5 text-primary" : "border-border bg-card hover:bg-muted"
+                }`}
+              >
+                <Palette className="h-5 w-5" />
+                <span className="text-xs font-bold capitalize">{theme}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-4 pt-4">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Arabic Reading Mode</p>
-          <button type="button" onClick={onToggleMushafMode} className="text-xs font-bold text-primary">
-            Change to {appearance.mushafMode ? "Verse" : "Mushaf"}
-          </button>
+        <div className="flex items-start justify-between gap-4 rounded-2xl border border-border bg-muted/20 p-4">
+          <div className="space-y-1">
+            <p className="text-sm font-bold">Open reader in {appearance.mushafMode ? "Mushaf" : "Verse"} mode</p>
+            <p className="text-xs text-muted-foreground">
+              This controls the default reading presentation used when you open Quran content.
+            </p>
+          </div>
+          <SettingsToggle checked={appearance.mushafMode} onToggle={onToggleMushafMode} />
         </div>
+
         <div className="flex items-center justify-center rounded-2xl border border-border bg-muted/30 p-6 text-center">
           <div className="space-y-2">
             <p className="text-2xl font-bold font-serif" dir="rtl">
               بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
             </p>
-            <p className="text-xs text-muted-foreground">Preview of current font size ({appearance.fontSize}/7)</p>
+            <p className="text-xs text-muted-foreground">Current Arabic size preview ({appearance.fontSize}/7)</p>
           </div>
         </div>
-      </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <StatusText errorMessage={errorMessage} successMessage={successMessage} />
+          <SectionActions isSaving={isSaving} isDisabled={!isDirty} />
+        </div>
+      </form>
     </SettingsCard>
   );
 }
 
-export function PlaceholderSettingsSection({ activeTab }: { activeTab: SettingsTab }) {
+export function ReadingSettingsSection({
+  reading,
+  onModeChange,
+  onToggleTranslation,
+  onToggleTransliteration,
+  onArabicSizeChange,
+  onSubmit,
+  isSaving,
+  isDirty,
+  errorMessage,
+  successMessage,
+}: {
+  reading: ReadingSettings;
+  onModeChange: (mode: ReadingSettings["mode"]) => void;
+  onToggleTranslation: () => void;
+  onToggleTransliteration: () => void;
+  onArabicSizeChange: (value: number) => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  isSaving: boolean;
+  isDirty: boolean;
+  errorMessage: string | null;
+  successMessage: string | null;
+}) {
+  const arabicScaleClass = arabicPreviewScale[reading.arabicSize - 1] ?? arabicPreviewScale[3];
+
   return (
-    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card/50 px-8 py-20 text-center">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
-        <History className="h-8 w-8 text-muted-foreground" />
-      </div>
-      <h3 className="text-lg font-bold capitalize">{activeTab} coming soon</h3>
-      <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-        Our engineers are working hard to bring this feature to you as soon as possible.
-      </p>
+    <SettingsCard title="Reading Preferences" description="Match the reader defaults to how you actually study.">
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div className="space-y-4">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Default Reader Mode</p>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { value: "verse", label: "Verse View" },
+              { value: "mushaf", label: "Mushaf View" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onModeChange(option.value as ReadingSettings["mode"])}
+                className={`rounded-2xl border p-4 text-sm font-bold transition-all ${
+                  reading.mode === option.value ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold">Live Reader Preview</p>
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+              {reading.mode === "mushaf" ? "Mushaf" : "Verse"}
+            </span>
+          </div>
+
+          {reading.mode === "verse" ? (
+            <div className="rounded-2xl border border-border/70 bg-background p-5 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                  1
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Verse View</span>
+              </div>
+
+              <p className={`text-right font-serif font-bold leading-[2.3] text-foreground/90 ${arabicScaleClass}`} dir="rtl">
+                بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+              </p>
+
+              {reading.showTransliteration ? (
+                <p className="mt-4 text-sm font-medium tracking-wide text-primary/80">
+                  Bismillahir Rahmanir Rahim
+                </p>
+              ) : null}
+
+              {reading.showTranslation ? (
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  In the name of Allah, the Entirely Merciful, the Especially Merciful.
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border/70 bg-background p-5 shadow-sm">
+              <div className="text-right font-serif font-bold leading-[2.5] text-foreground/90" dir="rtl">
+                <span className={arabicScaleClass}>
+                  بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+                </span>{" "}
+                <span className="relative mx-1 inline-flex translate-y-2 items-center justify-center">
+                  <span className="absolute inset-0 flex translate-y-[-8px] items-center justify-center text-[0.45em] text-muted-foreground">
+                    ١
+                  </span>
+                  <span className="text-[0.8em] text-primary/70">۝</span>
+                </span>{" "}
+                <span className={arabicScaleClass}>
+                  ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ
+                </span>{" "}
+                <span className="relative mx-1 inline-flex translate-y-2 items-center justify-center">
+                  <span className="absolute inset-0 flex translate-y-[-8px] items-center justify-center text-[0.45em] text-muted-foreground">
+                    ٢
+                  </span>
+                  <span className="text-[0.8em] text-primary/70">۝</span>
+                </span>
+              </div>
+
+              {reading.showTranslation || reading.showTransliteration ? (
+                <div className="mt-6 space-y-2 border-t border-border/50 pt-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Translation Block</p>
+                  {reading.showTransliteration ? (
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-primary/80">1. Bismillahir Rahmanir Rahim</p>
+                      <p className="text-sm font-medium text-primary/80">2. Alhamdu lillahi rabbil &#39;alamin</p>
+                    </div>
+                  ) : null}
+                  {reading.showTranslation ? (
+                    <div className="space-y-1">
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        1. In the name of Allah, the Entirely Merciful, the Especially Merciful.
+                      </p>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        2. All praise is due to Allah, Lord of the worlds.
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold">Arabic Font Size</p>
+            <span className="text-xs font-bold text-muted-foreground">{reading.arabicSize}/7</span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={7}
+            value={reading.arabicSize}
+            onChange={(event) => onArabicSizeChange(Number(event.target.value))}
+            className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+          />
+        </div>
+
+        <div className="space-y-4">
+          <label className="flex items-start justify-between gap-6">
+            <div className="space-y-0.5">
+              <p className="text-sm font-bold">Show Translation</p>
+              <p className="text-xs text-muted-foreground">Display the English translation in the reader.</p>
+            </div>
+            <SettingsToggle checked={reading.showTranslation} onToggle={onToggleTranslation} />
+          </label>
+          <label className="flex items-start justify-between gap-6">
+            <div className="space-y-0.5">
+              <p className="text-sm font-bold">Show Transliteration</p>
+              <p className="text-xs text-muted-foreground">Display the Latin transliteration below the Arabic text.</p>
+            </div>
+            <SettingsToggle checked={reading.showTransliteration} onToggle={onToggleTransliteration} />
+          </label>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <StatusText errorMessage={errorMessage} successMessage={successMessage} />
+          <SectionActions isSaving={isSaving} isDisabled={!isDirty} />
+        </div>
+      </form>
+    </SettingsCard>
+  );
+}
+
+export function SecuritySettingsSection({
+  email,
+  emailVerified,
+  sessions,
+  onSendPasswordReset,
+  onLogoutAll,
+  isSendingPasswordReset,
+  isLoggingOutAll,
+  passwordResetMessage,
+  errorMessage,
+}: {
+  email: string;
+  emailVerified: boolean;
+  sessions: SettingsSecuritySession[];
+  onSendPasswordReset: () => void;
+  onLogoutAll: () => void;
+  isSendingPasswordReset: boolean;
+  isLoggingOutAll: boolean;
+  passwordResetMessage: string | null;
+  errorMessage: string | null;
+}) {
+  return (
+    <div className="space-y-6">
+      <SettingsCard title="Password & Verification" description="Use the existing auth flow to secure your account.">
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4 rounded-2xl border border-border bg-muted/20 p-4">
+            <div className="space-y-1">
+              <p className="text-sm font-bold">Password Reset</p>
+              <p className="text-xs text-muted-foreground">
+                Send a reset link to <span className="font-semibold text-foreground">{email}</span>.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onSendPasswordReset}
+              disabled={isSendingPasswordReset}
+              className="inline-flex h-10 items-center justify-center rounded-full border border-border px-4 text-xs font-bold transition-all hover:bg-muted disabled:opacity-50"
+            >
+              {isSendingPasswordReset ? "Sending..." : "Send Reset Link"}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/20 p-4">
+            <div className="space-y-1">
+              <p className="text-sm font-bold">Email Verification</p>
+              <p className="text-xs text-muted-foreground">Current status for your sign-in email.</p>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ${
+                emailVerified ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-700"
+              }`}
+            >
+              {emailVerified ? "Verified" : "Pending"}
+            </span>
+          </div>
+
+          <StatusText errorMessage={errorMessage} successMessage={passwordResetMessage} />
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title="Active Sessions" description="Recent devices that accessed your account. Logging out all sessions signs you out here too.">
+        <div className="space-y-4">
+          {sessions.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+              No active sessions found.
+            </div>
+          ) : (
+            sessions.map((item) => (
+              <div key={item.id} className="flex items-start justify-between gap-4 rounded-2xl border border-border bg-muted/10 p-4">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-bold">{getDeviceLabel(item)}</p>
+                    {item.isCurrent ? (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary">
+                        Current
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Last seen {formatDate(item.lastSeenAt)}{item.ipAddress ? ` • ${item.ipAddress}` : ""}
+                  </p>
+                  {item.userAgent ? <p className="text-xs text-muted-foreground/80">{item.userAgent}</p> : null}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  Expires {formatDate(item.expiresAt)}
+                </div>
+              </div>
+            ))
+          )}
+
+          <button
+            type="button"
+            onClick={onLogoutAll}
+            disabled={isLoggingOutAll}
+            className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-bold transition-all hover:bg-muted disabled:opacity-50"
+          >
+            {isLoggingOutAll ? "Signing out..." : "Log Out All Devices"}
+          </button>
+        </div>
+      </SettingsCard>
+    </div>
+  );
+}
+
+export function BillingSettingsSection({ billing }: { billing: SettingsBillingSummary }) {
+  return (
+    <div className="space-y-6">
+      <SettingsCard title="Support Summary" description="Your supporter and donation activity appears here when payments are recorded.">
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-muted/10 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Confirmed Support</p>
+            <p className="mt-2 text-2xl font-black">{formatCurrency(billing.totalConfirmedAmount)}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-muted/10 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Successful Payments</p>
+            <p className="mt-2 text-2xl font-black">{billing.totalConfirmedCount}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-muted/10 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Supporter Status</p>
+            <p className="mt-2 text-2xl font-black">{billing.activeSupporter ? "Active" : "Inactive"}</p>
+          </div>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title="Billing History" description="Recent supporter and donation records associated with your account.">
+        {billing.donations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card/50 px-8 py-16 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
+              <History className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-bold">No billing records yet</h3>
+            <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+              Start a supporter plan or give pure sadaqah to see your contribution history here.
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/donate"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90"
+              >
+                Open Supporter Plans
+              </Link>
+              <Link
+                href="/sadaqah"
+                className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-bold transition-all hover:bg-muted"
+              >
+                Give Sadaqah
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {billing.donations.map((item) => (
+              <div key={item.id} className="flex flex-col gap-3 rounded-2xl border border-border bg-muted/10 p-4 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-bold">{formatCurrency(item.amount)}</p>
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      {item.type === "recurring" ? `${item.billingCycle ?? "Recurring"} supporter` : "One-time donation"}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
+                        item.status === "confirmed"
+                          ? "bg-emerald-50 text-emerald-600"
+                          : item.status === "failed"
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Created {formatDate(item.createdAt)}</p>
+                </div>
+                <Link
+                  href={item.type === "recurring" ? "/donate" : "/sadaqah"}
+                  className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline"
+                >
+                  Manage
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
+      </SettingsCard>
     </div>
   );
 }
