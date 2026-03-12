@@ -1,9 +1,8 @@
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { user, userProfile } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/features/auth/server/session";
 import type { DailyGoalValue } from "@/features/profile/types";
 
 const allowedGoals = new Set<DailyGoalValue>([
@@ -20,9 +19,7 @@ function jsonError(message: string, status: number) {
 }
 
 export async function POST(request: Request) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getServerSession();
 
   if (!session) {
     return jsonError("Unauthorized", 401);

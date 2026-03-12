@@ -4,9 +4,23 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
 export const getServerSession = cache(async () => {
-  return auth.api.getSession({
-    headers: await headers(),
-  });
+  try {
+    return await auth.api.getSession({
+      headers: await headers(),
+    });
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      error.digest === "DYNAMIC_SERVER_USAGE"
+    ) {
+      throw error;
+    }
+
+    console.error("[auth/session] Failed to resolve server session", error);
+    return null;
+  }
 });
 
 export const requireServerSession = cache(async () => {

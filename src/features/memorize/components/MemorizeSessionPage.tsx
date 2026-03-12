@@ -19,6 +19,7 @@ import {
   MemorizeSessionIntro,
   MemorizeSessionPractice,
 } from "@/features/memorize/components/MemorizeSessionPageSections";
+import { LoadingPopup } from "@/components/ui/LoadingPopup";
 
 export default function MemorizeSessionPage() {
   const router = useRouter();
@@ -178,6 +179,8 @@ export default function MemorizeSessionPage() {
 
         {sessionDone ? <MemorizeSessionCompletionState onDone={() => leaveSession(true)} /> : null}
       </div>
+
+      <LoadingPopup show={completeSessionMutation.isPending} message="Completing session..." />
     </div>
   );
 }
