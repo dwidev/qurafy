@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import pkg from "../../../../package.json";
 import { db } from "@/db";
 import { donations, session as authSession, userProfile, userSettings } from "@/db/schema";
-import { requireServerSession } from "@/features/auth/server/session";
+import { getServerSession, requireServerSession } from "@/features/auth/server/session";
 import {
   defaultAppearanceSettings,
   defaultNotificationSettings,
@@ -10,7 +10,83 @@ import {
 } from "@/features/settings/constants";
 import type { SettingsPageData, SettingsBillingItem } from "@/features/settings/types";
 
-function getNormalizedPreferences(row: typeof userSettings.$inferSelect | undefined) {
+type UserSettingsRecord = Partial<typeof userSettings.$inferSelect> | undefined;
+
+function isMissingDbStructure(error: unknown, identifiers: string[]) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const code = "code" in error ? String(error.code) : "";
+  const message = "message" in error ? String(error.message) : "";
+
+  if (!["42703", "42P01"].includes(code)) {
+    return false;
+  }
+
+  return identifiers.some((identifier) => message.includes(identifier));
+}
+
+export async function findUserSettingsWithFallback(userId: string): Promise<UserSettingsRecord> {
+  try {
+    return await db.query.userSettings.findFirst({
+      where: eq(userSettings.userId, userId),
+    });
+  } catch (error) {
+    if (!isMissingDbStructure(error, ["user_settings"])) {
+      throw error;
+    }
+    return undefined;
+  }
+}
+
+async function findUserProfileWithFallback(userId: string) {
+  try {
+    return await db.query.userProfile.findFirst({
+      where: eq(userProfile.userId, userId),
+    });
+  } catch (error) {
+    if (!isMissingDbStructure(error, ["user_profile"])) {
+      throw error;
+    }
+
+    return undefined;
+  }
+}
+
+async function findSessionsWithFallback(userId: string) {
+  try {
+    return await db.query.session.findMany({
+      where: eq(authSession.userId, userId),
+      orderBy: [desc(authSession.updatedAt)],
+      limit: 5,
+    });
+  } catch (error) {
+    if (!isMissingDbStructure(error, ["session"])) {
+      throw error;
+    }
+
+    return [];
+  }
+}
+
+async function findDonationsWithFallback(userId: string) {
+  try {
+    return await db.query.donations.findMany({
+      where: eq(donations.userId, userId),
+      orderBy: [desc(donations.createdAt)],
+      limit: 10,
+    });
+  } catch (error) {
+    if (!isMissingDbStructure(error, ["donations", "billing_cycle", "payment_status"])) {
+      throw error;
+    }
+
+    return [];
+  }
+}
+
+function getNormalizedPreferences(row: UserSettingsRecord) {
   const reading = {
     mode: row?.readerMode ?? defaultReadingSettings.mode,
     showTranslation: row?.showTranslation ?? defaultReadingSettings.showTranslation,
@@ -47,24 +123,17 @@ function toBillingItems(rows: Array<typeof donations.$inferSelect>): SettingsBil
 
 export async function getSettingsPageData(): Promise<SettingsPageData> {
   const session = await requireServerSession();
+  return getSettingsPageDataForSession(session);
+}
 
+export async function getSettingsPageDataForSession(
+  session: NonNullable<Awaited<ReturnType<typeof getServerSession>>>,
+): Promise<SettingsPageData> {
   const [profile, settings, sessions, donationRows] = await Promise.all([
-    db.query.userProfile.findFirst({
-      where: eq(userProfile.userId, session.user.id),
-    }),
-    db.query.userSettings.findFirst({
-      where: eq(userSettings.userId, session.user.id),
-    }),
-    db.query.session.findMany({
-      where: eq(authSession.userId, session.user.id),
-      orderBy: [desc(authSession.updatedAt)],
-      limit: 5,
-    }),
-    db.query.donations.findMany({
-      where: eq(donations.userId, session.user.id),
-      orderBy: [desc(donations.createdAt)],
-      limit: 10,
-    }),
+    findUserProfileWithFallback(session.user.id),
+    findUserSettingsWithFallback(session.user.id),
+    findSessionsWithFallback(session.user.id),
+    findDonationsWithFallback(session.user.id),
   ]);
 
   const preferences = getNormalizedPreferences(settings);

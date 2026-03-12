@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { userSettings } from "@/db/schema";
@@ -7,6 +6,9 @@ import {
   defaultNotificationSettings,
   defaultReadingSettings,
 } from "@/features/settings/constants";
+import {
+  findUserSettingsWithFallback,
+} from "@/features/settings/server/settings-data";
 import type {
   AppearanceSettings,
   NotificationSettings,
@@ -15,6 +17,49 @@ import type {
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
+}
+
+async function savePreferences(input: {
+  userId: string;
+  theme: "light" | "dark" | "system";
+  readerMode: "verse" | "mushaf";
+  arabicSize: number;
+  showTranslation: boolean;
+  showTransliteration: boolean;
+  notifications: NotificationSettings;
+  now: Date;
+}) {
+  await db
+    .insert(userSettings)
+    .values({
+      userId: input.userId,
+      theme: input.theme,
+      readerMode: input.readerMode,
+      arabicFontSize: input.arabicSize,
+      showTranslation: input.showTranslation,
+      showTransliteration: input.showTransliteration,
+      readingReminders: input.notifications.readingReminders,
+      hifzRepetitions: input.notifications.hifzRepetitions,
+      khatamDaily: input.notifications.khatamDaily,
+      marketing: input.notifications.marketing,
+      createdAt: input.now,
+      updatedAt: input.now,
+    })
+    .onConflictDoUpdate({
+      target: userSettings.userId,
+      set: {
+        theme: input.theme,
+        readerMode: input.readerMode,
+        arabicFontSize: input.arabicSize,
+        showTranslation: input.showTranslation,
+        showTransliteration: input.showTransliteration,
+        readingReminders: input.notifications.readingReminders,
+        hifzRepetitions: input.notifications.hifzRepetitions,
+        khatamDaily: input.notifications.khatamDaily,
+        marketing: input.notifications.marketing,
+        updatedAt: input.now,
+      },
+    });
 }
 
 export async function PATCH(request: Request) {
@@ -45,41 +90,18 @@ export async function PATCH(request: Request) {
 
   const now = new Date();
 
-  await db
-    .insert(userSettings)
-    .values({
-      userId: session.user.id,
-      theme: theme as "light" | "dark" | "system",
-      readerMode: readerMode as "verse" | "mushaf",
-      arabicFontSize: reading.arabicSize,
-      showTranslation: reading.showTranslation,
-      showTransliteration: reading.showTransliteration,
-      readingReminders: notifications.readingReminders,
-      hifzRepetitions: notifications.hifzRepetitions,
-      khatamDaily: notifications.khatamDaily,
-      marketing: notifications.marketing,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: userSettings.userId,
-      set: {
-        theme: theme as "light" | "dark" | "system",
-        readerMode: readerMode as "verse" | "mushaf",
-        arabicFontSize: reading.arabicSize,
-        showTranslation: reading.showTranslation,
-        showTransliteration: reading.showTransliteration,
-        readingReminders: notifications.readingReminders,
-        hifzRepetitions: notifications.hifzRepetitions,
-        khatamDaily: notifications.khatamDaily,
-        marketing: notifications.marketing,
-        updatedAt: now,
-      },
-    });
-
-  const saved = await db.query.userSettings.findFirst({
-    where: eq(userSettings.userId, session.user.id),
+  await savePreferences({
+    userId: session.user.id,
+    theme: theme as "light" | "dark" | "system",
+    readerMode: readerMode as "verse" | "mushaf",
+    arabicSize: reading.arabicSize,
+    showTranslation: reading.showTranslation,
+    showTransliteration: reading.showTransliteration,
+    notifications,
+    now,
   });
+
+  const saved = await findUserSettingsWithFallback(session.user.id);
 
   return NextResponse.json({ ok: true, settings: saved });
 }

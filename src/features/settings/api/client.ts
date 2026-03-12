@@ -148,10 +148,19 @@ export function readPersistedSettings() {
   }
 
   try {
-    return JSON.parse(raw) as {
+    const parsed = JSON.parse(raw) as {
       notifications: NotificationSettings;
-      appearance: AppearanceSettings;
+      appearance?: Partial<AppearanceSettings>;
       reading: ReadingSettings;
+    };
+
+    return {
+      notifications: parsed.notifications ?? defaultNotificationSettings,
+      appearance: {
+        ...defaultAppearanceSettings,
+        ...(parsed.appearance ?? {}),
+      },
+      reading: parsed.reading ?? defaultReadingSettings,
     };
   } catch {
     return {

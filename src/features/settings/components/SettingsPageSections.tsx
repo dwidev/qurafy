@@ -318,10 +318,14 @@ export function AccountSettingsSection({
   isDirty,
   errorMessage,
   successMessage,
+  onOpenDeleteDialog,
+  onCloseDeleteDialog,
+  onConfirmDeleteAccount,
+  isDeleteDialogOpen,
   deleteConfirmation,
   onDeleteConfirmationChange,
-  onDeleteAccount,
   isDeleting,
+  deleteErrorMessage,
 }: {
   form: SettingsAccountData;
   onChange: <K extends keyof SettingsAccountData>(key: K, value: SettingsAccountData[K]) => void;
@@ -330,10 +334,14 @@ export function AccountSettingsSection({
   isDirty: boolean;
   errorMessage: string | null;
   successMessage: string | null;
+  onOpenDeleteDialog: () => void;
+  onCloseDeleteDialog: () => void;
+  onConfirmDeleteAccount: () => void;
+  isDeleteDialogOpen: boolean;
   deleteConfirmation: string;
   onDeleteConfirmationChange: (value: string) => void;
-  onDeleteAccount: () => void;
   isDeleting: boolean;
+  deleteErrorMessage: string | null;
 }) {
   return (
     <div className="space-y-6">
@@ -384,29 +392,73 @@ export function AccountSettingsSection({
 
       <SettingsCard title="Danger Zone" description="Account deletion is permanent and removes your profile, progress, and session history.">
         <div className="space-y-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Type <span className="font-black text-foreground">DELETE</span> to confirm permanent account removal.
+          <p className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm leading-relaxed text-destructive">
+            Deleting your account will permanently delete your profile data, reading progress, memorization data, and active sessions.
           </p>
-          <div className="flex flex-col gap-3 md:flex-row">
-            <input
-              type="text"
-              value={deleteConfirmation}
-              onChange={(event) => onDeleteConfirmationChange(event.target.value)}
-              placeholder="Type DELETE"
-              className="h-11 flex-1 rounded-xl border border-destructive/30 bg-destructive/5 px-4 text-sm font-medium outline-none transition-all focus:border-destructive"
-            />
-            <button
-              type="button"
-              onClick={onDeleteAccount}
-              disabled={isDeleting || deleteConfirmation !== "DELETE"}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-destructive px-5 text-sm font-bold text-white transition-all hover:bg-destructive/90 disabled:opacity-50"
-            >
-              <Trash2 className="h-4 w-4" />
-              {isDeleting ? "Deleting..." : "Delete Account"}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onOpenDeleteDialog}
+            disabled={isDeleting}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-destructive px-5 text-sm font-bold text-white transition-all hover:bg-destructive/90 disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Account
+          </button>
         </div>
       </SettingsCard>
+
+      {isDeleteDialogOpen ? (
+        <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" onClick={onCloseDeleteDialog} />
+          <div className="relative z-201 w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="space-y-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold">Delete account?</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  This permanently deletes your profile, progress, memorization data, and active sessions.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Type DELETE to confirm
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmation}
+                onChange={(event) => onDeleteConfirmationChange(event.target.value)}
+                placeholder="DELETE"
+                className="h-11 w-full rounded-2xl border border-destructive/30 bg-destructive/5 px-4 text-sm font-medium outline-none transition-all focus:border-destructive"
+              />
+            </div>
+
+            {deleteErrorMessage ? <p className="mt-4 text-sm font-medium text-destructive">{deleteErrorMessage}</p> : null}
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={onCloseDeleteDialog}
+                disabled={isDeleting}
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-border px-5 text-sm font-bold transition-all hover:bg-muted disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onConfirmDeleteAccount}
+                disabled={isDeleting || deleteConfirmation !== "DELETE"}
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-destructive px-5 text-sm font-bold text-white transition-all hover:bg-destructive/90 disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -463,7 +515,6 @@ export function NotificationSettingsSection({
 export function AppearanceSettingsSection({
   appearance,
   onThemeChange,
-  onToggleMushafMode,
   onSubmit,
   isSaving,
   isDirty,
@@ -472,7 +523,6 @@ export function AppearanceSettingsSection({
 }: {
   appearance: AppearanceSettings;
   onThemeChange: (theme: AppearanceSettings["theme"]) => void;
-  onToggleMushafMode: () => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   isSaving: boolean;
   isDirty: boolean;
@@ -480,7 +530,7 @@ export function AppearanceSettingsSection({
   successMessage: string | null;
 }) {
   return (
-    <SettingsCard title="App Look & Feel" description="Set your theme and the default reader presentation.">
+    <SettingsCard title="App Look & Feel" description="Customize the website interface theme.">
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="space-y-4">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Theme</p>
@@ -498,25 +548,6 @@ export function AppearanceSettingsSection({
                 <span className="text-xs font-bold capitalize">{theme}</span>
               </button>
             ))}
-          </div>
-        </div>
-
-        <div className="flex items-start justify-between gap-4 rounded-2xl border border-border bg-muted/20 p-4">
-          <div className="space-y-1">
-            <p className="text-sm font-bold">Open reader in {appearance.mushafMode ? "Mushaf" : "Verse"} mode</p>
-            <p className="text-xs text-muted-foreground">
-              This controls the default reading presentation used when you open Quran content.
-            </p>
-          </div>
-          <SettingsToggle checked={appearance.mushafMode} onToggle={onToggleMushafMode} />
-        </div>
-
-        <div className="flex items-center justify-center rounded-2xl border border-border bg-muted/30 p-6 text-center">
-          <div className="space-y-2">
-            <p className="text-2xl font-bold font-serif" dir="rtl">
-              بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
-            </p>
-            <p className="text-xs text-muted-foreground">Current Arabic size preview ({appearance.fontSize}/7)</p>
           </div>
         </div>
 
@@ -557,28 +588,7 @@ export function ReadingSettingsSection({
   return (
     <SettingsCard title="Reading Preferences" description="Match the reader defaults to how you actually study.">
       <form onSubmit={onSubmit} className="space-y-6">
-        <div className="space-y-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Default Reader Mode</p>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { value: "verse", label: "Verse View" },
-              { value: "mushaf", label: "Mushaf View" },
-            ].map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => onModeChange(option.value as ReadingSettings["mode"])}
-                className={`rounded-2xl border p-4 text-sm font-bold transition-all ${
-                  reading.mode === option.value ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+         <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-bold">Live Reader Preview</p>
             <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
@@ -657,6 +667,27 @@ export function ReadingSettingsSection({
               ) : null}
             </div>
           )}
+        </div>
+        
+        <div className="space-y-4">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Default Reader Mode</p>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { value: "verse", label: "Verse View" },
+              { value: "mushaf", label: "Mushaf View" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onModeChange(option.value as ReadingSettings["mode"])}
+                className={`rounded-2xl border p-4 text-sm font-bold transition-all ${
+                  reading.mode === option.value ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">

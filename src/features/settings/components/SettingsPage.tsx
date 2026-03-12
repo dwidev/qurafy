@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   getSettingsErrorMessage,
   isUnauthorizedSettingsError,
+  persistSettingsLocally,
   readPersistedSettings,
   useDeleteAccountMutation,
   useLogoutAllSessionsMutation,
@@ -20,7 +21,6 @@ import {
   defaultAppearanceSettings,
   defaultNotificationSettings,
   defaultReadingSettings,
-  settingsStorageKey,
 } from "@/features/settings/constants";
 import {
   AccountSettingsSection,
@@ -198,25 +198,20 @@ function SettingsPageContent({
   const [securityError, setSecurityError] = useState<string | null>(null);
   const [passwordResetMessage, setPasswordResetMessage] = useState<string | null>(null);
   const [isSendingPasswordReset, setIsSendingPasswordReset] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setTheme(appearance.theme);
   }, [appearance.theme, setTheme]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    window.localStorage.setItem(
-      settingsStorageKey,
-      JSON.stringify({
-        notifications,
-        appearance,
-        reading,
-      }),
-    );
+    persistSettingsLocally({
+      notifications,
+      appearance,
+      reading,
+    });
   }, [appearance, notifications, reading]);
 
   const isAccountDirty = useMemo(
@@ -349,16 +344,34 @@ function SettingsPageContent({
   };
 
   const handleDeleteAccount = async () => {
-    setAccountError(null);
+    setDeleteErrorMessage(null);
 
     try {
       await deleteAccountMutation.mutateAsync(deleteConfirmation);
       authClient.$store.notify("$sessionSignal");
+      setIsDeleteDialogOpen(false);
+      setDeleteConfirmation("");
       router.replace("/login");
       router.refresh();
     } catch (caughtError) {
-      setAccountError(getSettingsErrorMessage(caughtError));
+      setDeleteErrorMessage(getSettingsErrorMessage(caughtError));
     }
+  };
+
+  const openDeleteDialog = () => {
+    setDeleteErrorMessage(null);
+    setDeleteConfirmation("");
+    setIsDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    if (deleteAccountMutation.isPending) {
+      return;
+    }
+
+    setDeleteErrorMessage(null);
+    setDeleteConfirmation("");
+    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -388,10 +401,14 @@ function SettingsPageContent({
                 isDirty={isAccountDirty}
                 errorMessage={accountError}
                 successMessage={accountSuccess}
+                onOpenDeleteDialog={openDeleteDialog}
+                onCloseDeleteDialog={closeDeleteDialog}
+                onConfirmDeleteAccount={() => void handleDeleteAccount()}
+                isDeleteDialogOpen={isDeleteDialogOpen}
                 deleteConfirmation={deleteConfirmation}
                 onDeleteConfirmationChange={setDeleteConfirmation}
-                onDeleteAccount={() => void handleDeleteAccount()}
                 isDeleting={deleteAccountMutation.isPending}
+                deleteErrorMessage={deleteErrorMessage}
               />
             ) : null}
 
@@ -421,13 +438,6 @@ function SettingsPageContent({
                   setPreferencesError(null);
                   setPreferencesSuccess(null);
                   setAppearance((prev) => ({ ...prev, theme }));
-                }}
-                onToggleMushafMode={() => {
-                  setPreferencesError(null);
-                  setPreferencesSuccess(null);
-                  const nextMode = appearance.mushafMode ? "verse" : "mushaf";
-                  setAppearance((prev) => ({ ...prev, mushafMode: !prev.mushafMode }));
-                  setReading((prev) => ({ ...prev, mode: nextMode }));
                 }}
                 onSubmit={(event) => {
                   event.preventDefault();
