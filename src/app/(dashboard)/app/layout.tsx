@@ -2,11 +2,19 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { GlobalSearch } from "@/components/shared/GlobalSearch";
 import { requireServerUserProfile } from "@/features/profile/server/profile-context";
 
-export default async function AppLayout({
-  children,
-}: {
+type AppLayoutProps = Readonly<{
   children: React.ReactNode;
-}) {
+}>;
+
+export default function AppLayout({
+  children,
+}: AppLayoutProps) {
+  return <AppLayoutContent>{children}</AppLayoutContent>;
+}
+
+async function AppLayoutContent({
+  children,
+}: AppLayoutProps) {
   await requireServerUserProfile();
 
   return (
