@@ -22,6 +22,7 @@ export const quickStats = (isNewUser: boolean): QuickStat[] => [
 ];
 
 export const readingQuranData: ReadingData = {
+  readingType: "quran",
   surah: "Surah Al-Kahf",
   verse: "Verse 10 — The Cave",
   arabic: "إِذْ أَوَى ٱلْفِتْيَةُ إِلَى ٱلْكَهْفِ فَقَالُوا۟ رَبَّنَآ ءَاتِنَا مِن لَّدُنكَ رَحْمَةً",
@@ -29,6 +30,7 @@ export const readingQuranData: ReadingData = {
 };
 
 export const khatamProgressData: ReadingData = {
+  readingType: "khatam",
   surah: "Surah Ya-Sin",
   verse: "Verse 40 — The Sun & Moon",
   arabic: "لَا ٱلشَّمْسُ يَنۢبَغِى لَهَآ أَن تُدْرِكَ ٱلْقَمَرَ وَلَا ٱلَّيْلُ سَابِقُ ٱلنَّهَارِ",

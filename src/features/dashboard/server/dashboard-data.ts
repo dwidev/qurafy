@@ -1,45 +1,13 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
-import { db } from "@/db";
-import { khatamPlanProgress, khatamPlans, memorizationGoals, memorizationProgress } from "@/db/schema";
 import { dailyVerseQuotes } from "@/features/dashboard/constants/daily-verses";
+import { getMemorizeMeData } from "@/features/memorize/server/memorize-data";
 import { getProfileStats } from "@/features/profile/server/profile-stats";
 import { getQuranReadContentData } from "@/features/read/server/quran-api";
+import { getKhatamMeData } from "@/features/tracker/server/khatam-data";
 import type { DashboardViewData } from "@/features/dashboard/types";
 
 function formatDateShort(date: Date) {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
-}
-
-function clampPositive(value: number) {
-  if (!Number.isFinite(value) || value <= 0) {
-    return 1;
-  }
-
-  return Math.floor(value);
-}
-
-function buildDailyTargets(totalVerses: number, targetDays: number) {
-  const safeVerses = clampPositive(totalVerses);
-  const safeTargetDays = clampPositive(targetDays);
-  const effectiveDays = Math.min(safeTargetDays, safeVerses);
-  const baseVersesPerDay = Math.floor(safeVerses / effectiveDays);
-  const extraVerses = safeVerses % effectiveDays;
-  let startVerse = 1;
-
-  return Array.from({ length: effectiveDays }, (_, index) => {
-    const versesCount = baseVersesPerDay + (index < extraVerses ? 1 : 0);
-    const endVerse = startVerse + versesCount - 1;
-    const target = {
-      dayNumber: index + 1,
-      startVerse,
-      endVerse,
-      versesCount,
-    };
-
-    startVerse = endVerse + 1;
-    return target;
-  });
 }
 
 function formatVerseRange(startVerse: number, endVerse: number) {
@@ -62,14 +30,6 @@ function formatReadTime(totalMinutes: number) {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return `${hours}h ${minutes}m`;
-}
-
-function daysBetween(startDate: Date, endDate: Date) {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-  return Math.floor((end.getTime() - start.getTime()) / 86_400_000);
 }
 
 function formatGregorianDate(date: Date) {
@@ -95,31 +55,32 @@ function getDailyVerse(date: Date) {
   return dailyVerseQuotes[index];
 }
 
+function formatDateFromKey(dateKey: string) {
+  return formatDateShort(new Date(`${dateKey}T00:00:00.000Z`));
+}
+
+function getPrimaryKhatamTarget(
+  activePlan: NonNullable<Awaited<ReturnType<typeof getKhatamMeData>>["activePlan"]>,
+) {
+  const todayTarget = activePlan.dailyTargets.find((target) => target.isToday) ?? null;
+  const nextUpcomingTarget =
+    activePlan.dailyTargets.find((target) => !target.isCompleted && !target.isPast && !target.isToday) ?? null;
+
+  return todayTarget && !todayTarget.isCompleted
+    ? todayTarget
+    : nextUpcomingTarget ?? todayTarget ?? activePlan.dailyTargets.at(-1) ?? null;
+}
+
 async function getDashboardViewDataUncached(userId: string): Promise<DashboardViewData> {
   const now = new Date();
-  const [stats, activeGoal, activePlan] = await Promise.all([
+  const [stats, memorizeData, khatamData] = await Promise.all([
     getProfileStats(userId),
-    db.query.memorizationGoals.findFirst({
-      where: and(
-        eq(memorizationGoals.userId, userId),
-        eq(memorizationGoals.status, "active"),
-        isNull(memorizationGoals.deletedAt),
-      ),
-      orderBy: [desc(memorizationGoals.id)],
-    }),
-    db.query.khatamPlans.findFirst({
-      where: and(
-        eq(khatamPlans.userId, userId),
-        eq(khatamPlans.isCompleted, false),
-        isNull(khatamPlans.deletedAt),
-      ),
-      orderBy: [desc(khatamPlans.targetDate)],
-    }),
+    getMemorizeMeData(userId),
+    getKhatamMeData(userId),
   ]);
-  const latestMemorizationGoal = activeGoal ?? null;
-  const latestKhatamPlan = activePlan ?? null;
-  
-  const isNewUser = !latestMemorizationGoal && !latestKhatamPlan;
+  const activeGoal = memorizeData.activeGoal;
+  const activePlan = khatamData.activePlan;
+  const isNewUser = !activeGoal && !activePlan;
 
   const totalMinutesRead = stats.totalVersesRead * 2;
   const quickStats = {
@@ -130,93 +91,72 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
   };
 
   let memorizationCard: DashboardViewData["memorizationCard"] = null;
-  const readingQuranData: DashboardViewData["readingQuranData"] = null;
-  let khatamProgressData: DashboardViewData["khatamProgressData"] = null;
+  let memorizationReadingData: DashboardViewData["memorizationReadingData"] = null;
 
-  if (latestMemorizationGoal) {
-    const latestGoalProgress = await db.query.memorizationProgress.findFirst({
-      where: eq(memorizationProgress.goalId, latestMemorizationGoal.id),
-    });
-
-    const totalGoalVerses = Math.max(latestMemorizationGoal.totalVerses, 1);
-    const completedGoalVerses = Math.min(totalGoalVerses, latestGoalProgress?.completedVerses ?? 0);
-    const progressPct = Math.min(100, Math.round((completedGoalVerses / totalGoalVerses) * 100));
-    const isCompletedGoal = latestMemorizationGoal.status === "completed";
-    const dailyTargets = buildDailyTargets(totalGoalVerses, latestMemorizationGoal.targetDays);
-    const completedDays = Math.max(0, Math.min(latestGoalProgress?.completedDays ?? 0, dailyTargets.length));
-    const nextTarget = dailyTargets[completedDays] ?? null;
-    const lastTarget = dailyTargets.at(-1) ?? null;
-    const displayTarget = nextTarget ?? lastTarget;
-    const memorizationContent = await getQuranReadContentData(`surah-${latestMemorizationGoal.surahNumber}`).catch(() => null);
-    const memorizationArabic = displayTarget && memorizationContent
-      ? buildArabicExcerpt(
-        memorizationContent.verses.filter(
-          (verse) => verse.n >= displayTarget.startVerse && verse.n <= displayTarget.endVerse,
-        ),
-      )
-      : "";
+  if (activeGoal) {
+    const todayTarget = activeGoal.todayTarget;
+    const memorizationArabic = todayTarget ? buildArabicExcerpt(todayTarget.verses) : "";
 
     memorizationCard = {
-      title: latestMemorizationGoal.title,
-      subtitle: `Surah ${latestMemorizationGoal.surahNumber}`,
-      progressPct,
-      targetLabel: isCompletedGoal
-        ? `Completed in ${latestMemorizationGoal.targetDays} days`
-        : `Goal: ${latestMemorizationGoal.targetDays} days`,
-      statusLabel: `${completedGoalVerses}/${totalGoalVerses} verses`,
-      stateLabel: isCompletedGoal ? "Completed Goal" : "Active Target",
+      title: activeGoal.title,
+      subtitle: `Surah ${activeGoal.surahNumber}`,
+      progressPct: activeGoal.progressPct,
+      targetLabel: `Goal: ${activeGoal.targetDays} days`,
+      statusLabel: `${activeGoal.completedVerses}/${activeGoal.totalVerses} verses`,
+      stateLabel: "Active Target",
     };
 
-    khatamProgressData = {
-      surah: latestMemorizationGoal.title,
-      verse: displayTarget
-        ? isCompletedGoal
-          ? `Surah ${latestMemorizationGoal.surahNumber} • Completed ${formatVerseRange(displayTarget.startVerse, displayTarget.endVerse)}`
-          : `Surah ${latestMemorizationGoal.surahNumber} • Next ${formatVerseRange(displayTarget.startVerse, displayTarget.endVerse)}`
-        : `Surah ${latestMemorizationGoal.surahNumber} • Active memorization`,
-      arabic: memorizationArabic || "وَرَتِّلِ ٱلْقُرْءَانَ تَرْتِيلًا",
-      link: "/app/memorize",
+    memorizationReadingData = {
+      readingType: "memorization",
+      surah: activeGoal.title,
+      verse: todayTarget
+        ? `Surah ${activeGoal.surahNumber} • Day ${todayTarget.dayNumber} • ${formatVerseRange(todayTarget.startVerse, todayTarget.endVerse)}`
+        : `Surah ${activeGoal.surahNumber} • Today's target completed`,
+      arabic: memorizationArabic || activeGoal.surahArabicName || "وَرَتِّلِ ٱلْقُرْءَانَ تَرْتِيلًا",
+      link: todayTarget ? "/app/memorize/session" : "/app/memorize",
     };
   }
 
   let khatamCard: DashboardViewData["khatamCard"] = null;
+  let khatamReadingData: DashboardViewData["khatamReadingData"] = null;
 
   if (activePlan) {
-    const totalDays = Math.max(1, daysBetween(activePlan.startDate, activePlan.targetDate) + 1);
-    const planProgress = await db.query.khatamPlanProgress.findFirst({
-      where: eq(khatamPlanProgress.planId, activePlan.id),
-    });
-    const completedDays = Math.max(0, Math.min(totalDays, planProgress?.completedDays ?? 0));
-    const progressPct = Math.min(100, Math.max(0, Math.round((completedDays / totalDays) * 100)));
-    const khatamContent = await getQuranReadContentData(`juz-${activePlan.startJuz}`).catch(() => null);
+    const completedDays = activePlan.completedDays.length;
+    const progressPct = Math.min(100, Math.max(0, Math.round((completedDays / activePlan.totalDays) * 100)));
+    const primaryTarget = getPrimaryKhatamTarget(activePlan);
+    const khatamContent = primaryTarget ? await getQuranReadContentData(primaryTarget.readId).catch(() => null) : null;
     const khatamArabic = khatamContent ? buildArabicExcerpt(khatamContent.verses) : "";
 
     khatamCard = {
       title: activePlan.name,
       subtitle: `Start Juz ${activePlan.startJuz}`,
       progressPct,
-      targetLabel: `Target: ${totalDays} days`,
-      statusLabel: `${completedDays} / ${totalDays} days done`,
+      targetLabel: `Target: ${activePlan.totalDays} days`,
+      statusLabel: `${completedDays} / ${activePlan.totalDays} days done`,
     };
 
-    khatamProgressData = {
+    khatamReadingData = {
+      readingType: "khatam",
       surah: activePlan.name,
-      verse: `Start Juz ${activePlan.startJuz} • Due ${formatDateShort(activePlan.targetDate)}`,
+      verse: primaryTarget
+        ? `${primaryTarget.rangeLabel} • ${primaryTarget.isToday ? "Today's target" : formatDateFromKey(primaryTarget.date)}`
+        : `Start Juz ${activePlan.startJuz} • Due ${formatDateFromKey(activePlan.targetDate)}`,
       arabic: khatamArabic || "فَٱقْرَءُوا۟ مَا تَيَسَّرَ مِنَ ٱلْقُرْءَانِ",
-      link: "/app/tracker",
+      link: primaryTarget
+        ? `/app/read/${primaryTarget.readId}?khatam=true&planId=${activePlan.id}&scheduledDate=${primaryTarget.date}&returnTo=/app/tracker`
+        : "/app/tracker",
     };
   }
 
   const recentItems = [
-    ...(latestMemorizationGoal
+    ...(activeGoal
       ? [
         {
-          surah: latestMemorizationGoal.title,
-          verse:
-            latestMemorizationGoal.status === "completed"
-              ? `Surah ${latestMemorizationGoal.surahNumber} memorization completed`
-              : `Surah ${latestMemorizationGoal.surahNumber} memorization active`,
-          time: latestMemorizationGoal.status === "completed" ? "Completed goal" : "Active goal",
+          surah: activeGoal.title,
+          verse: activeGoal.todayTarget
+            ? `Day ${activeGoal.todayTarget.dayNumber} memorization ready`
+            : "Today's memorization completed",
+          time: "Memorization",
         },
       ]
       : []),
@@ -225,7 +165,7 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
         {
           surah: activePlan.name,
           verse: `Khatam from Juz ${activePlan.startJuz}`,
-          time: `Target ${formatDateShort(activePlan.targetDate)}`,
+          time: `Target ${formatDateFromKey(activePlan.targetDate)}`,
         },
       ]
       : []),
@@ -251,8 +191,8 @@ async function getDashboardViewDataUncached(userId: string): Promise<DashboardVi
     dateInfo,
     dailyVerse,
     quickStats,
-    readingQuranData,
-    khatamProgressData,
+    memorizationReadingData,
+    khatamReadingData,
     memorizationCard,
     khatamCard,
     recentItems,

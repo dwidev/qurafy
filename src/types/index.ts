@@ -20,7 +20,10 @@ export interface QuickStat {
     bg: string;
 }
 
+export type ReadingType = "quran" | "memorization" | "khatam";
+
 export interface ReadingData {
+    readingType: ReadingType;
     surah: string;
     verse: string;
     arabic: string;

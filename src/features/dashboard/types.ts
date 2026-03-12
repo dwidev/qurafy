@@ -32,8 +32,8 @@ export type DashboardViewData = {
   dateInfo: DashboardDateInfo;
   dailyVerse: DashboardVerseQuote;
   quickStats: DashboardQuickStats;
-  readingQuranData: ReadingData | null;
-  khatamProgressData: ReadingData | null;
+  memorizationReadingData: ReadingData | null;
+  khatamReadingData: ReadingData | null;
   memorizationCard: DashboardProgressCard | null;
   khatamCard: DashboardProgressCard | null;
   recentItems: RecentActivityItem[];
