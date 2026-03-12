@@ -7,6 +7,7 @@ import {
   Calendar,
   ChevronRight,
   Flame,
+  Heart,
   Mail,
   MapPin,
   Medal,
@@ -138,14 +139,31 @@ export function ProfilePageSkeletonView() {
   );
 }
 
-export function ProfileHeroSection({ user }: { user: ProfileUserView }) {
+export function ProfileHeroSection({
+  user,
+  isRefreshing = false,
+}: {
+  user: ProfileUserView;
+  isRefreshing?: boolean;
+}) {
   return (
     <div className="relative overflow-hidden rounded-[2.5rem] border border-border bg-card p-6 shadow-sm md:p-10">
       <div className="absolute right-0 top-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-primary/5 blur-3xl opacity-50 transition-opacity group-hover:opacity-100" />
 
+      {isRefreshing ? (
+        <div
+          className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/95 px-3 py-1.5 text-[11px] font-bold text-primary shadow-sm backdrop-blur"
+          aria-live="polite"
+          role="status"
+        >
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+          Refreshing profile...
+        </div>
+      ) : null}
+
       <div className="relative z-10 flex flex-col items-center gap-8 md:flex-row md:items-start">
         <div className="relative">
-          <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-4xl border-4 border-background bg-gradient-to-br from-primary/20 to-primary/5 shadow-xl md:h-40 md:w-40">
+          <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-4xl border-4 border-background bg-linear-to-br from-primary/20 to-primary/5 shadow-xl md:h-40 md:w-40">
             <span className="text-5xl font-black text-primary/40 md:text-6xl">{user.name.charAt(0).toUpperCase()}</span>
           </div>
           <div className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-xl border-4 border-background bg-primary text-white shadow-lg">
@@ -191,6 +209,10 @@ export function ProfileHeroSection({ user }: { user: ProfileUserView }) {
             >
               Back to Dashboard
             </Link>
+          </div>
+
+          <div className="w-full pt-2">
+            <ProfileProCard />
           </div>
         </div>
       </div>
@@ -297,45 +319,40 @@ export function ProfileQuickActions() {
 
 export function ProfileProCard() {
   return (
-    <div className="group/pro relative overflow-hidden rounded-4xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8 shadow-xl shadow-primary/5">
-      <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/10 blur-2xl transition-transform duration-700 group-hover/pro:scale-150" />
+    <div className="group/pro relative overflow-hidden rounded-[1.75rem] border border-primary/15 bg-gradient-to-r from-primary/10 via-background to-amber-500/5 p-4 shadow-lg shadow-primary/5">
+      <div className="absolute -right-12 -top-12 h-24 w-24 rounded-full bg-primary/10 blur-2xl transition-transform duration-700 group-hover/pro:scale-150" />
 
-      <div className="relative z-10 space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-transform group-hover/pro:rotate-12">
-            <Sparkles className="h-7 w-7" />
+      <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+            <Sparkles className="h-5 w-5" />
           </div>
-          <div>
-            <h3 className="text-xl font-black">Qurafy Pro</h3>
-            <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-primary/60">Premium Features</p>
-          </div>
-        </div>
-
-        <p className="text-sm font-medium leading-relaxed text-muted-foreground">
-          Donate any amount as sadaqah to unlock Pro features permanently.
-        </p>
-
-        <div className="space-y-3">
-          {["Donate Any Amount", "Permanent Pro Access", "Supporting Our Mission"].map((feature) => (
-            <div key={feature} className="flex items-center gap-2.5 text-xs font-bold text-foreground/80">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-              {feature}
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">Get Pro</p>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-black text-primary">Monthly or Yearly</span>
             </div>
-          ))}
+            <h3 className="text-base font-black">Unlock Qurafy Pro</h3>
+            <p className="max-w-xl text-xs font-medium leading-relaxed text-muted-foreground">
+              Subscribe as a supporter or send a donation to support Qurafy and start your Pro access flow.
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-3 pt-2">
-          <Link
-            href="/sadaqah"
-            className="inline-flex h-12 w-full items-center justify-center rounded-full border border-primary/20 bg-primary/5 text-sm font-black text-primary shadow-sm transition-all hover:bg-primary/10"
-          >
-            Donate to Unlock Pro
-          </Link>
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Link
             href="/donate"
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-amber-500 text-sm font-black text-white shadow-lg shadow-amber-500/20 transition-all hover:-translate-y-0.5 hover:bg-amber-600"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-xs font-black text-primary-foreground shadow-lg shadow-primary/15 transition-all hover:-translate-y-0.5 hover:bg-primary/90 sm:w-auto"
           >
-            Lifetime Supporter ($49)
+            <Sparkles className="h-4 w-4" />
+            Subscribe
+          </Link>
+          <Link
+            href="/sadaqah"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 text-xs font-black text-emerald-700 transition-all hover:bg-emerald-600 hover:text-white sm:w-auto"
+          >
+            <Heart className="h-4 w-4" />
+            Donate
           </Link>
         </div>
       </div>

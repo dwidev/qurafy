@@ -51,6 +51,8 @@ export function useProfileMeQuery(options?: { initialData?: ProfileMeData }) {
     queryFn: fetchProfileMe,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
     retry: (failureCount, error) => {
       if (error instanceof ProfileApiError && (error.status === 401 || error.status === 403)) {
         return false;

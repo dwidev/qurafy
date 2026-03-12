@@ -8,7 +8,6 @@ import {
   ProfileHeroSection,
   ProfilePageErrorState,
   ProfilePageSkeletonView,
-  ProfileProCard,
   ProfileQuickActions,
   ProfileStatsGrid,
   profileStatIcons,
@@ -16,7 +15,7 @@ import {
 
 export function ProfilePageClient() {
   const router = useRouter();
-  const { data, isLoading, isError, error, refetch } = useProfileMeQuery();
+  const { data, isLoading, isError, error, refetch, isRefetching } = useProfileMeQuery();
 
   useEffect(() => {
     if (data && !data.profile) {
@@ -122,7 +121,7 @@ export function ProfilePageClient() {
 
   return (
     <div className="mx-auto flex-1 max-w-5xl space-y-8 p-4 pb-24 pt-6 md:p-8">
-      <ProfileHeroSection user={user} />
+      <ProfileHeroSection user={user} isRefreshing={isRefetching} />
       <ProfileStatsGrid stats={stats} />
 
       <div className="grid gap-8 pt-4 md:grid-cols-3">
@@ -131,7 +130,6 @@ export function ProfilePageClient() {
         </div>
         <div className="space-y-6">
           <ProfileQuickActions />
-          <ProfileProCard />
         </div>
       </div>
     </div>
