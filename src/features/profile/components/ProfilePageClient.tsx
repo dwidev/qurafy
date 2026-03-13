@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getProfileErrorMessage, isUnauthorizedProfileError, useProfileMeQuery } from "@/features/profile/api/client";
+import { useSettingsPageQuery } from "@/features/settings/api/client";
 import {
   ProfileAchievementsSection,
   ProfileHeroSection,
@@ -16,6 +17,7 @@ import {
 export function ProfilePageClient() {
   const router = useRouter();
   const { data, isLoading, isError, error, refetch, isRefetching } = useProfileMeQuery();
+  const { data: settingsData } = useSettingsPageQuery();
 
   useEffect(() => {
     if (data && !data.profile) {
@@ -51,6 +53,8 @@ export function ProfilePageClient() {
     joinedDate,
     rank: data.stats.rank,
   };
+  const subscription = settingsData?.subscription;
+  const isPro = subscription?.planType === "pro" && subscription.status === "active";
 
   const stats = [
     {
@@ -121,7 +125,12 @@ export function ProfilePageClient() {
 
   return (
     <div className="mx-auto flex-1 max-w-5xl space-y-8 p-4 pb-24 pt-6 md:p-8">
-      <ProfileHeroSection user={user} isRefreshing={isRefetching} />
+      <ProfileHeroSection
+        user={user}
+        isRefreshing={isRefetching}
+        isPro={isPro}
+        billingCycle={subscription?.billingCycle ?? null}
+      />
       <ProfileStatsGrid stats={stats} />
 
       <div className="grid gap-8 pt-4 md:grid-cols-3">

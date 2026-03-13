@@ -21,6 +21,7 @@ import {
   User,
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { ProFlag } from "@/components/shared/ProFlag";
 import type {
   AppearanceSettings,
   NotificationSettings,
@@ -936,6 +937,18 @@ export function SubscriptionSettingsSection({
   const isPendingRequest = subscription.status === "pending";
   const billingCycleLabel = formatBillingCycleLabel(subscription.billingCycle);
   const nextRenewalLabel = subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : null;
+  const amountLabel =
+    subscription.amount !== null
+      ? formatCurrency(subscription.amount)
+      : isPro
+        ? "Included"
+        : isPendingRequest
+          ? "Awaiting transfer"
+          : "No plan charge";
+  const statusLabel =
+    subscription.status === "inactive"
+      ? "Not Active"
+      : `${subscription.status[0].toUpperCase()}${subscription.status.slice(1)}`;
   const freeBenefits = [
     "Read the Quran with translation and transliteration controls.",
     "Track your khatam progress and keep your daily reading habit visible.",
@@ -955,79 +968,94 @@ export function SubscriptionSettingsSection({
         title="Current Plan"
         description="Your subscription status is based on the active supporter plan attached to this account."
       >
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-border bg-muted/10 p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Plan</p>
-            <div className="mt-2 flex items-center gap-2">
-              <p className="text-2xl font-black">{isPro ? "Pro" : "Free"}</p>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${isPro ? "bg-amber-500/15 text-amber-700" : "bg-secondary text-muted-foreground"
-                  }`}
-              >
-                {isPro ? "Supporter" : "Starter"}
-              </span>
-              {isPro ? (
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${subscription.billingCycle === "yearly"
-                      ? "bg-amber-500 text-white"
-                      : "bg-rose-500 text-white"
-                    }`}
-                >
-                  {billingCycleLabel}
-                </span>
-              ) : null}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-border bg-muted/10 p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Status</p>
-            <p className="mt-2 text-2xl font-black">
-              {subscription.status === "inactive"
-                ? "Not Active"
-                : `${subscription.status[0].toUpperCase()}${subscription.status.slice(1)}`}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-border bg-muted/10 p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              {isPro ? "Renews" : "Billing Cycle"}
-            </p>
-            <p className="mt-2 text-2xl font-black">{isPro ? nextRenewalLabel ?? "N/A" : billingCycleLabel}</p>
-          </div>
-        </div>
-
         <div
-          className={`rounded-3xl border px-5 py-4 ${isPro
-              ? "border-amber-500/20 bg-amber-500/5"
-              : "border-emerald-500/20 bg-emerald-500/5"
-            }`}
+          className={`overflow-hidden rounded-[2rem] border ${
+            isPro
+              ? "border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-card to-card"
+              : isPendingRequest
+                ? "border-amber-500/20 bg-gradient-to-br from-amber-500/8 via-card to-card"
+                : "border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-card to-card"
+          }`}
         >
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-bold">
-                {isPro
-                  ? "Your account currently has active Pro supporter access."
-                  : isPendingRequest
-                    ? "Your supporter plan request is waiting for bank transfer approval."
-                  : "Your account is on the Free plan and keeps core Quran features unlocked."}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {isPro
-                  ? `Your ${billingCycleLabel.toLowerCase()} supporter plan is active${nextRenewalLabel ? ` through ${nextRenewalLabel}` : ""}.`
-                  : isPendingRequest
-                    ? "Complete the transfer and wait for admin confirmation. Pro access starts only after approval."
-                  : "Free users can still read, track progress, memorize, and personalize their experience without a subscription."}
-              </p>
+          <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {isPro ? <ProFlag billingCycle={subscription.billingCycle} /> : null}
+                {!isPro ? (
+                  <span
+                    className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${
+                      isPendingRequest ? "bg-amber-500/10 text-amber-700" : "bg-secondary text-muted-foreground"
+                    }`}
+                  >
+                    {isPendingRequest ? "Pending Activation" : "Free Plan"}
+                  </span>
+                ) : null}
+                <span
+                  className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${
+                    isPro
+                      ? "bg-foreground text-background"
+                      : isPendingRequest
+                        ? "bg-amber-500/10 text-amber-700"
+                        : "bg-secondary text-muted-foreground"
+                  }`}
+                >
+                  {statusLabel}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-3xl font-black tracking-tight">
+                  {isPro
+                    ? "Qurafy Pro is active on this account"
+                    : isPendingRequest
+                      ? "Your Pro request is waiting for approval"
+                      : "You are currently on the Free plan"}
+                </h3>
+                <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                  {isPro
+                    ? `Your ${billingCycleLabel.toLowerCase()} supporter plan is active${nextRenewalLabel ? ` through ${nextRenewalLabel}` : ""}. You keep the full free Quran experience and now also carry active Pro supporter access.`
+                    : isPendingRequest
+                      ? "Complete the bank transfer and wait for admin confirmation. Your Pro benefits turn on only after the transaction is accepted."
+                      : "Free already includes the Quran reader, memorization, khatam progress, and account personalization. Pro adds supporter identity and deeper upgrades without locking the essentials."}
+                </p>
+              </div>
             </div>
+
             <Link
               href={isPendingRequest && subscription.transactionId ? `/transfer?tx=${subscription.transactionId}` : "/donate"}
-              className={`inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold transition-all ${isPro
-                  ? "border border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
+              className={`inline-flex h-11 shrink-0 items-center justify-center rounded-full px-5 text-sm font-bold transition-all ${
+                isPro
+                  ? "border border-amber-500/25 text-amber-700 hover:bg-amber-500/10"
                   : isPendingRequest
-                    ? "border border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
+                    ? "border border-amber-500/25 text-amber-700 hover:bg-amber-500/10"
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
-                }`}
+              }`}
             >
               {isPro ? "Manage Supporter Plan" : isPendingRequest ? "View Transfer Info" : "Upgrade to Pro"}
             </Link>
+          </div>
+
+          <div className="grid gap-3 border-t border-border/70 bg-background/55 p-4 md:grid-cols-4">
+            <div className="min-w-0 rounded-2xl border border-border bg-card/80 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Plan</p>
+              <p className="mt-2 break-words text-lg font-black leading-tight md:text-xl">{isPro ? "Pro" : "Free"}</p>
+            </div>
+            <div className="min-w-0 rounded-2xl border border-border bg-card/80 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Billing</p>
+              <p className="mt-2 break-words text-lg font-black leading-tight md:text-xl">{billingCycleLabel}</p>
+            </div>
+            <div className="min-w-0 rounded-2xl border border-border bg-card/80 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                {isPro ? "Renews" : isPendingRequest ? "Activation" : "Supporter Cycle"}
+              </p>
+              <p className="mt-2 break-words text-lg font-black leading-tight md:text-xl">
+                {isPro ? nextRenewalLabel ?? "N/A" : isPendingRequest ? "Waiting" : "Optional"}
+              </p>
+            </div>
+            <div className="min-w-0 rounded-2xl border border-border bg-card/80 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Amount</p>
+              <p className="mt-2 break-words text-lg font-black leading-tight md:text-xl">{amountLabel}</p>
+            </div>
           </div>
         </div>
       </SettingsCard>
