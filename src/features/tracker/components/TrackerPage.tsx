@@ -20,10 +20,11 @@ import {
   TrackerPlanView,
   WelcomeState,
 } from "@/features/tracker/components/TrackerPageSections";
+import type { KhatamMeData } from "@/features/tracker/types";
 
-export default function TrackerPage() {
+export default function TrackerPage({ initialData }: { initialData?: KhatamMeData }) {
   const router = useRouter();
-  const khatamQuery = useKhatamMeQuery();
+  const khatamQuery = useKhatamMeQuery({ initialData });
   const createPlanMutation = useCreateKhatamPlanMutation();
   const updatePlanMutation = useUpdateKhatamPlanMutation();
   const deletePlanMutation = useDeleteKhatamPlanMutation();

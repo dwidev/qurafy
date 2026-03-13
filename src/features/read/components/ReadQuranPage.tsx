@@ -18,10 +18,11 @@ import {
   ReadToolbar,
   type ReadListTab,
 } from "@/features/read/components/ReadQuranPageSections";
+import type { ReadListData } from "@/features/read/types";
 
-export default function ReadQuranPage() {
+export default function ReadQuranPage({ initialData }: { initialData?: ReadListData }) {
   const router = useRouter();
-  const { data, isLoading, isError, error, refetch } = useReadListQuery();
+  const { data, isLoading, isError, error, refetch } = useReadListQuery({ initialData });
   const [tab, setTab] = useState<ReadListTab>("surah");
   const [searchQuery, setSearchQuery] = useState("");
 

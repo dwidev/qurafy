@@ -132,12 +132,13 @@ export const trackerQueryKeys = {
   me: ["khatam", "me"] as const,
 };
 
-export function useKhatamMeQuery() {
+export function useKhatamMeQuery(options?: { initialData?: KhatamMeData }) {
   return useQuery({
     queryKey: trackerQueryKeys.me,
     queryFn: fetchKhatamMe,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    initialData: options?.initialData,
     retry: (failureCount, error) => {
       if (error instanceof KhatamApiError && (error.status === 401 || error.status === 403)) {
         return false;

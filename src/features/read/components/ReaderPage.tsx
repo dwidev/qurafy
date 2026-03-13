@@ -18,10 +18,11 @@ import {
   type ReaderSettings,
 } from "@/features/read/components/ReaderPageSections";
 import { settingsStorageKey } from "@/features/settings/constants";
+import type { ReadContentData } from "@/features/read/types";
 
 const arabicScale = ["text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-6xl", "text-7xl", "text-8xl"];
 
-function ReaderContent() {
+function ReaderContent({ initialData }: { initialData?: ReadContentData }) {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -31,7 +32,7 @@ function ReaderContent() {
   const khatamPlanId = searchParams?.get("planId") ?? "";
   const scheduledDate = searchParams?.get("scheduledDate") ?? "";
   const returnTo = searchParams?.get("returnTo") ?? "/app/tracker";
-  const { data, isLoading, isError, error, refetch } = useReadContentQuery(idStr);
+  const { data, isLoading, isError, error, refetch } = useReadContentQuery(idStr, { initialData });
   const toggleKhatamDayMutation = useToggleKhatamDayMutation();
 
   const [showSettings, setShowSettings] = useState(false);
@@ -179,10 +180,10 @@ function ReaderContent() {
   );
 }
 
-export default function SurahReaderPage() {
+export default function SurahReaderPage({ initialData }: { initialData?: ReadContentData }) {
   return (
     <Suspense fallback={<ReaderPageSkeleton />}>
-      <ReaderContent />
+      <ReaderContent initialData={initialData} />
     </Suspense>
   );
 }

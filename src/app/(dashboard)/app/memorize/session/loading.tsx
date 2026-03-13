@@ -1,5 +1,5 @@
-import { MemorizePageSkeleton } from "@/features/memorize/components/MemorizePageSkeleton";
+import { MemorizeSessionPageSkeleton } from "@/features/memorize/components/MemorizeSessionPageSkeleton";
 
 export default function MemorizeSessionLoading() {
-  return <MemorizePageSkeleton />;
+  return <MemorizeSessionPageSkeleton />;
 }

@@ -71,7 +71,7 @@ function getPrimaryKhatamTarget(
     : nextUpcomingTarget ?? todayTarget ?? activePlan.dailyTargets.at(-1) ?? null;
 }
 
-async function getDashboardViewDataUncached(userId: string): Promise<DashboardViewData> {
+export async function getDashboardViewDataUncached(userId: string): Promise<DashboardViewData> {
   const now = new Date();
   const [stats, memorizeData, khatamData] = await Promise.all([
     getProfileStats(userId),

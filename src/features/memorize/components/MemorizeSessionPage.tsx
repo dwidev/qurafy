@@ -8,7 +8,7 @@ import {
   useCompleteMemorizeSessionMutation,
   useMemorizeMeQuery,
 } from "@/features/memorize/api/client";
-import { MemorizePageSkeleton } from "@/features/memorize/components/MemorizePageSkeleton";
+import { MemorizeSessionPageSkeleton } from "@/features/memorize/components/MemorizeSessionPageSkeleton";
 import {
   getLocalDateKey,
   MEMORIZE_SESSION_DONE_STORAGE_KEY,
@@ -118,7 +118,7 @@ export default function MemorizeSessionPage() {
   }
 
   if (memorizeQuery.isLoading || !memorizeQuery.data) {
-    return <MemorizePageSkeleton />;
+    return <MemorizeSessionPageSkeleton />;
   }
 
   if (!activeGoal) {

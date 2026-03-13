@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { authClient } from "@/lib/auth-client";
 import { LoadingPopup } from "@/components/ui/LoadingPopup";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   getSettingsErrorMessage,
   isUnauthorizedSettingsError,
@@ -34,6 +33,7 @@ import {
   SettingsSidebar,
   SubscriptionSettingsSection,
 } from "@/features/settings/components/SettingsPageSections";
+import { SettingsPageSkeleton } from "@/features/settings/components/SettingsPageSkeleton";
 import type {
   AppearanceSettings,
   NotificationSettings,
@@ -76,60 +76,9 @@ function getQurafyCacheSize() {
   return bytes * 2;
 }
 
-function SettingsPageSkeleton() {
-  return (
-    <div className="mx-auto flex-1 max-w-5xl space-y-8 p-4 pb-32 pt-6 md:p-8">
-      <div className="space-y-3">
-        <Skeleton className="h-10 w-40 rounded-xl" />
-        <Skeleton className="h-4 w-72" />
-      </div>
-
-      <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-        <div className="space-y-2">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <Skeleton key={index} className="h-12 w-full rounded-2xl" />
-          ))}
-        </div>
-
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Skeleton className="h-7 w-44" />
-                <Skeleton className="h-4 w-80 max-w-full" />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Skeleton className="h-24 w-full rounded-2xl" />
-                <Skeleton className="h-24 w-full rounded-2xl" />
-                <Skeleton className="h-24 w-full rounded-2xl" />
-                <Skeleton className="h-24 w-full rounded-2xl" />
-              </div>
-
-              <div className="flex items-center justify-between gap-4">
-                <Skeleton className="h-4 w-52" />
-                <Skeleton className="h-11 w-32 rounded-full" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-40" />
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} className="h-16 w-full rounded-2xl" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function SettingsPage() {
+export default function SettingsPage({ initialData }: { initialData?: SettingsPageData }) {
   const router = useRouter();
-  const { data, isLoading, isError, error, refetch } = useSettingsPageQuery();
+  const { data, isLoading, isError, error, refetch } = useSettingsPageQuery({ initialData });
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
   useEffect(() => {

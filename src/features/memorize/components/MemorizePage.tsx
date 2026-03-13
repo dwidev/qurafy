@@ -37,12 +37,13 @@ import {
   type MemorizeGoalForm,
   type MemorizeSessionDoneMarker,
 } from "@/features/memorize/components/MemorizePageSections";
+import type { MemorizeMeData } from "@/features/memorize/types";
 
 /* ─── Main page ──────────────────────────────────────────────────────── */
-export default function MemorizePage() {
+export default function MemorizePage({ initialData }: { initialData?: MemorizeMeData }) {
   /* ── State ── */
   const router = useRouter();
-  const memorizeQuery = useMemorizeMeQuery();
+  const memorizeQuery = useMemorizeMeQuery({ initialData });
   const createGoalMutation = useCreateMemorizeGoalMutation();
   const deleteGoalMutation = useDeleteMemorizeGoalMutation();
   const updateGoalMutation = useUpdateMemorizeGoalMutation();

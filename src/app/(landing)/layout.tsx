@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { LandingCursor } from "@/components/shared/LandingCursor";
 import ScrollAnimator from "@/components/shared/ScrollAnimator";
 import { StarryBackground } from "@/components/shared/StarryBackground";
 
@@ -9,7 +10,8 @@ export default function MarketingLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex flex-col min-h-screen bg-background text-foreground font-sans overflow-x-hidden">
+        <div className="landing-cursor-area flex min-h-screen flex-col overflow-x-hidden bg-background font-sans text-foreground">
+            <LandingCursor />
             <StarryBackground />
             <ScrollAnimator />
             <Navbar />

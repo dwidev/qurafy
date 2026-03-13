@@ -171,11 +171,12 @@ export function readPersistedSettings() {
   }
 }
 
-export function useSettingsPageQuery() {
+export function useSettingsPageQuery(options?: { initialData?: SettingsPageData }) {
   return useQuery({
     queryKey: settingsQueryKeys.me,
     queryFn: fetchSettingsMe,
     staleTime: 60_000,
+    initialData: options?.initialData,
   });
 }
 

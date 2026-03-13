@@ -16,6 +16,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
+import { TrackerPageSkeleton } from "@/features/tracker/components/TrackerPageSkeleton";
 import type { KhatamActivePlan } from "@/features/tracker/types";
 
 export type KhatamPlan = KhatamActivePlan;
@@ -139,16 +140,7 @@ export function TrackerErrorState({
 }
 
 export function TrackerLoadingState() {
-  return (
-    <div className="mx-auto max-w-5xl flex-1 p-4 pb-24 pt-6 md:p-8">
-      <div className="animate-pulse space-y-5 rounded-3xl border border-border bg-card p-6 md:p-8">
-        <div className="h-8 w-56 rounded-lg bg-secondary" />
-        <div className="h-4 w-80 rounded bg-secondary" />
-        <div className="h-32 w-full rounded-2xl bg-secondary" />
-        <div className="h-32 w-full rounded-2xl bg-secondary" />
-      </div>
-    </div>
-  );
+  return <TrackerPageSkeleton />;
 }
 
 export function TrackerPageHeader({ plan, onOpenEdit }: TrackerPageHeaderProps) {

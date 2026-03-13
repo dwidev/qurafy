@@ -12,10 +12,11 @@ import {
   DashboardPageContent,
   DashboardPageErrorState,
 } from "@/features/dashboard/components/DashboardPageSections";
+import type { DashboardMeData } from "@/features/dashboard/types";
 
-export function DashboardPage() {
+export function DashboardPage({ initialData }: { initialData?: DashboardMeData }) {
   const router = useRouter();
-  const { data, isLoading, isError, error, refetch } = useDashboardMeQuery();
+  const { data, isLoading, isError, error, refetch } = useDashboardMeQuery({ initialData });
 
   useEffect(() => {
     if (error && isUnauthorizedDashboardError(error)) {

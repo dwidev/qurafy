@@ -13,11 +13,19 @@ import {
   ProfileStatsGrid,
   profileStatIcons,
 } from "@/features/profile/components/ProfilePageSections";
+import type { ProfileMeData } from "@/features/profile/types";
+import type { SettingsPageData } from "@/features/settings/types";
 
-export function ProfilePageClient() {
+export function ProfilePageClient({
+  initialData,
+  initialSettingsData,
+}: {
+  initialData?: ProfileMeData;
+  initialSettingsData?: SettingsPageData;
+}) {
   const router = useRouter();
-  const { data, isLoading, isError, error, refetch, isRefetching } = useProfileMeQuery();
-  const { data: settingsData } = useSettingsPageQuery();
+  const { data, isLoading, isError, error, refetch, isRefetching } = useProfileMeQuery({ initialData });
+  const { data: settingsData } = useSettingsPageQuery({ initialData: initialSettingsData });
 
   useEffect(() => {
     if (data && !data.profile) {

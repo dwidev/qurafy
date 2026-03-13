@@ -40,12 +40,13 @@ export const readQueryKeys = {
   content: (id: string) => ["read", "content", id] as const,
 };
 
-export function useReadListQuery() {
+export function useReadListQuery(options?: { initialData?: ReadListData }) {
   return useQuery({
     queryKey: readQueryKeys.list,
     queryFn: fetchReadList,
     staleTime: 10 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
+    initialData: options?.initialData,
     retry: (failureCount, error) => {
       if (error instanceof ReadApiError && (error.status === 401 || error.status === 403)) {
         return false;
@@ -56,13 +57,14 @@ export function useReadListQuery() {
   });
 }
 
-export function useReadContentQuery(id: string) {
+export function useReadContentQuery(id: string, options?: { initialData?: ReadContentData }) {
   return useQuery({
     queryKey: readQueryKeys.content(id),
     queryFn: () => fetchReadContent(id),
     enabled: id.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
+    initialData: options?.initialData,
     retry: (failureCount, error) => {
       if (error instanceof ReadApiError && [400, 401, 403, 404].includes(error.status)) {
         return false;

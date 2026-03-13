@@ -120,12 +120,13 @@ async function refreshDashboardQuery(queryClient: ReturnType<typeof useQueryClie
   });
 }
 
-export function useMemorizeMeQuery() {
+export function useMemorizeMeQuery(options?: { initialData?: MemorizeMeData }) {
   return useQuery({
     queryKey: memorizeQueryKeys.me,
     queryFn: fetchMemorizeMe,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+    initialData: options?.initialData,
     retry: (failureCount, error) => {
       if (error instanceof MemorizeApiError && (error.status === 401 || error.status === 403)) {
         return false;
