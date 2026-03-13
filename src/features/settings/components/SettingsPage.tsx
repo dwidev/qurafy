@@ -32,6 +32,7 @@ import {
   SecuritySettingsSection,
   SettingsHeader,
   SettingsSidebar,
+  SubscriptionSettingsSection,
 } from "@/features/settings/components/SettingsPageSections";
 import type {
   AppearanceSettings,
@@ -85,7 +86,7 @@ function SettingsPageSkeleton() {
 
       <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
         <div className="space-y-2">
-          {Array.from({ length: 7 }).map((_, index) => (
+          {Array.from({ length: 8 }).map((_, index) => (
             <Skeleton key={index} className="h-12 w-full rounded-2xl" />
           ))}
         </div>
@@ -496,6 +497,10 @@ function SettingsPageContent({
                 passwordResetMessage={passwordResetMessage}
                 errorMessage={securityError}
               />
+            ) : null}
+
+            {activeTab === "subscription" ? (
+              <SubscriptionSettingsSection billing={data.billing} />
             ) : null}
 
             {activeTab === "billing" ? <BillingSettingsSection billing={data.billing} /> : null}

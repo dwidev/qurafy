@@ -1,6 +1,14 @@
 import type { DailyGoalValue } from "@/features/profile/types";
 
-export type SettingsTab = "general" | "account" | "appearance" | "notifications" | "reading" | "security" | "billing";
+export type SettingsTab =
+  | "general"
+  | "account"
+  | "appearance"
+  | "notifications"
+  | "reading"
+  | "security"
+  | "subscription"
+  | "billing";
 
 export type NotificationSettings = {
   readingReminders: boolean;

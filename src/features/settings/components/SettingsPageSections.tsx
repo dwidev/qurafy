@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   Bell,
   BookOpen,
+  CheckCircle2,
   ChevronRight,
   CreditCard,
   Globe,
@@ -15,6 +16,7 @@ import {
   Settings,
   Smartphone,
   Sparkles,
+  Star,
   Trash2,
   User,
 } from "lucide-react";
@@ -36,6 +38,7 @@ const settingsTabs: Array<{ id: SettingsTab; label: string; icon: typeof Smartph
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "reading", label: "Reading Prefs", icon: BookOpen },
   { id: "security", label: "Security", icon: Lock },
+  { id: "subscription", label: "Subscription", icon: Sparkles },
   { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
@@ -178,6 +181,14 @@ function formatDate(date: string) {
   }).format(new Date(date));
 }
 
+function formatBillingCycleLabel(cycle: SettingsBillingSummary["donations"][number]["billingCycle"]) {
+  if (!cycle) {
+    return "None";
+  }
+
+  return `${cycle[0].toUpperCase()}${cycle.slice(1)}`;
+}
+
 function getDeviceLabel(session: SettingsSecuritySession) {
   if (!session.userAgent) {
     return "Unknown device";
@@ -211,7 +222,7 @@ export function SettingsHeader() {
         </span>
         Settings
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground">Manage your account, device preferences, billing, and security.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Manage your account, device preferences, subscription, billing, and security.</p>
     </div>
   );
 }
@@ -917,6 +928,154 @@ export function BillingSettingsSection({ billing }: { billing: SettingsBillingSu
           </div>
         )}
       </SettingsCard>
+    </div>
+  );
+}
+
+export function SubscriptionSettingsSection({ billing }: { billing: SettingsBillingSummary }) {
+  const activeRecurringPayment = billing.donations.find(
+    (item) => item.status === "confirmed" && item.type === "recurring",
+  );
+  const isPro = Boolean(activeRecurringPayment);
+  const billingCycleLabel = formatBillingCycleLabel(activeRecurringPayment?.billingCycle ?? null);
+  const freeBenefits = [
+    "Read the Quran with translation and transliteration controls.",
+    "Track your khatam progress and keep your daily reading habit visible.",
+    "Run memorization sessions and keep your personal learning rhythm.",
+    "Use settings, profile, and device preferences across your account.",
+  ];
+  const proBenefits = [
+    "Everything in Free, plus full supporter status across your account.",
+    "Monthly or yearly Pro access through the Qurafy supporter plan.",
+    "Priority access to deeper productivity and supporter-only upgrades as they launch.",
+    "Your plan directly helps sustain Qurafy while keeping core Quran access free.",
+  ];
+
+  return (
+    <div className="space-y-6">
+      <SettingsCard
+        title="Current Plan"
+        description="Your subscription status is based on recorded supporter payments tied to this account."
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-muted/10 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Plan</p>
+            <div className="mt-2 flex items-center gap-2">
+              <p className="text-2xl font-black">{isPro ? "Pro" : "Free"}</p>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
+                  isPro ? "bg-amber-500/15 text-amber-700" : "bg-secondary text-muted-foreground"
+                }`}
+              >
+                {isPro ? "Supporter" : "Starter"}
+              </span>
+              {isPro ? (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
+                    activeRecurringPayment?.billingCycle === "yearly"
+                      ? "bg-amber-500 text-white"
+                      : "bg-rose-500 text-white"
+                  }`}
+                >
+                  {billingCycleLabel}
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-muted/10 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Status</p>
+            <p className="mt-2 text-2xl font-black">{isPro ? "Active" : "Not Active"}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-muted/10 p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Billing Cycle</p>
+            <p className="mt-2 text-2xl font-black">{billingCycleLabel}</p>
+          </div>
+        </div>
+
+        <div
+          className={`rounded-3xl border px-5 py-4 ${
+            isPro
+              ? "border-amber-500/20 bg-amber-500/5"
+              : "border-emerald-500/20 bg-emerald-500/5"
+          }`}
+        >
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-bold">
+                {isPro
+                  ? "Your account currently has active Pro supporter access."
+                  : "Your account is on the Free plan and keeps core Quran features unlocked."}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {isPro
+                  ? "Use Billing to review payment history or update your supporter plan."
+                  : "Free users can still read, track progress, memorize, and personalize their experience without a subscription."}
+              </p>
+            </div>
+            <Link
+              href="/donate"
+              className={`inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold transition-all ${
+                isPro
+                  ? "border border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}
+            >
+              {isPro ? "Manage Supporter Plan" : "Upgrade to Pro"}
+            </Link>
+          </div>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard
+        title={isPro ? "Your Pro Benefits" : "What You Get on Free"}
+        description={
+          isPro
+            ? "Your supporter plan keeps the full free experience and adds Pro supporter benefits."
+            : "Free users still get the essential Qurafy experience without payment friction."
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          {(isPro ? proBenefits : freeBenefits).map((benefit) => (
+            <div key={benefit} className="flex gap-3 rounded-2xl border border-border bg-muted/10 p-4">
+              <div
+                className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
+                  isPro ? "bg-amber-500/10 text-amber-700" : "bg-emerald-500/10 text-emerald-700"
+                }`}
+              >
+                {isPro ? <Star className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+              </div>
+              <p className="text-sm font-medium leading-relaxed">{benefit}</p>
+            </div>
+          ))}
+        </div>
+      </SettingsCard>
+
+      {!isPro ? (
+        <SettingsCard
+          title="Why Pro Exists"
+          description="Qurafy keeps the core Quran journey free. Pro is positioned as a supporter upgrade, not a paywall on the essentials."
+        >
+          <div className="space-y-4">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Upgrading to Pro helps fund product development, hosting, and maintenance while preserving free access for everyone.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/donate"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90"
+              >
+                See Supporter Plans
+              </Link>
+              <Link
+                href="/sadaqah"
+                className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-sm font-bold transition-all hover:bg-muted"
+              >
+                Give Pure Sadaqah
+              </Link>
+            </div>
+          </div>
+        </SettingsCard>
+      ) : null}
     </div>
   );
 }
