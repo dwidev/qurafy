@@ -27,6 +27,7 @@ import type {
   ReadingSettings,
   SettingsAccountData,
   SettingsBillingSummary,
+  SettingsSubscriptionSummary,
   SettingsSecuritySession,
   SettingsTab,
 } from "@/features/settings/types";
@@ -157,9 +158,8 @@ function InputField({
         value={value}
         onChange={onChange ? (event) => onChange(event.target.value) : undefined}
         disabled={disabled}
-        className={`h-11 w-full rounded-xl border border-border px-4 text-sm font-medium outline-none transition-all ${
-          disabled ? "bg-secondary/50 text-muted-foreground" : "bg-transparent focus:border-primary"
-        }`}
+        className={`h-11 w-full rounded-xl border border-border px-4 text-sm font-medium outline-none transition-all ${disabled ? "bg-secondary/50 text-muted-foreground" : "bg-transparent focus:border-primary"
+          }`}
       />
     </div>
   );
@@ -181,7 +181,7 @@ function formatDate(date: string) {
   }).format(new Date(date));
 }
 
-function formatBillingCycleLabel(cycle: SettingsBillingSummary["donations"][number]["billingCycle"]) {
+function formatBillingCycleLabel(cycle: "monthly" | "yearly" | null) {
   if (!cycle) {
     return "None";
   }
@@ -241,11 +241,10 @@ export function SettingsSidebar({
           key={tab.id}
           type="button"
           onClick={() => onTabChange(tab.id)}
-          className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
-            activeTab === tab.id
+          className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${activeTab === tab.id
               ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-          }`}
+            }`}
         >
           <tab.icon className="h-4 w-4" />
           {tab.label}
@@ -551,9 +550,8 @@ export function AppearanceSettingsSection({
                 key={theme}
                 type="button"
                 onClick={() => onThemeChange(theme as AppearanceSettings["theme"])}
-                className={`flex flex-col items-center gap-3 rounded-2xl border p-4 transition-all ${
-                  appearance.theme === theme ? "border-primary bg-primary/5 text-primary" : "border-border bg-card hover:bg-muted"
-                }`}
+                className={`flex flex-col items-center gap-3 rounded-2xl border p-4 transition-all ${appearance.theme === theme ? "border-primary bg-primary/5 text-primary" : "border-border bg-card hover:bg-muted"
+                  }`}
               >
                 <Palette className="h-5 w-5" />
                 <span className="text-xs font-bold capitalize">{theme}</span>
@@ -599,7 +597,7 @@ export function ReadingSettingsSection({
   return (
     <SettingsCard title="Reading Preferences" description="Match the reader defaults to how you actually study.">
       <form onSubmit={onSubmit} className="space-y-6">
-         <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+        <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-bold">Live Reader Preview</p>
             <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
@@ -679,7 +677,7 @@ export function ReadingSettingsSection({
             </div>
           )}
         </div>
-        
+
         <div className="space-y-4">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Default Reader Mode</p>
           <div className="grid grid-cols-2 gap-4">
@@ -691,9 +689,8 @@ export function ReadingSettingsSection({
                 key={option.value}
                 type="button"
                 onClick={() => onModeChange(option.value as ReadingSettings["mode"])}
-                className={`rounded-2xl border p-4 text-sm font-bold transition-all ${
-                  reading.mode === option.value ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted"
-                }`}
+                className={`rounded-2xl border p-4 text-sm font-bold transition-all ${reading.mode === option.value ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted"
+                  }`}
               >
                 {option.label}
               </button>
@@ -790,9 +787,8 @@ export function SecuritySettingsSection({
               <p className="text-xs text-muted-foreground">Current status for your sign-in email.</p>
             </div>
             <span
-              className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ${
-                emailVerified ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-700"
-              }`}
+              className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ${emailVerified ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-700"
+                }`}
             >
               {emailVerified ? "Verified" : "Pending"}
             </span>
@@ -903,13 +899,12 @@ export function BillingSettingsSection({ billing }: { billing: SettingsBillingSu
                       {item.type === "recurring" ? `${item.billingCycle ?? "Recurring"} supporter` : "One-time donation"}
                     </span>
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
-                        item.status === "confirmed"
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${item.status === "confirmed"
                           ? "bg-emerald-50 text-emerald-600"
                           : item.status === "failed"
                             ? "bg-destructive/10 text-destructive"
                             : "bg-amber-50 text-amber-700"
-                      }`}
+                        }`}
                     >
                       {item.status}
                     </span>
@@ -932,12 +927,15 @@ export function BillingSettingsSection({ billing }: { billing: SettingsBillingSu
   );
 }
 
-export function SubscriptionSettingsSection({ billing }: { billing: SettingsBillingSummary }) {
-  const activeRecurringPayment = billing.donations.find(
-    (item) => item.status === "confirmed" && item.type === "recurring",
-  );
-  const isPro = Boolean(activeRecurringPayment);
-  const billingCycleLabel = formatBillingCycleLabel(activeRecurringPayment?.billingCycle ?? null);
+export function SubscriptionSettingsSection({
+  subscription,
+}: {
+  subscription: SettingsSubscriptionSummary;
+}) {
+  const isPro = subscription.planType === "pro" && subscription.status === "active";
+  const isPendingRequest = subscription.status === "pending";
+  const billingCycleLabel = formatBillingCycleLabel(subscription.billingCycle);
+  const nextRenewalLabel = subscription.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd) : null;
   const freeBenefits = [
     "Read the Quran with translation and transliteration controls.",
     "Track your khatam progress and keep your daily reading habit visible.",
@@ -955,7 +953,7 @@ export function SubscriptionSettingsSection({ billing }: { billing: SettingsBill
     <div className="space-y-6">
       <SettingsCard
         title="Current Plan"
-        description="Your subscription status is based on recorded supporter payments tied to this account."
+        description="Your subscription status is based on the active supporter plan attached to this account."
       >
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-border bg-muted/10 p-4">
@@ -963,19 +961,17 @@ export function SubscriptionSettingsSection({ billing }: { billing: SettingsBill
             <div className="mt-2 flex items-center gap-2">
               <p className="text-2xl font-black">{isPro ? "Pro" : "Free"}</p>
               <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
-                  isPro ? "bg-amber-500/15 text-amber-700" : "bg-secondary text-muted-foreground"
-                }`}
+                className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${isPro ? "bg-amber-500/15 text-amber-700" : "bg-secondary text-muted-foreground"
+                  }`}
               >
                 {isPro ? "Supporter" : "Starter"}
               </span>
               {isPro ? (
                 <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
-                    activeRecurringPayment?.billingCycle === "yearly"
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${subscription.billingCycle === "yearly"
                       ? "bg-amber-500 text-white"
                       : "bg-rose-500 text-white"
-                  }`}
+                    }`}
                 >
                   {billingCycleLabel}
                 </span>
@@ -984,43 +980,53 @@ export function SubscriptionSettingsSection({ billing }: { billing: SettingsBill
           </div>
           <div className="rounded-2xl border border-border bg-muted/10 p-4">
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Status</p>
-            <p className="mt-2 text-2xl font-black">{isPro ? "Active" : "Not Active"}</p>
+            <p className="mt-2 text-2xl font-black">
+              {subscription.status === "inactive"
+                ? "Not Active"
+                : `${subscription.status[0].toUpperCase()}${subscription.status.slice(1)}`}
+            </p>
           </div>
           <div className="rounded-2xl border border-border bg-muted/10 p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Billing Cycle</p>
-            <p className="mt-2 text-2xl font-black">{billingCycleLabel}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              {isPro ? "Renews" : "Billing Cycle"}
+            </p>
+            <p className="mt-2 text-2xl font-black">{isPro ? nextRenewalLabel ?? "N/A" : billingCycleLabel}</p>
           </div>
         </div>
 
         <div
-          className={`rounded-3xl border px-5 py-4 ${
-            isPro
+          className={`rounded-3xl border px-5 py-4 ${isPro
               ? "border-amber-500/20 bg-amber-500/5"
               : "border-emerald-500/20 bg-emerald-500/5"
-          }`}
+            }`}
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">
               <p className="text-sm font-bold">
                 {isPro
                   ? "Your account currently has active Pro supporter access."
+                  : isPendingRequest
+                    ? "Your supporter plan request is waiting for bank transfer approval."
                   : "Your account is on the Free plan and keeps core Quran features unlocked."}
               </p>
               <p className="text-sm text-muted-foreground">
                 {isPro
-                  ? "Use Billing to review payment history or update your supporter plan."
+                  ? `Your ${billingCycleLabel.toLowerCase()} supporter plan is active${nextRenewalLabel ? ` through ${nextRenewalLabel}` : ""}.`
+                  : isPendingRequest
+                    ? "Complete the transfer and wait for admin confirmation. Pro access starts only after approval."
                   : "Free users can still read, track progress, memorize, and personalize their experience without a subscription."}
               </p>
             </div>
             <Link
-              href="/donate"
-              className={`inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold transition-all ${
-                isPro
+              href={isPendingRequest && subscription.transactionId ? `/transfer?tx=${subscription.transactionId}` : "/donate"}
+              className={`inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-bold transition-all ${isPro
                   ? "border border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
-              }`}
+                  : isPendingRequest
+                    ? "border border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                }`}
             >
-              {isPro ? "Manage Supporter Plan" : "Upgrade to Pro"}
+              {isPro ? "Manage Supporter Plan" : isPendingRequest ? "View Transfer Info" : "Upgrade to Pro"}
             </Link>
           </div>
         </div>
@@ -1038,9 +1044,8 @@ export function SubscriptionSettingsSection({ billing }: { billing: SettingsBill
           {(isPro ? proBenefits : freeBenefits).map((benefit) => (
             <div key={benefit} className="flex gap-3 rounded-2xl border border-border bg-muted/10 p-4">
               <div
-                className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
-                  isPro ? "bg-amber-500/10 text-amber-700" : "bg-emerald-500/10 text-emerald-700"
-                }`}
+                className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${isPro ? "bg-amber-500/10 text-amber-700" : "bg-emerald-500/10 text-emerald-700"
+                  }`}
               >
                 {isPro ? <Star className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
               </div>

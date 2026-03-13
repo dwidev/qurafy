@@ -33,6 +33,16 @@ function getFallbackSettingsPayload(
     security: {
       sessions: [],
     },
+    subscription: {
+      id: null,
+      transactionId: null,
+      planType: "free",
+      status: "inactive",
+      billingCycle: null,
+      amount: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+    },
     billing: {
       donations: [],
       totalConfirmedAmount: 0,

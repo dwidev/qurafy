@@ -1,14 +1,18 @@
 import { desc, eq } from "drizzle-orm";
 import pkg from "../../../../package.json";
 import { db } from "@/db";
-import { donations, session as authSession, userProfile, userSettings } from "@/db/schema";
+import { donations, paymentTransactions, session as authSession, supporterSubscriptions, userProfile, userSettings } from "@/db/schema";
 import { getServerSession, requireServerSession } from "@/features/auth/server/session";
 import {
   defaultAppearanceSettings,
   defaultNotificationSettings,
   defaultReadingSettings,
 } from "@/features/settings/constants";
-import type { SettingsPageData, SettingsBillingItem } from "@/features/settings/types";
+import type {
+  SettingsBillingItem,
+  SettingsPageData,
+  SettingsSubscriptionSummary,
+} from "@/features/settings/types";
 
 type UserSettingsRecord = Partial<typeof userSettings.$inferSelect> | undefined;
 
@@ -86,6 +90,25 @@ async function findDonationsWithFallback(userId: string) {
   }
 }
 
+async function findCurrentSubscriptionWithFallback(userId: string) {
+  try {
+    const [subscription] = await db
+      .select()
+      .from(supporterSubscriptions)
+      .where(eq(supporterSubscriptions.userId, userId))
+      .orderBy(desc(supporterSubscriptions.updatedAt))
+      .limit(1);
+
+    return subscription;
+  } catch (error) {
+    if (!isMissingDbStructure(error, ["supporter_subscriptions", "supporter_subscription_status"])) {
+      throw error;
+    }
+
+    return undefined;
+  }
+}
+
 function getNormalizedPreferences(row: UserSettingsRecord) {
   const reading = {
     mode: row?.readerMode ?? defaultReadingSettings.mode,
@@ -121,6 +144,35 @@ function toBillingItems(rows: Array<typeof donations.$inferSelect>): SettingsBil
   }));
 }
 
+function toSubscriptionSummary(
+  row: typeof supporterSubscriptions.$inferSelect | undefined,
+  transactionId: string | null,
+): SettingsSubscriptionSummary {
+  if (!row) {
+    return {
+      id: null,
+      transactionId: null,
+      planType: "free",
+      status: "inactive",
+      billingCycle: null,
+      amount: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+    };
+  }
+
+  return {
+    id: row.id,
+    transactionId,
+    planType: row.status === "active" ? "pro" : "free",
+    status: row.status,
+    billingCycle: row.billingCycle,
+    amount: row.amount,
+    currentPeriodEnd: row.currentPeriodEnd.toISOString(),
+    cancelAtPeriodEnd: row.cancelAtPeriodEnd,
+  };
+}
+
 export async function getSettingsPageData(): Promise<SettingsPageData> {
   const session = await requireServerSession();
   return getSettingsPageDataForSession(session);
@@ -129,22 +181,32 @@ export async function getSettingsPageData(): Promise<SettingsPageData> {
 export async function getSettingsPageDataForSession(
   session: NonNullable<Awaited<ReturnType<typeof getServerSession>>>,
 ): Promise<SettingsPageData> {
-  const [profile, settings, sessions, donationRows] = await Promise.all([
+  const [profile, settings, sessions, donationRows, subscriptionRow] = await Promise.all([
     findUserProfileWithFallback(session.user.id),
     findUserSettingsWithFallback(session.user.id),
     findSessionsWithFallback(session.user.id),
     findDonationsWithFallback(session.user.id),
+    findCurrentSubscriptionWithFallback(session.user.id),
   ]);
 
   const preferences = getNormalizedPreferences(settings);
   const billingItems = toBillingItems(donationRows);
+  const [subscriptionTransaction] = subscriptionRow
+    ? await db
+        .select({
+          id: paymentTransactions.id,
+        })
+        .from(paymentTransactions)
+        .where(eq(paymentTransactions.supporterSubscriptionId, subscriptionRow.id))
+        .orderBy(desc(paymentTransactions.createdAt))
+        .limit(1)
+    : [];
+  const subscription = toSubscriptionSummary(subscriptionRow, subscriptionTransaction?.id ?? null);
   const totalConfirmedAmount = billingItems
     .filter((item) => item.status === "confirmed")
     .reduce((sum, item) => sum + item.amount, 0);
   const totalConfirmedCount = billingItems.filter((item) => item.status === "confirmed").length;
-  const activeSupporter = billingItems.some(
-    (item) => item.status === "confirmed" && item.type === "recurring",
-  );
+  const activeSupporter = subscription.status === "active";
   const currentSessionId = (session as { session?: { id?: string } }).session?.id ?? null;
 
   return {
@@ -172,6 +234,7 @@ export async function getSettingsPageDataForSession(
         expiresAt: item.expiresAt.toISOString(),
       })),
     },
+    subscription,
     billing: {
       donations: billingItems,
       totalConfirmedAmount,

@@ -334,7 +334,7 @@ export function ProfileProCard() {
             </div>
             <h3 className="text-base font-black">Unlock Qurafy Pro</h3>
             <p className="max-w-xl text-xs font-medium leading-relaxed text-muted-foreground">
-              Subscribe as a supporter or send a donation to support Qurafy and start your Pro access flow.
+              Start a monthly or yearly supporter plan for Pro access. Pure Sadaqah stays separate and does not unlock subscription benefits.
             </p>
           </div>
         </div>

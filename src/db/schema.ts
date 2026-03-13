@@ -14,6 +14,16 @@ import {
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "confirmed", "failed"]);
 export const donationTypeEnum = pgEnum("donation_type", ["recurring", "one_time"]);
 export const billingCycleEnum = pgEnum("billing_cycle", ["monthly", "yearly"]);
+export const supporterSubscriptionStatusEnum = pgEnum("supporter_subscription_status", ["pending", "active", "canceled"]);
+export const paymentTransactionKindEnum = pgEnum("payment_transaction_kind", ["subscription", "donation"]);
+export const paymentMethodEnum = pgEnum("payment_method", ["manual_bank_transfer"]);
+export const paymentTransactionStatusEnum = pgEnum("payment_transaction_status", [
+  "pending_payment",
+  "pending_review",
+  "approved",
+  "rejected",
+  "expired",
+]);
 export const goalStatusEnum = pgEnum("goal_status", ["active", "completed"]);
 export const themePreferenceEnum = pgEnum("theme_preference", ["light", "dark", "system"]);
 export const readerModeEnum = pgEnum("reader_mode", ["verse", "mushaf"]);
@@ -231,6 +241,9 @@ export const donations = pgTable("donations", {
   userId: text("user_id")
     .references(() => user.id, { onDelete: "cascade" })
     .notNull(),
+  supporterSubscriptionId: uuid("supporter_subscription_id").references(() => supporterSubscriptions.id, {
+    onDelete: "set null",
+  }),
   amount: bigint("amount", { mode: "number" }).notNull(),
   type: donationTypeEnum("type").notNull(),
   billingCycle: billingCycleEnum("billing_cycle"),
@@ -238,6 +251,67 @@ export const donations = pgTable("donations", {
   paymentProofUrl: text("payment_proof_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const supporterSubscriptions = pgTable(
+  "supporter_subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    amount: bigint("amount", { mode: "number" }).notNull(),
+    billingCycle: billingCycleEnum("billing_cycle").notNull(),
+    status: supporterSubscriptionStatusEnum("status").default("pending").notNull(),
+    currentPeriodStart: timestamp("current_period_start").notNull(),
+    currentPeriodEnd: timestamp("current_period_end").notNull(),
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(),
+    canceledAt: timestamp("canceled_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("supporter_subscriptions_user_id_idx").on(table.userId),
+    index("supporter_subscriptions_user_status_idx").on(table.userId, table.status),
+  ],
+);
+
+export const paymentTransactions = pgTable(
+  "payment_transactions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    supporterSubscriptionId: uuid("supporter_subscription_id").references(() => supporterSubscriptions.id, {
+      onDelete: "cascade",
+    }),
+    donationId: uuid("donation_id").references(() => donations.id, {
+      onDelete: "cascade",
+    }),
+    kind: paymentTransactionKindEnum("kind").notNull(),
+    paymentMethod: paymentMethodEnum("payment_method").default("manual_bank_transfer").notNull(),
+    amount: bigint("amount", { mode: "number" }).notNull(),
+    currency: text("currency").default("IDR").notNull(),
+    billingCycle: billingCycleEnum("billing_cycle"),
+    status: paymentTransactionStatusEnum("status").default("pending_payment").notNull(),
+    referenceCode: text("reference_code").notNull().unique(),
+    proofUrl: text("proof_url"),
+    notes: text("notes"),
+    expiresAt: timestamp("expires_at"),
+    submittedAt: timestamp("submitted_at"),
+    approvedAt: timestamp("approved_at"),
+    rejectedAt: timestamp("rejected_at"),
+    reviewedByUserId: text("reviewed_by_user_id").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("payment_transactions_user_id_idx").on(table.userId),
+    index("payment_transactions_status_idx").on(table.status),
+    index("payment_transactions_subscription_id_idx").on(table.supporterSubscriptionId),
+    index("payment_transactions_donation_id_idx").on(table.donationId),
+  ],
+);
 
 export const platformBankAccounts = pgTable("platform_bank_accounts", {
   id: uuid("id").primaryKey().defaultRandom(),

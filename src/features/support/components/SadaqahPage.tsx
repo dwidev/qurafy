@@ -1,8 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, HandHeart, Shield, Sparkles } from "lucide-react";
 import { LoadingPopup } from "@/components/ui/LoadingPopup";
+import {
+  getSupportErrorMessage,
+  isUnauthorizedSupportError,
+  useCreateSadaqahDonationMutation,
+} from "@/features/support/api/client";
 import { sadaqahPresets } from "@/features/support/constants/presets";
 import {
   CurrencyInput,
@@ -14,19 +20,31 @@ import {
 } from "@/features/support/components/SupportPageSections";
 
 export default function SadaqahPage() {
+  const router = useRouter();
+  const createSadaqahDonationMutation = useCreateSadaqahDonationMutation();
   const [amount, setAmount] = useState<string>("50000");
   const [customAmount, setCustomAmount] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const displayAmount = customAmount || amount;
 
-  const handleDonate = (event: React.FormEvent) => {
+  const handleDonate = async (event: React.FormEvent) => {
     event.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      alert("Alhamdulillah! 100% of your Sadaqah is being securely processed.");
-    }, 1500);
+    setFormError(null);
+
+    try {
+      const donation = await createSadaqahDonationMutation.mutateAsync({
+        amount: Number(displayAmount),
+      });
+      router.push(`/transfer?tx=${donation.transaction.id}`);
+    } catch (error) {
+      if (isUnauthorizedSupportError(error)) {
+        router.push("/login");
+        return;
+      }
+
+      setFormError(getSupportErrorMessage(error));
+    }
   };
 
   return (
@@ -77,6 +95,12 @@ export default function SadaqahPage() {
               accentClassName="group-focus-within/input:text-emerald-600"
             />
 
+            {formError ? (
+              <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+                {formError}
+              </div>
+            ) : null}
+
             {Number(displayAmount) > 0 ? (
               <div className="pt-2">
                 <div className="flex items-end justify-between">
@@ -98,14 +122,14 @@ export default function SadaqahPage() {
 
             <button
               type="submit"
-              disabled={isLoading || Number(displayAmount) <= 0}
+              disabled={createSadaqahDonationMutation.isPending || Number(displayAmount) <= 0}
               className="group flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-foreground text-[12px] font-black uppercase tracking-widest text-background shadow-xl shadow-foreground/5 transition-all hover:-translate-y-1 disabled:translate-y-0 disabled:opacity-20"
             >
-              {isLoading ? (
+              {createSadaqahDonationMutation.isPending ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-background/30 border-t-background" />
               ) : (
                 <>
-                  Confirm Sadaqah
+                  Continue to Transfer
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1.5" />
                 </>
               )}
@@ -123,7 +147,7 @@ export default function SadaqahPage() {
         />
       </div>
 
-      <LoadingPopup show={isLoading} message="Processing sadaqah..." />
+      <LoadingPopup show={createSadaqahDonationMutation.isPending} message="Preparing bank transfer instructions..." />
     </SupportShell>
   );
 }

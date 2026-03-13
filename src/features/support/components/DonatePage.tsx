@@ -1,8 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Calendar, FileText, Heart, ShieldCheck, Zap } from "lucide-react";
 import { LoadingPopup } from "@/components/ui/LoadingPopup";
+import {
+  getSupportErrorMessage,
+  isUnauthorizedSupportError,
+  useCreateSupporterSubscriptionMutation,
+} from "@/features/support/api/client";
 import { monthlyPresets, yearlyPresets } from "@/features/support/constants/presets";
 import {
   CurrencyInput,
@@ -42,10 +48,12 @@ const supporterTerms = {
 } as const;
 
 export default function DonatePage() {
+  const router = useRouter();
+  const createSupporterSubscriptionMutation = useCreateSupporterSubscriptionMutation();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [amount, setAmount] = useState<string>("50000");
   const [customAmount, setCustomAmount] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const presets = billingCycle === "monthly" ? monthlyPresets : yearlyPresets;
   const displayAmount = customAmount || amount;
@@ -53,13 +61,24 @@ export default function DonatePage() {
   const charityAmount = Math.floor(Number(displayAmount) * 0.3);
   const activeTerms = supporterTerms[billingCycle];
 
-  const handleDonate = (event: React.FormEvent) => {
+  const handleDonate = async (event: React.FormEvent) => {
     event.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      alert(`Redirecting to secure gateway for your ${billingCycle} supporter plan...`);
-    }, 1500);
+    setFormError(null);
+
+    try {
+      const subscription = await createSupporterSubscriptionMutation.mutateAsync({
+        amount: Number(displayAmount),
+        billingCycle,
+      });
+      router.push(`/transfer?tx=${subscription.transaction.id}`);
+    } catch (error) {
+      if (isUnauthorizedSupportError(error)) {
+        router.push("/login");
+        return;
+      }
+
+      setFormError(getSupportErrorMessage(error));
+    }
   };
 
   return (
@@ -146,6 +165,12 @@ export default function DonatePage() {
                 accentClassName="group-focus-within/input:text-rose-500"
               />
 
+              {formError ? (
+                <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+                  {formError}
+                </div>
+              ) : null}
+
               <div className="space-y-3 rounded-2xl border border-border/40 bg-secondary/20 p-[18px]">
                 <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-[0.15em] text-muted-foreground/50">
                   <span>{billingCycle === "monthly" ? "Monthly Supporter" : "Yearly Supporter"}</span>
@@ -176,14 +201,14 @@ export default function DonatePage() {
 
               <button
                 type="submit"
-                disabled={isLoading || Number(displayAmount) <= 0}
+                disabled={createSupporterSubscriptionMutation.isPending || Number(displayAmount) <= 0}
                 className="group flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-rose-500 text-[12px] font-black uppercase tracking-widest text-white shadow-xl shadow-rose-500/5 transition-all hover:-translate-y-1 disabled:translate-y-0 disabled:opacity-20"
               >
-                {isLoading ? (
+                {createSupporterSubscriptionMutation.isPending ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 ) : (
                   <>
-                    Start Supporter Plan
+                    Continue to Transfer
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1.5" />
                   </>
                 )}
@@ -256,7 +281,7 @@ export default function DonatePage() {
         </div>
       </div>
 
-      <LoadingPopup show={isLoading} message="Processing supporter plan..." />
+      <LoadingPopup show={createSupporterSubscriptionMutation.isPending} message="Preparing bank transfer instructions..." />
     </SupportShell>
   );
 }

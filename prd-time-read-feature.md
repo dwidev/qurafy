@@ -1,171 +1,248 @@
-# PRD: Dynamic Time Read Tracking
+# PRD: Qurafy Free vs Pro Entitlements
 
-**Feature Name:** Dynamic Time Read Tracking  
+**Feature Name:** Free vs Pro Product Definition  
 **Status:** Draft  
 **Platform:** Web Application (Responsive)  
-**Last Updated:** March 8, 2026
+**Last Updated:** March 13, 2026
 
 ---
 
 ## 1. Problem Statement
-The dashboard currently calculates `Time Read` using a fixed estimate derived from completed verses. This is not an accurate reflection of real user behavior.
+Qurafy needs a monetization boundary that is clear to users, sustainable for the product, and aligned with the app's religious purpose.
 
-Current issues:
-* users can spend a long time reading a few verses but get a low `Time Read` value,
-* users can complete memorization quickly but spend much longer repeating and practicing,
-* users who spend time on read or memorize pages without completing verses get no meaningful credit,
-* dashboard stats are based on inferred output, not actual engagement time.
+Right now the risk is not only billing complexity. The bigger risk is product confusion:
+* if too much is free, Pro feels weak,
+* if core worship flows are paywalled, the app feels spiritually hostile,
+* if free users must choose only one core feature such as `memorize` or `khatam`, the product feels incomplete before it feels useful,
+* if `subscription`, `supporter`, and `sadaqah` are not clearly separated, users will not trust the model.
 
-The product needs a real activity-based time metric for reading and memorization.
+Qurafy needs a simple rule:
+* keep the core Quran journey free,
+* charge for depth, scale, convenience, and premium workflow support.
 
-## 2. Goal
-Track how long an authenticated user actively spends on supported read and memorize pages, then use that tracked time to power the dashboard `Time Read` metric.
+## 2. Product Goal
+Define a tier model that:
+* preserves generous free access to Quran reading and habit-building,
+* creates a meaningful reason to upgrade to Pro,
+* avoids forcing free users to choose between `memorize` and `khatam`,
+* supports monthly and yearly supporter plans with the same entitlements,
+* keeps `Pure Sadaqah` fully separate from subscription benefits.
 
-Tracked routes in V1:
-* `/app/read`
-* `/app/read/[id]`
-* `/app/memorize`
-* `/app/memorize/session`
+## 3. Product Principle
+Recommended principle for Qurafy:
+* `Free` should be complete enough for sincere daily use.
+* `Pro` should make committed users more effective, consistent, and supported.
+* monthly and yearly plans should differ only in billing cycle and pricing, not in feature access.
+* sadaqah should not grant product entitlements.
 
-## 3. Non-Goals
-* Tracking activity on unrelated pages such as settings or profile
-* Passive background tracking when the tab is hidden
-* Camera or microphone-based attention tracking
-* Retroactively reconstructing historical time from old data
-* Public leaderboards or social ranking in this phase
+Important decision:
+* free users should **not** be forced to choose only one of `memorize` or `khatam`.
+* instead, free users should get limited access to both:
+  * `1 active memorization goal`
+  * `1 active khatam plan`
 
-## 4. User Stories
-* As a user, I want my dashboard time to reflect my real reading and memorization effort.
-* As a user, I do not want accidental short visits to inflate my stats.
-* As a product team, we want a reusable engagement signal for analytics and future features.
+This gives real value without collapsing the upgrade path.
 
-## 5. Success Criteria
-* Dashboard `Time Read` is sourced from tracked active time, not estimated verse count.
-* Time is recorded for both read and memorize flows.
-* Idle, hidden, or abandoned sessions do not overcount significantly.
-* Dashboard updates after the user leaves a tracked page and returns.
+## 4. Non-Goals
+* Paywalling Quran reading itself
+* Paywalling basic translation or transliteration
+* Making the free plan feel broken on first use
+* Creating different feature entitlements for monthly vs yearly Pro
+* Mixing subscription access with charitable giving
 
-## 6. Functional Requirements
-* The system must create or resume a tracked session when a signed-in user enters a supported route.
-* The system must count only active foreground time.
-* The system must pause or stop counting when:
-  * the tab becomes hidden,
-  * the route changes away from a tracked page,
-  * the page unloads,
-  * the user has been idle for longer than the configured threshold.
-* The system must periodically persist active time to the backend during long sessions.
-* The system must send a final flush before page exit where possible.
-* The system must ignore very short micro-sessions below a minimum threshold.
-* The dashboard must aggregate tracked seconds into a formatted hours-and-minutes label.
+## 5. Tier Definitions
+### Free
+Free is the default plan for every signed-in user.
 
-## 7. UX Requirements
-* Tracking is automatic and silent for authenticated users.
-* No persistent timer UI is required in V1.
-* Dashboard values should feel fresh after returning from reading or memorization.
-* Future UI enhancements such as a subtle “session active” marker are out of scope for V1.
+It should allow a user to:
+* read Quran normally,
+* maintain a daily habit,
+* start memorization,
+* maintain a khatam journey,
+* personalize basic reading settings.
 
-## 8. Tracking Rules
-* Track authenticated users only.
-* Count time only when the page is visible.
-* Count time only on supported tracked routes.
-* Reset idle status on meaningful interaction:
-  * scroll,
-  * click,
-  * touch,
-  * key press,
-  * audio control interaction.
-* Recommended idle timeout: `60-90` seconds.
-* Recommended heartbeat interval: `30-60` seconds.
-* Recommended minimum persisted session duration: `10` seconds.
+### Pro
+Pro is the supporter tier unlocked through either:
+* `Qurafy Supporter Monthly 70/30`
+* `Qurafy Supporter Yearly 70/30`
 
-## 9. Proposed Data Model
-Recommended new table: `activity_sessions`
+Both monthly and yearly Pro include the same product access.
 
-Suggested fields:
-* `id`
-* `user_id`
-* `feature_type` with values such as `read` and `memorize`
-* `route`
-* `content_id` nullable, for example `surah-2`, `juz-30`, or a memorize goal/session identifier
-* `started_at`
-* `last_seen_at`
-* `ended_at` nullable
-* `active_seconds`
-* `is_completed`
-* `created_at`
-* `updated_at`
+### Pure Sadaqah
+Pure Sadaqah is a separate donation flow.
 
-Recommended approach:
-* store incremental active seconds on session rows rather than only raw event logs
+It should:
+* not unlock Pro,
+* not grant a plan badge by default,
+* remain clearly distinct in UI copy, accounting, and user expectations.
 
-Reason:
-* simpler dashboard aggregation,
-* easier debugging,
-* easier final flush and retry behavior.
+## 6. Recommended Free vs Pro Matrix
+| Area | Free | Pro |
+|---|---|---|
+| Quran reading | Full basic reading access | Same as Free |
+| Translation and transliteration | Included | Included |
+| Continue reading | Included | Included |
+| Reader settings | Basic settings | Same as Free |
+| Dashboard summary | Basic stats | Richer stats and insights |
+| Memorization goals | 1 active goal | Multiple active goals |
+| Memorization session history | Basic current progress | Rich history and deeper stats |
+| Khatam plans | 1 active plan | Multiple active plans |
+| Khatam progress history | Basic current plan view | Rich history and archived insights |
+| Reminders | Basic reminders | Smarter reminders and automation |
+| Analytics | Minimal | Advanced charts, trends, and streak insights |
+| Personalization | Basic theme and reader controls | Premium personalization and supporter badge |
+| Supporter identity | None | Pro badge and supporter status |
 
-## 10. Backend Requirements
-* Provide an authenticated endpoint to start or resume an activity session.
-* Provide an authenticated heartbeat endpoint to update accumulated active time.
-* Provide an authenticated finalize endpoint to close a session.
-* Ensure users can only update their own sessions.
-* Make writes tolerant to duplicate heartbeats and duplicate final flushes.
-* Aggregate total tracked seconds per user for dashboard consumption.
+## 7. Detailed Entitlement Rules
+### Must Stay Free
+These should remain free because they are core to the product's trust and usefulness:
+* reading Quran by surah and by page flow already present in the app,
+* translation and transliteration toggles,
+* continue reading,
+* profile and settings access,
+* daily usage of both `memorize` and `khatam`,
+* one active memorization goal,
+* one active khatam plan.
 
-## 11. Frontend Requirements
-* Build a shared client tracking hook usable by read and memorize pages.
-* The hook should:
-  * start or resume a session on mount,
-  * send heartbeat updates on an interval,
-  * listen for `visibilitychange`,
-  * stop or pause on unmount,
-  * flush on route exit and `pagehide`.
-* Read pages should pass page context such as content id, surah id, or juz id.
-* Memorize pages should pass goal or session context where available.
+### Should Be Pro
+These are the strongest candidates for monetization because they add depth rather than basic access:
+* more than one active memorization goal,
+* more than one active khatam plan,
+* archived goal history and richer progress history,
+* deeper analytics and trend views,
+* premium reminders and study automation,
+* supporter badge and supporter-facing subscription status,
+* future premium planning tools and productivity features.
 
-## 12. Dashboard Requirements
-* Replace the current formula based on completed verses.
-* Use aggregated tracked seconds as the source of truth.
-* Format time into `Xh Ym`.
-* Show `0h 0m` if no tracked time exists.
-* Invalidate or refresh dashboard cache after tracked-session flushes so stats feel current.
+### Should Not Be Used as the Main Paywall
+Avoid using these as the primary upgrade trigger:
+* raw Quran reading access,
+* translation access,
+* a forced choice between `memorize` and `khatam`,
+* account settings or profile editing,
+* a basic streak or a basic dashboard.
 
-## 13. Edge Cases
-* Multiple tracked tabs open at once
-  * V1 recommendation: allow it, but avoid obvious double-counting where feasible
-* Network loss during a session
-  * queue final flush attempts or rely on periodic heartbeat persistence
-* Abrupt browser close
-  * rely on `pagehide` plus heartbeat intervals to reduce lost time
-* Long inactive page stay
-  * stop counting after idle timeout and resume only after interaction
-* Rapid switching between read and memorize pages
-  * close the previous route session and start a new one cleanly
+## 8. Core Decision for Memorize and Khatam
+Recommended decision:
+* Free users get both `memorize` and `khatam`.
+* Free users are limited by active depth, not feature existence.
 
-## 14. Analytics Opportunities
-Track:
-* daily reading minutes,
-* daily memorization minutes,
-* average active session length,
-* median active session length,
-* dashboard time-read trust/accuracy feedback,
-* comparison between estimated time and tracked time during rollout.
+Implementation rule:
+* Free user can create:
+  * `1 active memorization goal`
+  * `1 active khatam plan`
+* Pro user can create:
+  * multiple active memorization goals
+  * multiple active khatam plans
 
-## 15. Rollout Plan
+Why this is better:
+* users experience the full Qurafy value loop,
+* the product does not feel artificially blocked,
+* the upgrade path is still obvious for serious users,
+* the limit is easy to explain and easy to enforce technically.
+
+## 9. Subscription UX Requirements
+The app should clearly show:
+* current plan: `Free` or `Pro`,
+* if Pro, visible billing flag: `Monthly` or `Yearly`,
+* what Free users already get,
+* what Pro adds beyond Free,
+* links to upgrade or manage the supporter plan.
+
+The app should never imply:
+* Quran access itself is the paid product,
+* donation and subscription are interchangeable,
+* monthly Pro and yearly Pro have different core features.
+
+## 10. Upgrade Triggers
+Recommended upgrade triggers:
+* user tries to create a second memorization goal,
+* user tries to create a second khatam plan,
+* user opens advanced analytics or archived history,
+* user wants premium reminders or supporter-only personalization.
+
+Recommended upgrade copy:
+* `Free includes 1 active memorization goal and 1 active khatam plan. Upgrade to Pro for more active plans, richer insights, and supporter benefits.`
+
+Avoid copy like:
+* `Choose memorize or khatam`
+* `Upgrade to unlock Quran features`
+* `Subscribe to access the Quran`
+
+## 11. Engineering Requirements
+The system should model entitlements explicitly rather than infer them from generic payment history.
+
+Recommended entitlement shape:
+* `plan_type`: `free` or `pro`
+* `billing_cycle`: `monthly`, `yearly`, or `null`
+* `memorize_active_limit`
+* `khatam_active_limit`
+* `has_advanced_analytics`
+* `has_premium_reminders`
+* `has_supporter_badge`
+
+Recommended V1 default values:
+* Free
+  * `memorize_active_limit = 1`
+  * `khatam_active_limit = 1`
+  * `has_advanced_analytics = false`
+  * `has_premium_reminders = false`
+  * `has_supporter_badge = false`
+* Pro
+  * `memorize_active_limit = unlimited`
+  * `khatam_active_limit = unlimited`
+  * `has_advanced_analytics = true`
+  * `has_premium_reminders = true`
+  * `has_supporter_badge = true`
+
+## 12. Enforcement Rules
+When a user is Free:
+* block creation of a second active memorization goal,
+* block creation of a second active khatam plan,
+* allow existing active item completion and normal usage,
+* show an upgrade explanation instead of a generic error.
+
+When a user is Pro:
+* allow multiple active goals and plans,
+* show supporter status and billing-cycle badge in settings/subscription UI.
+
+When a subscription expires:
+* do not delete existing data,
+* keep historical goals and plans,
+* prevent creation of new active items above the Free limit,
+* allow completion or closure of already-active items depending on final policy.
+
+Recommended downgrade rule:
+* if a Pro user downgrades while having more than one active item, mark excess items as read-only until they reduce back to Free limits.
+
+## 13. Rollout Plan
 ### Phase 1
-* add schema and backend endpoints,
-* ship silent tracking on read and memorize pages,
-* keep old dashboard estimate for internal comparison only.
+* finalize Free vs Pro rules,
+* ship Subscription settings UI,
+* keep billing cycle visible for Pro users,
+* keep all existing core features usable while backend entitlements are still simple.
 
 ### Phase 2
-* switch dashboard `Time Read` to tracked seconds,
-* verify cache refresh and aggregation behavior.
+* add explicit entitlement fields in backend models,
+* enforce active-goal and active-plan limits,
+* add upgrade prompts on the relevant actions.
 
 ### Phase 3
-* add internal monitoring/debugging tools,
-* evaluate whether streaks should later incorporate active minutes.
+* add advanced analytics and premium reminders,
+* move Pro value from placeholder messaging into real differentiated features.
 
-## 16. Open Questions
-* Should `/app/tracker` also count toward `Time Read` in V1?
-* Should audio listening without interaction count as active time?
-* Should a single session have a hard cap to prevent abuse or runaway tabs?
-* Should dashboard later split `Reading Time` and `Memorization Time` instead of combining them?
+## 14. Success Criteria
+* users can easily understand what `Free` includes,
+* users can easily understand what `Pro` adds,
+* free users do not feel forced to choose between `memorize` and `khatam`,
+* upgrade triggers happen at natural moments of commitment,
+* Pro feels meaningfully better without making Free feel broken.
+
+## 15. Recommended Decision
+Recommended final decision for Qurafy:
+* keep Quran reading free,
+* keep both `memorize` and `khatam` available in Free,
+* limit Free to `1 active memorization goal` and `1 active khatam plan`,
+* use Pro to unlock scale, analytics, automation, and supporter identity,
+* treat monthly and yearly as the same Pro plan with different billing cadence,
+* keep `Pure Sadaqah` completely separate from product access.

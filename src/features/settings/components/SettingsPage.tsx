@@ -500,7 +500,7 @@ function SettingsPageContent({
             ) : null}
 
             {activeTab === "subscription" ? (
-              <SubscriptionSettingsSection billing={data.billing} />
+              <SubscriptionSettingsSection subscription={data.subscription} />
             ) : null}
 
             {activeTab === "billing" ? <BillingSettingsSection billing={data.billing} /> : null}

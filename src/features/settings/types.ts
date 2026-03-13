@@ -59,6 +59,17 @@ export type SettingsBillingItem = {
   createdAt: string;
 };
 
+export type SettingsSubscriptionSummary = {
+  id: string | null;
+  transactionId: string | null;
+  planType: "free" | "pro";
+  status: "inactive" | "pending" | "active" | "canceled";
+  billingCycle: "monthly" | "yearly" | null;
+  amount: number | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+};
+
 export type SettingsBillingSummary = {
   donations: SettingsBillingItem[];
   totalConfirmedAmount: number;
@@ -75,5 +86,6 @@ export type SettingsPageData = {
   security: {
     sessions: SettingsSecuritySession[];
   };
+  subscription: SettingsSubscriptionSummary;
   billing: SettingsBillingSummary;
 };

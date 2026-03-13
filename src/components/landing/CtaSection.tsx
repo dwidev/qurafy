@@ -9,7 +9,7 @@ export function CtaSection() {
                     Start your Quran journey<br />today — for free.
                 </h2>
                 <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-                    No credit card. No subscription. Just you, the Quran, and a simple plan.
+                    Start free with reading, memorization, and khatam tools. Upgrade later only if you want deeper Pro support.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Link href="/app" className="inline-flex items-center justify-center gap-2 h-13 rounded-full bg-foreground text-background px-10 py-3.5 text-base font-semibold hover:bg-foreground/90 transition-colors shadow">
