@@ -27,6 +27,8 @@ export const paymentTransactionStatusEnum = pgEnum("payment_transaction_status",
 export const goalStatusEnum = pgEnum("goal_status", ["active", "completed"]);
 export const themePreferenceEnum = pgEnum("theme_preference", ["light", "dark", "system"]);
 export const readerModeEnum = pgEnum("reader_mode", ["verse", "mushaf"]);
+export const habitTypeEnum = pgEnum("habit_type", ["boolean", "quantitative"]);
+export const habitRoutineEnum = pgEnum("habit_routine", ["morning", "afternoon", "evening", "anytime"]);
 
 // Better-Auth core tables (Drizzle adapter expects these model names).
 export const user = pgTable("user", {
@@ -233,6 +235,51 @@ export const memorizationProgress = pgTable(
   },
   (table) => [
     uniqueIndex("memorization_progress_goal_unique_idx").on(table.goalId),
+  ],
+);
+
+export const habits = pgTable(
+  "habits",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
+    title: text("title").notNull(),
+    category: text("category").notNull(),
+    color: text("color").default("emerald").notNull(),
+    iconName: text("icon_name"),
+    type: habitTypeEnum("type").default("boolean").notNull(),
+    routine: habitRoutineEnum("routine").default("anytime").notNull(),
+    target: integer("target").default(1).notNull(),
+    unit: text("unit"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    archivedAt: timestamp("archived_at"),
+  },
+  (table) => [
+    index("habits_user_id_idx").on(table.userId),
+    index("habits_user_archived_idx").on(table.userId, table.archivedAt),
+    index("habits_user_routine_idx").on(table.userId, table.routine),
+  ],
+);
+
+export const habitEntries = pgTable(
+  "habit_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    habitId: uuid("habit_id")
+      .references(() => habits.id, { onDelete: "cascade" })
+      .notNull(),
+    date: timestamp("date").notNull(),
+    value: integer("value").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("habit_entries_habit_id_idx").on(table.habitId),
+    index("habit_entries_date_idx").on(table.date),
+    uniqueIndex("habit_entries_habit_date_unique_idx").on(table.habitId, table.date),
   ],
 );
 

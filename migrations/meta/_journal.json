@@ -120,6 +120,13 @@
       "when": 1773684000000,
       "tag": "0016_payment_transactions",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1773770400000,
+      "tag": "0017_white_toad",
+      "breakpoints": true
     }
   ]
 }

@@ -102,7 +102,7 @@ export default function DonatePage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,360px)] lg:items-start lg:justify-center">
-          <div className="relative z-10 w-full space-y-6 rounded-[2.5rem] border border-border/80 bg-card p-8 shadow-2xl shadow-black/3">
+          <div className="relative z-10 w-full space-y-6 rounded-4xl border border-border/80 bg-card p-8 shadow-2xl shadow-black/3">
             <form onSubmit={handleDonate} className="space-y-6">
               <div className="flex w-full rounded-2xl border border-border/50 bg-secondary/30 p-1">
                 <button
@@ -218,10 +218,10 @@ export default function DonatePage() {
 
           <div
             className={cn(
-              "w-full rounded-[2.25rem] border px-6 py-6 shadow-xl backdrop-blur-sm transition-all duration-500 lg:sticky lg:top-10",
+              "w-full rounded-4xl border px-6 py-6 shadow-xl backdrop-blur-sm transition-all duration-500 lg:sticky lg:top-10",
               billingCycle === "monthly"
-                ? "border-rose-500/20 bg-gradient-to-b from-rose-500/8 to-card/95"
-                : "border-amber-500/25 bg-gradient-to-b from-amber-500/10 to-card/95",
+                ? "border-rose-500/20 bg-linear-to-b from-rose-500/8 to-card/95"
+                : "border-amber-500/25 bg-linear-to-b from-amber-500/10 to-card/95",
             )}
           >
             <div key={billingCycle} className="animate-in space-y-5 fade-in slide-in-from-right-6 duration-500">

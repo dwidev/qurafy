@@ -5,6 +5,7 @@ import {
     Target,
     Settings,
     User,
+    Activity,
 } from "lucide-react";
 import type { NavItem } from "@/types";
 
@@ -28,6 +29,11 @@ export const mainNavItems: NavItem[] = [
         title: "Khatam Tracker",
         href: "/app/tracker",
         icon: Calendar,
+    },
+    {
+        title: "Habit Tracker",
+        href: "/app/habits",
+        icon: Activity,
     },
 ];
 
