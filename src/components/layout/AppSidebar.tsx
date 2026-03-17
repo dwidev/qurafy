@@ -16,7 +16,7 @@ export function AppSidebar() {
   const profileInitial = displayName.charAt(0).toUpperCase() || "U";
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-6 md:top-1/2 md:-translate-y-1/2 md:translate-x-0 z-50 flex flex-row md:flex-col items-center gap-2 md:gap-4 rounded-4xl border border-border bg-background/80 backdrop-blur-xl p-2.5 md:p-3.5 shadow-2xl shadow-primary/10 animate-in fade-in slide-in-from-bottom-8 md:slide-in-from-left-8 duration-700">
+    <div className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100vw-1rem)] max-w-[22rem] -translate-x-1/2 flex-row items-center justify-between gap-1.5 rounded-4xl border border-border bg-background/80 p-2 shadow-2xl shadow-primary/10 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-8 duration-700 md:bottom-auto md:left-6 md:top-1/2 md:w-auto md:max-w-none md:-translate-x-0 md:-translate-y-1/2 md:flex-col md:justify-start md:gap-4 md:p-3.5 md:slide-in-from-left-8">
 
       {/* Brand logo at the top */}
       <Link href="/" className="group relative hidden md:flex items-center justify-center p-2 mt-1">
@@ -26,7 +26,7 @@ export function AppSidebar() {
 
       <div className="w-8 h-[2px] bg-border/50 rounded-full my-1 hidden md:block" />
 
-      <nav className="flex flex-row md:flex-col gap-2 md:gap-3 items-center">
+      <nav className="flex min-w-0 flex-1 flex-row items-center justify-between gap-1 md:flex-none md:flex-col md:gap-3">
         {mainNavItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -34,7 +34,7 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group relative flex items-center justify-center rounded-2xl p-3 md:p-3.5 transition-all outline-none",
+                "group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl p-0 transition-all outline-none md:h-auto md:w-auto md:p-3.5",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 md:hover:scale-105"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground md:hover:scale-105"
@@ -53,13 +53,13 @@ export function AppSidebar() {
       <div className="w-8 h-[2px] bg-border/50 rounded-full my-1 hidden md:block" />
 
       {/* Utility Actions */}
-      <div className="flex flex-row md:flex-col gap-2 md:gap-3 items-center">
+      <div className="flex shrink-0 flex-row items-center gap-1 md:flex-col md:gap-3">
         {utilityNavItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "group relative flex items-center justify-center rounded-2xl p-3 md:p-3.5 transition-all outline-none",
+              "group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl p-0 transition-all outline-none md:h-auto md:w-auto md:p-3.5",
               pathname === item.href
                 ? "bg-secondary text-foreground"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
