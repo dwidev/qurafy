@@ -2,6 +2,7 @@
   "name": "qurafy",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "bun@1.2.14",
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbo": "next dev",

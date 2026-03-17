@@ -5,7 +5,7 @@ Next.js app with Better-Auth + Drizzle + Supabase Postgres.
 ## 1. Install
 
 ```bash
-npm install
+bun install
 ```
 
 ## 2. Configure environment
@@ -42,12 +42,12 @@ Important:
 ## 3. Run database migration
 
 ```bash
-npm run db:generate
-npm run db:migrate
+bun run db:generate
+bun run db:migrate
 ```
 
 ## 4. Run app
 
 ```bash
-npm run dev
+bun run dev
 ```
