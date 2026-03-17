@@ -18,6 +18,7 @@ import { HabitTrackerHeader } from "@/features/habits/components/HabitTrackerHea
 import { HabitFilters } from "@/features/habits/components/HabitFilters";
 import { HabitSuggestions } from "@/features/habits/components/HabitSuggestions";
 import { HabitStats } from "@/features/habits/components/HabitStats";
+import { HabitTrackerPageSkeleton } from "@/features/habits/components/HabitTrackerPageSkeleton";
 import type { HabitRecord, HabitRoutine, SaveHabitPayload } from "@/features/habits/types";
 
 type StatusFilter = "all" | "pending" | "completed";
@@ -25,23 +26,6 @@ const PRAYER_HABIT_TITLES = ["Subuh", "Dzuhur", "Ashar", "Maghrib", "Isya"] as c
 
 function isGroupedPrayerHabit(habit: HabitRecord) {
   return habit.category === "Prayer" && PRAYER_HABIT_TITLES.includes(habit.title as (typeof PRAYER_HABIT_TITLES)[number]);
-}
-
-function HabitsLoadingState() {
-  return (
-    <div className="space-y-8">
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="h-40 animate-pulse rounded-4xl bg-card/60" />
-        ))}
-      </div>
-      <div className="space-y-5">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="h-56 animate-pulse rounded-4xl bg-card/60" />
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export function HabitTrackerPage() {
@@ -93,7 +77,7 @@ export function HabitTrackerPage() {
   }
 
   if (habitsQuery.isLoading || !habitsQuery.data) {
-    return <HabitsLoadingState />;
+    return <HabitTrackerPageSkeleton />;
   }
 
   const data = habitsQuery.data;
