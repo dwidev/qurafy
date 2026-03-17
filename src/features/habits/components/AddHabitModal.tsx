@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LoaderCircle, X } from "lucide-react";
 import type { HabitColor, HabitRecord, HabitRoutine, HabitType, SaveHabitPayload } from "@/features/habits/types";
 import { HABIT_CATEGORIES, HABIT_COLORS, HABIT_ROUTINES } from "@/features/habits/types";
+import { cn } from "@/lib/utils";
 
 interface AddHabitModalProps {
   isOpen: boolean;
@@ -64,29 +65,30 @@ export function AddHabitModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-xl overflow-hidden rounded-[2rem] border border-border/60 bg-card shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border/60 px-6 py-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 md:p-6 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="absolute inset-0 z-0" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-xl overflow-hidden rounded-4xl border border-border bg-card shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
+        <div className="flex items-center justify-between border-b border-border bg-muted/20 px-8 py-6">
           <div className="space-y-1">
-            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-muted-foreground">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {mode === "create" ? "New Habit" : "Edit Habit"}
             </p>
-            <h2 className="text-xl font-black tracking-tight text-foreground">
-              {mode === "create" ? "Design your next routine" : "Adjust your habit setup"}
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              {mode === "create" ? "Design your routine" : "Adjust your setup"}
             </h2>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="rounded-full p-2.5 bg-secondary/80 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <form
-          className="space-y-6 p-6"
+          className="space-y-6 p-6 md:p-8"
           onSubmit={async (event) => {
             event.preventDefault();
 
@@ -103,62 +105,72 @@ export function AddHabitModal({
         >
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2 md:col-span-2">
-              <span className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Habit Name
               </span>
               <input
                 required
                 value={form.title}
                 onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
-                placeholder="Read 2 pages after Fajr"
-                className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground outline-hidden transition-colors placeholder:text-muted-foreground/50 focus:border-foreground"
+                placeholder="E.g., Read 2 pages after Fajr"
+                className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm transition placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
 
             <label className="space-y-2">
-              <span className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Category
               </span>
-              <select
-                value={form.category}
-                onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
-                className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground outline-hidden transition-colors focus:border-foreground"
-              >
-                {HABIT_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={form.category}
+                  onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
+                  className="w-full appearance-none rounded-2xl border border-border bg-background px-4 py-3 pr-10 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {HABIT_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+                  <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                </div>
+              </div>
             </label>
 
             <label className="space-y-2">
-              <span className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Routine
               </span>
-              <select
-                value={form.routine}
-                onChange={(event) => setForm((current) => ({ ...current, routine: event.target.value as HabitRoutine }))}
-                className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium capitalize text-foreground outline-hidden transition-colors focus:border-foreground"
-              >
-                {HABIT_ROUTINES.map((routine) => (
-                  <option key={routine} value={routine}>
-                    {routine}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={form.routine}
+                  onChange={(event) => setForm((current) => ({ ...current, routine: event.target.value as HabitRoutine }))}
+                  className="w-full appearance-none rounded-2xl border border-border bg-background px-4 py-3 pr-10 text-sm capitalize transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {HABIT_ROUTINES.map((routine) => (
+                    <option key={routine} value={routine}>
+                      {routine}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+                  <svg className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                </div>
+              </div>
             </label>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <fieldset className="space-y-2">
-              <legend className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+              <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pb-2">
                 Tracking Style
               </legend>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { value: "boolean" as const, label: "Done / not done" },
-                  { value: "quantitative" as const, label: "Track a number" },
+                  { value: "boolean" as const, label: "Done/Skip" },
+                  { value: "quantitative" as const, label: "Set target" },
                 ].map((option) => {
                   const active = form.type === option.value;
 
@@ -174,11 +186,12 @@ export function AddHabitModal({
                           unit: option.value === "quantitative" ? current.unit : "",
                         }))
                       }
-                      className={`rounded-2xl border px-4 py-3 text-left text-sm font-bold transition-colors ${
+                      className={cn(
+                        "rounded-xl border px-4 py-3 text-center text-sm font-semibold transition-all duration-200",
                         active
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border/60 bg-background text-foreground"
-                      }`}
+                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                      )}
                     >
                       {option.label}
                     </button>
@@ -187,40 +200,43 @@ export function AddHabitModal({
               </div>
             </fieldset>
 
-            <fieldset className="space-y-2">
-              <legend className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                Accent
+            <fieldset className="space-y-2 border-l border-border pl-4 md:pl-6">
+              <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pb-2">
+                Accent Theme
               </legend>
-              <div className="flex flex-wrap gap-3">
-                {HABIT_COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setForm((current) => ({ ...current, color }))}
-                    className={`h-9 w-9 rounded-full border-2 transition-transform ${
-                      form.color === color ? "scale-90 border-foreground" : "border-transparent"
-                    } ${
-                      color === "emerald"
-                        ? "bg-emerald-500"
-                        : color === "amber"
-                          ? "bg-amber-500"
-                          : color === "rose"
-                            ? "bg-rose-500"
-                            : color === "blue"
-                              ? "bg-blue-500"
-                              : "bg-indigo-500"
-                    }`}
-                    aria-label={`Use ${color} accent`}
-                  />
-                ))}
+              <div className="flex flex-wrap items-center gap-2">
+                {HABIT_COLORS.map((color) => {
+                  const isActive = form.color === color;
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setForm((current) => ({ ...current, color }))}
+                      className={cn(
+                        "h-10 w-10 shrink-0 grow-0 rounded-full transition-all duration-200 focus-visible:outline-none focus:ring-2 focus:ring-offset-2",
+                        isActive ? "scale-110 shadow-md ring-2 ring-primary ring-offset-2 ring-offset-background" : "scale-100 opacity-80 hover:opacity-100 hover:scale-105",
+                        color === "emerald"
+                          ? "bg-emerald-500"
+                          : color === "amber"
+                            ? "bg-amber-500"
+                            : color === "rose"
+                              ? "bg-rose-500"
+                              : color === "blue"
+                                ? "bg-blue-500"
+                                : "bg-indigo-500"
+                      )}
+                      aria-label={`Use ${color} accent`}
+                    />
+                  );
+                })}
               </div>
             </fieldset>
           </div>
 
           {isQuantitative ? (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 rounded-2xl border border-primary/20 bg-primary/5 p-5 animate-in fade-in duration-300">
               <label className="space-y-2">
-                <span className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                   Daily Target
                 </span>
                 <input
@@ -230,39 +246,39 @@ export function AddHabitModal({
                   type="number"
                   value={form.target}
                   onChange={(event) => setForm((current) => ({ ...current, target: event.target.value }))}
-                  className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground outline-hidden transition-colors focus:border-foreground"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm transition placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </label>
 
               <label className="space-y-2">
-                <span className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                   Unit
                 </span>
                 <input
                   required
                   value={form.unit}
                   onChange={(event) => setForm((current) => ({ ...current, unit: event.target.value }))}
-                  placeholder="pages, glasses, reps"
-                  className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground outline-hidden transition-colors placeholder:text-muted-foreground/50 focus:border-foreground"
+                  placeholder="E.g., pages, sets"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm transition placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </label>
             </div>
           ) : null}
 
-          <div className="flex flex-col-reverse gap-3 border-t border-border/60 pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="h-12 rounded-2xl border border-border/60 px-5 text-sm font-bold text-foreground transition-colors hover:bg-secondary"
+              className="flex-1 inline-flex h-14 items-center justify-center rounded-full border border-border bg-background px-6 text-sm font-bold text-foreground transition-all duration-300 hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex h-12 min-w-40 items-center justify-center gap-2 rounded-2xl bg-foreground px-5 text-sm font-black uppercase tracking-[0.18em] text-background transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex-1 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-primary-foreground shadow-sm transition-all duration-300 hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
             >
-              {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+              {isSubmitting ? <LoaderCircle className="h-5 w-5 animate-spin" /> : null}
               {mode === "create" ? "Create Habit" : "Save Changes"}
             </button>
           </div>

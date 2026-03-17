@@ -33,14 +33,14 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
     orderedHabits.length === 0
       ? 0
       : Math.round(
-          orderedHabits.reduce((total, habit) => total + habit.completionRate7d, 0) / orderedHabits.length,
-        );
+        orderedHabits.reduce((total, habit) => total + habit.completionRate7d, 0) / orderedHabits.length,
+      );
   const week = Array.from({ length: 7 }, (_, index) => {
     const completed = orderedHabits.filter((habit) => habit.week[index]?.isCompleted).length;
     const label = orderedHabits[0]?.week[index]?.date
       ? new Date(`${orderedHabits[0].week[index].date}T00:00:00.000Z`).toLocaleDateString("en-US", {
-          weekday: "narrow",
-        })
+        weekday: "narrow",
+      })
       : "";
 
     return {
@@ -51,13 +51,13 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
   });
 
   return (
-    <article className="rounded-[2rem] border border-border/60 bg-card p-5 shadow-sm">
-      <div className="space-y-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-lg font-black tracking-tight text-foreground">Prayer</h3>
-              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-600">
+    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+      <div className="space-y-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-2.5">
+            <div className="flex flex-wrap items-center gap-3">
+              <h3 className="text-xl font-bold tracking-tight text-foreground">Prayer</h3>
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
                 {completedCount}/{orderedHabits.length} today
               </span>
             </div>
@@ -66,30 +66,30 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:min-w-[260px]">
-            <div className="rounded-[1.5rem] border border-border/60 bg-background px-4 py-3">
-              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">Today</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-foreground">{completedCount}</p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:min-w-[280px]">
+            <div className="rounded-2xl border border-border bg-secondary/20 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Today</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{completedCount}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-border/60 bg-background px-4 py-3">
-              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">Target</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-foreground">{orderedHabits.length}</p>
+            <div className="rounded-2xl border border-border bg-secondary/20 px-4 py-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Target</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{orderedHabits.length}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-border/60 bg-background px-4 py-3 sm:col-span-1 col-span-2">
-              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">7d score</p>
-              <p className="mt-1 text-2xl font-black tracking-tight text-foreground">{consistencyScore}%</p>
+            <div className="col-span-2 rounded-2xl border border-border bg-secondary/20 px-4 py-3 sm:col-span-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">7d score</p>
+              <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{consistencyScore}%</p>
             </div>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {week.map((point) => (
-            <div key={point.label} className="flex flex-col items-center gap-1">
+          {week.map((point, i) => (
+            <div key={i} className="flex flex-col items-center gap-1.5">
               <div
                 className={cn(
-                  "flex h-8 min-w-8 items-center justify-center rounded-full border px-2 text-[10px] font-black",
+                  "flex h-8 min-w-8 items-center justify-center rounded-full border px-2 text-[10px] font-black transition-colors duration-300",
                   point.completed === point.total && point.total > 0
-                    ? "border-emerald-500/20 bg-emerald-500 text-white"
+                    ? "border-emerald-500/20 bg-emerald-500 text-white shadow-sm shadow-emerald-500/20"
                     : point.completed > 0
                       ? "border-emerald-500/20 bg-emerald-500/12 text-emerald-600"
                       : "border-border/60 bg-background text-muted-foreground",
@@ -102,7 +102,7 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
           ))}
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {orderedHabits.map((habit) => {
             const isSaving = pendingHabitId === habit.id;
 
@@ -113,33 +113,33 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
                 disabled={isSaving}
                 onClick={() => onSaveProgress(habit, habit.isCompletedToday ? 0 : 1)}
                 className={cn(
-                  "flex min-h-24 flex-col items-start justify-between rounded-[1.75rem] border px-4 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+                  "flex min-h-24 flex-col items-start justify-between rounded-2xl border px-5 py-4 text-left transition-all hover:bg-accent/50 disabled:cursor-not-allowed disabled:opacity-60",
                   habit.isCompletedToday
-                    ? "border-emerald-500/20 bg-emerald-500/10"
-                    : "border-border/60 bg-background hover:bg-secondary",
+                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100"
+                    : "border-border bg-background hover:border-primary/30",
                 )}
               >
                 <div className="flex w-full items-start justify-between gap-3">
                   <div>
-                    <p className="text-base font-black tracking-tight text-foreground">{habit.title}</p>
-                    <p className="mt-1 text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+                    <p className="text-sm font-bold tracking-tight text-foreground">{habit.title}</p>
+                    <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       {habit.routine}
                     </p>
                   </div>
 
                   <div
                     className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-full border",
+                      "flex h-6 w-6 items-center justify-center rounded-md border transition-colors",
                       habit.isCompletedToday
-                        ? "border-transparent bg-emerald-500 text-white"
+                        ? "border-transparent bg-emerald-500 text-white shadow-sm shadow-emerald-500/20"
                         : "border-border/60 bg-card text-muted-foreground",
                     )}
                   >
-                    {isSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : habit.isCompletedToday ? <Check className="h-4 w-4" /> : null}
+                    {isSaving ? <LoaderCircle className="h-3 w-3 animate-spin" /> : habit.isCompletedToday ? <Check className="h-4 w-4" /> : null}
                   </div>
                 </div>
 
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="mt-4 text-[10px] font-medium text-muted-foreground">
                   {habit.isCompletedToday ? "Checked for today" : "Tap to mark this prayer done"}
                 </p>
               </button>

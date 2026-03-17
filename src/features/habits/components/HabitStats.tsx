@@ -13,6 +13,8 @@ export function HabitStats({ summary }: HabitStatsProps) {
       hint: `${summary.completionRateToday}% complete`,
       icon: CheckCircle2,
       tone: "text-emerald-500",
+      bgTone: "bg-emerald-500/10",
+      glow: "bg-emerald-500",
     },
     {
       label: "Perfect streak",
@@ -20,6 +22,8 @@ export function HabitStats({ summary }: HabitStatsProps) {
       hint: `Best ${summary.bestStreak} days`,
       icon: Flame,
       tone: "text-amber-500",
+      bgTone: "bg-amber-500/10",
+      glow: "bg-amber-500",
     },
     {
       label: "Consistency",
@@ -27,6 +31,8 @@ export function HabitStats({ summary }: HabitStatsProps) {
       hint: "Last 7 days",
       icon: Sparkles,
       tone: "text-rose-500",
+      bgTone: "bg-rose-500/10",
+      glow: "bg-rose-500",
     },
     {
       label: "Check-ins",
@@ -34,6 +40,8 @@ export function HabitStats({ summary }: HabitStatsProps) {
       hint: "Completed entries",
       icon: Activity,
       tone: "text-blue-500",
+      bgTone: "bg-blue-500/10",
+      glow: "bg-blue-500",
     },
   ];
 
@@ -45,18 +53,15 @@ export function HabitStats({ summary }: HabitStatsProps) {
         return (
           <article
             key={card.label}
-            className="relative overflow-hidden rounded-[2rem] border border-border/60 bg-card p-5 shadow-sm"
+            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
           >
-            <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-secondary/60 blur-3xl" />
-            <div className="relative space-y-5">
-              <div className={`flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] ${card.tone}`}>
-                <Icon className="h-4 w-4" />
-                {card.label}
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl font-black tracking-tight text-foreground">{card.value}</p>
-                <p className="text-sm font-medium text-muted-foreground">{card.hint}</p>
-              </div>
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${card.bgTone} ${card.tone}`}>
+              <Icon className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{card.label}</p>
+              <p className="text-2xl font-bold tracking-tight text-foreground leading-none mb-1">{card.value}</p>
+              <p className="text-[11px] font-medium text-muted-foreground">{card.hint}</p>
             </div>
           </article>
         );

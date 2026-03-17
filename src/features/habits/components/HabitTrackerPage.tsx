@@ -1,8 +1,7 @@
 "use client";
 
-import { startTransition, useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LoaderCircle, Plus } from "lucide-react";
 import {
   getHabitsErrorMessage,
   isUnauthorizedHabitsError,
@@ -15,6 +14,9 @@ import {
 import { AddHabitModal } from "@/features/habits/components/AddHabitModal";
 import { HabitItem } from "@/features/habits/components/HabitItem";
 import { PrayerHabitCard } from "@/features/habits/components/PrayerHabitCard";
+import { HabitTrackerHeader } from "@/features/habits/components/HabitTrackerHeader";
+import { HabitFilters } from "@/features/habits/components/HabitFilters";
+import { HabitSuggestions } from "@/features/habits/components/HabitSuggestions";
 import { HabitStats } from "@/features/habits/components/HabitStats";
 import type { HabitRecord, HabitRoutine, SaveHabitPayload } from "@/features/habits/types";
 
@@ -27,15 +29,15 @@ function isGroupedPrayerHabit(habit: HabitRecord) {
 
 function HabitsLoadingState() {
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="space-y-8">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="h-36 animate-pulse rounded-[2rem] bg-card" />
+          <div key={index} className="h-40 animate-pulse rounded-4xl bg-card/60" />
         ))}
       </div>
-      <div className="space-y-4">
+      <div className="space-y-5">
         {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="h-52 animate-pulse rounded-[2rem] bg-card" />
+          <div key={index} className="h-56 animate-pulse rounded-4xl bg-card/60" />
         ))}
       </div>
     </div>
@@ -76,13 +78,13 @@ export function HabitTrackerPage() {
 
   if (habitsQuery.isError) {
     return (
-      <div className="rounded-[2rem] border border-destructive/20 bg-destructive/5 p-6">
-        <h2 className="text-xl font-black tracking-tight text-foreground">Could not load habits</h2>
-        <p className="mt-2 text-sm font-medium text-muted-foreground">{getHabitsErrorMessage(habitsQuery.error)}</p>
+      <div className="rounded-4xl border border-destructive/20 bg-destructive/5 p-8 backdrop-blur-md">
+        <h2 className="text-xl font-black tracking-tight text-destructive">Could not load habits</h2>
+        <p className="mt-2 text-sm font-medium text-destructive/80">{getHabitsErrorMessage(habitsQuery.error)}</p>
         <button
           type="button"
           onClick={() => habitsQuery.refetch()}
-          className="mt-4 rounded-2xl bg-foreground px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-background"
+          className="mt-6 rounded-2xl bg-destructive px-6 py-3.5 text-sm font-black uppercase tracking-[0.16em] text-white transition-transform hover:scale-105 active:scale-[0.98]"
         >
           Retry
         </button>
@@ -203,150 +205,57 @@ export function HabitTrackerPage() {
   }
 
   return (
-    <div className="space-y-8 pb-24">
-      <section className="overflow-hidden rounded-[2.25rem] border border-border/60 bg-linear-to-br from-card via-card to-secondary/40 p-6 shadow-sm md:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl space-y-3">
-            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-muted-foreground">Habits</p>
-            <h1 className="text-4xl font-black tracking-tight text-foreground md:text-5xl">Build routines you can keep.</h1>
-            <p className="text-base font-medium leading-7 text-muted-foreground">
-              Track daily ibadah, reading, and personal routines in one place. Each habit keeps its own streak, weekly
-              consistency, and daily progress.
-            </p>
-          </div>
+    <div className="space-y-8 pb-32">
+      {/* 1. Page header — identity + primary action */}
+      <HabitTrackerHeader 
+        onAddHabit={() => {
+          setEditingHabit(null);
+          setEditorOpen(true);
+        }} 
+      />
 
-          <button
-            type="button"
-            onClick={() => {
-              setEditingHabit(null);
-              setEditorOpen(true);
-            }}
-            className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-foreground px-6 text-sm font-black uppercase tracking-[0.18em] text-background transition-transform active:scale-[0.98]"
-          >
-            <Plus className="h-4 w-4" />
-            Add Habit
-          </button>
-        </div>
-      </section>
-
-      <HabitStats summary={data.summary} />
-
-      <section className="rounded-[2rem] border border-border/60 bg-card p-5 shadow-sm">
-        <div className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr_0.9fr_0.9fr]">
-          <label className="space-y-2">
-            <span className="px-1 text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">Search</span>
-            <input
-              value={searchTerm}
-              onChange={(event) => startTransition(() => setSearchTerm(event.target.value))}
-              placeholder="Find a habit"
-              className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground outline-hidden transition-colors placeholder:text-muted-foreground/50 focus:border-foreground"
-            />
-          </label>
-
-          <label className="space-y-2">
-            <span className="px-1 text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">Category</span>
-            <select
-              value={activeCategory}
-              onChange={(event) => startTransition(() => setActiveCategory(event.target.value))}
-              className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground outline-hidden transition-colors focus:border-foreground"
-            >
-              <option value="All">All categories</option>
-              {data.categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="space-y-2">
-            <span className="px-1 text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">Routine</span>
-            <select
-              value={activeRoutine}
-              onChange={(event) => startTransition(() => setActiveRoutine(event.target.value as "all" | HabitRoutine))}
-              className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium capitalize text-foreground outline-hidden transition-colors focus:border-foreground"
-            >
-              <option value="all">All routines</option>
-              <option value="morning">Morning</option>
-              <option value="afternoon">Afternoon</option>
-              <option value="evening">Evening</option>
-              <option value="anytime">Anytime</option>
-            </select>
-          </label>
-
-          <label className="space-y-2">
-            <span className="px-1 text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">Status</span>
-            <select
-              value={statusFilter}
-              onChange={(event) => startTransition(() => setStatusFilter(event.target.value as StatusFilter))}
-              className="h-12 w-full rounded-2xl border border-border/60 bg-background px-4 text-sm font-medium text-foreground outline-hidden transition-colors focus:border-foreground"
-            >
-              <option value="all">All habits</option>
-              <option value="pending">Pending today</option>
-              <option value="completed">Completed today</option>
-            </select>
-          </label>
-        </div>
-
-        {actionError ? (
-          <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
-            {actionError}
-          </div>
-        ) : null}
-      </section>
-
-      {data.suggestions.length > 0 ? (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-black tracking-tight text-foreground">Quick start ideas</h2>
-              <p className="text-sm font-medium text-muted-foreground">Use a template, then customize it later.</p>
-            </div>
-            {createHabitMutation.isPending ? <LoaderCircle className="h-4 w-4 animate-spin text-muted-foreground" /> : null}
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {data.suggestions.slice(0, 4).map((suggestion) => (
-              <button
-                key={suggestion.label}
-                type="button"
-                disabled={createHabitMutation.isPending}
-                onClick={() =>
-                  handleQuickAdd({
-                    title: suggestion.label,
-                    category: suggestion.category,
-                    color: suggestion.color,
-                    routine: suggestion.routine,
-                    type: suggestion.type,
-                    target: suggestion.target,
-                    unit: suggestion.unit,
-                  })
-                }
-                className="rounded-[1.75rem] border border-border/60 bg-card px-5 py-4 text-left transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <p className="text-base font-black tracking-tight text-foreground">{suggestion.label}</p>
-                <p className="mt-2 text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">
-                  {suggestion.category} • {suggestion.routine}
-                </p>
-              </button>
-            ))}
-          </div>
-        </section>
+      {/* 2. Prayer card — always on top, time-sensitive daily actions */}
+      {prayerHabits.length > 0 ? (
+        <PrayerHabitCard habits={prayerHabits} pendingHabitId={pendingEntryHabitId} onSaveProgress={handleSaveProgress} />
       ) : null}
 
-      {prayerHabits.length === 0 && habits.length === 0 ? (
-        <section className="rounded-[2rem] border border-dashed border-border/60 bg-card px-6 py-16 text-center shadow-inner">
-          <h2 className="text-2xl font-black tracking-tight text-foreground">No habits match this view</h2>
-          <p className="mt-3 text-sm font-medium text-muted-foreground">
-            Adjust the filters above or create a new habit to start building your routine.
+      {/* 3. Stats — motivational overview of progress */}
+      <HabitStats summary={data.summary} />
+
+      {/* 4. Filters — narrow down the list */}
+      <HabitFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        activeRoutine={activeRoutine}
+        setActiveRoutine={setActiveRoutine}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        categories={data.categories}
+      />
+
+      {actionError ? (
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+          {actionError}
+        </div>
+      ) : null}
+
+      {/* 5. Habit list — the core actionable items */}
+      {habits.length === 0 && prayerHabits.length === 0 ? (
+        <section className="flex min-h-[400px] flex-col items-center justify-center rounded-4xl border border-dashed border-border/40 bg-card/40 px-6 py-20 text-center backdrop-blur-sm">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+            <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">No habits match this view</h2>
+          <p className="mt-4 max-w-md text-base font-medium text-muted-foreground">
+            Adjust the filters above or create a new habit to start building your routine today.
           </p>
         </section>
-      ) : (
-        <section className="space-y-4">
-          {prayerHabits.length > 0 ? (
-            <PrayerHabitCard habits={prayerHabits} pendingHabitId={pendingEntryHabitId} onSaveProgress={handleSaveProgress} />
-          ) : null}
-
+      ) : habits.length > 0 ? (
+        <section className="space-y-5">
           {habits.map((habit) => (
             <HabitItem
               key={habit.id}
@@ -362,7 +271,14 @@ export function HabitTrackerPage() {
             />
           ))}
         </section>
-      )}
+      ) : null}
+
+      {/* 6. Quick start ideas — discovery for new/growing users, at the bottom */}
+      <HabitSuggestions 
+        suggestions={data.suggestions} 
+        isPending={createHabitMutation.isPending} 
+        onQuickAdd={handleQuickAdd} 
+      />
 
       <AddHabitModal
         key={editingHabit?.id ?? "create-habit"}
