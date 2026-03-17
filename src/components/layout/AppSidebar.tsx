@@ -16,7 +16,7 @@ export function AppSidebar() {
   const profileInitial = displayName.charAt(0).toUpperCase() || "U";
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100vw-1rem)] max-w-[22rem] -translate-x-1/2 flex-row items-center justify-between gap-1.5 rounded-4xl border border-border bg-background/80 p-2 shadow-2xl shadow-primary/10 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-8 duration-700 md:bottom-auto md:left-6 md:top-1/2 md:w-auto md:max-w-none md:-translate-x-0 md:-translate-y-1/2 md:flex-col md:justify-start md:gap-4 md:p-3.5 md:slide-in-from-left-8">
+    <div className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100vw-1rem)] max-w-88 -translate-x-1/2 flex-row items-center justify-between gap-1.5 rounded-4xl border border-border bg-background/80 p-2 shadow-2xl shadow-primary/10 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-8 duration-700 md:bottom-auto md:left-6 md:top-1/2 md:w-auto md:max-w-none md:translate-x-0 md:-translate-y-1/2 md:flex-col md:justify-start md:gap-4 md:p-3.5 md:slide-in-from-left-8">
 
       {/* Brand logo at the top */}
       <Link href="/" className="group relative hidden md:flex items-center justify-center p-2 mt-1">
