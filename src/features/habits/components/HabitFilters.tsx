@@ -1,6 +1,6 @@
 import { startTransition, useState, useEffect } from "react";
 import type { HabitRoutine } from "@/features/habits/types";
-import { Search, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 
 type StatusFilter = "all" | "pending" | "completed";
 
@@ -41,43 +41,36 @@ export function HabitFilters({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const activeFiltersCount = 
-    Number(!!searchTerm) + 
-    Number(activeCategory !== "All") + 
-    Number(activeRoutine !== "all") + 
+  const activeFiltersCount =
+    Number(!!searchTerm) +
+    Number(activeCategory !== "All") +
+    Number(activeRoutine !== "all") +
     Number(statusFilter !== "all");
 
   return (
     <>
+      {/* Compact trigger — designed to sit next to the Add Habit button */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="group flex h-14 w-full items-center gap-3 rounded-2xl border border-border bg-card px-5 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:bg-accent/50 hover:text-foreground hover:border-primary/30"
+        className="relative flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/30 hover:bg-accent/50 hover:text-foreground"
+        title="Search & filter (press /)"
       >
-        <div className="flex items-center justify-center text-foreground transition-transform duration-300 group-hover:scale-105">
-          <Search className="h-4 w-4" />
-        </div>
-        <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
-          Search & Filter Habits...
-        </span>
-        
-        <div className="ml-auto flex items-center gap-3">
-          {activeFiltersCount > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
-              {activeFiltersCount}
-            </span>
-          )}
-          <span className="hidden rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm sm:block">
-            /
+        <Search className="h-4 w-4 shrink-0" />
+        <span className="hidden sm:inline">Search</span>
+        {activeFiltersCount > 0 && (
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground shadow-sm">
+            {activeFiltersCount}
           </span>
-        </div>
+        )}
+        <SlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 md:p-6 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="absolute inset-0 z-0" onClick={() => setIsOpen(false)} />
           <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-4xl border border-border bg-card shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
-            
+
             <div className="flex items-center justify-between border-b border-border bg-muted/20 px-8 py-6">
               <div className="space-y-1">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -96,7 +89,7 @@ export function HabitFilters({
                 <X className="h-4 w-4" />
               </button>
             </div>
-            
+
             <div className="space-y-8 p-8">
               <label className="block space-y-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Search Query</span>

@@ -206,12 +206,25 @@ export function HabitTrackerPage() {
 
   return (
     <div className="space-y-8 pb-32">
-      {/* 1. Page header — identity + primary action */}
-      <HabitTrackerHeader 
+      {/* 1. Page header — identity + search filter + add action */}
+      <HabitTrackerHeader
         onAddHabit={() => {
           setEditingHabit(null);
           setEditorOpen(true);
-        }} 
+        }}
+        filterSlot={
+          <HabitFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+            activeRoutine={activeRoutine}
+            setActiveRoutine={setActiveRoutine}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            categories={data.categories}
+          />
+        }
       />
 
       {/* 2. Prayer card — always on top, time-sensitive daily actions */}
@@ -221,19 +234,6 @@ export function HabitTrackerPage() {
 
       {/* 3. Stats — motivational overview of progress */}
       <HabitStats summary={data.summary} />
-
-      {/* 4. Filters — narrow down the list */}
-      <HabitFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-        activeRoutine={activeRoutine}
-        setActiveRoutine={setActiveRoutine}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        categories={data.categories}
-      />
 
       {actionError ? (
         <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
