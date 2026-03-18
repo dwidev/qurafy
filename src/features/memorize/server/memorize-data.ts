@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNotNull, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { memorizationGoals, memorizationProgress } from "@/db/schema";
 import { getQuranReadContentData, getQuranReadListData } from "@/features/read/server/quran-api";
@@ -9,8 +9,11 @@ import type {
   DeleteMemorizeGoalPayload,
   MemorizeActiveGoal,
   MemorizeMeData,
+  RecreateMemorizeGoalPayload,
   UpdateMemorizeGoalPayload,
 } from "@/features/memorize/types";
+
+const GOAL_HISTORY_EXPIRY_DAYS = 7;
 
 function buildRangeLabel(surahName: string, startVerse: number, endVerse: number) {
   if (startVerse === endVerse) {
@@ -81,7 +84,8 @@ function buildMemorizationStreakUpdate(
 }
 
 export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData> {
-  const [quranListResult, activeGoalRow] = await Promise.all([
+  const now = new Date();
+  const [quranListResult, activeGoalRow, deletedGoalRows] = await Promise.all([
     getQuranReadListData().catch(() => null),
     db.query.memorizationGoals.findFirst({
       where: and(
@@ -91,7 +95,33 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
       ),
       orderBy: [desc(memorizationGoals.id)],
     }),
+    db.query.memorizationGoals.findMany({
+      where: and(
+        eq(memorizationGoals.userId, userId),
+        or(
+          and(
+            isNotNull(memorizationGoals.deletedAt),
+            gt(memorizationGoals.expiresAt, now),
+          ),
+          and(
+            isNull(memorizationGoals.deletedAt),
+            eq(memorizationGoals.status, "completed"),
+          ),
+        ),
+      ),
+      orderBy: [desc(memorizationGoals.deletedAt)],
+    }),
   ]);
+
+  const deletedGoalIds = deletedGoalRows.map((row) => row.id);
+  const deletedGoalProgressRows = deletedGoalIds.length > 0
+    ? await db.query.memorizationProgress.findMany({
+      where: inArray(memorizationProgress.goalId, deletedGoalIds),
+    })
+    : [];
+  const deletedGoalProgressMap = new Map(
+    deletedGoalProgressRows.map((row) => [row.goalId, row] as const),
+  );
 
   const surahs = quranListResult
     ? quranListResult.surahs.map((surah) => ({
@@ -102,10 +132,44 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
     }))
     : [];
 
+  const deletedGoalHistory = deletedGoalRows.map((row) => {
+    const surahMeta = surahs.find((item) => item.n === row.surahNumber);
+    const progress = deletedGoalProgressMap.get(row.id);
+    const historyState: "deleted" | "completed" = row.deletedAt ? "deleted" : "completed";
+    const completedVerses = Math.max(0, Math.min(progress?.completedVerses ?? 0, row.totalVerses));
+    const progressPct = Math.min(100, Math.round((completedVerses / Math.max(1, row.totalVerses)) * 100));
+
+    return {
+      id: row.id,
+      historyState,
+      title: row.title,
+      surahNumber: row.surahNumber,
+      surahName: surahMeta?.en ?? `Surah ${row.surahNumber}`,
+      surahArabicName: surahMeta?.ar ?? "",
+      totalVerses: row.totalVerses,
+      targetDays: row.targetDays,
+      repsPerVerse: row.repsPerVerse,
+      status: row.status,
+      completedDays: progress?.completedDays ?? 0,
+      completedVerses,
+      progressPct,
+      currentStreak: progress?.currentStreak ?? 0,
+      bestStreak: progress?.bestStreak ?? 0,
+      deletedAt: row.deletedAt?.toISOString() ?? null,
+      expiresAt: row.expiresAt?.toISOString() ?? null,
+      completedAt: progress?.lastCompletedAt?.toISOString() ?? null,
+    };
+  }).sort((left, right) => {
+    const leftTime = new Date(left.deletedAt ?? left.completedAt ?? 0).getTime();
+    const rightTime = new Date(right.deletedAt ?? right.completedAt ?? 0).getTime();
+    return rightTime - leftTime;
+  });
+
   if (!activeGoalRow) {
     return {
       surahs,
       activeGoal: null,
+      deletedGoalHistory,
     };
   }
 
@@ -195,6 +259,7 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
       todayTarget,
       upcomingTargets,
     },
+    deletedGoalHistory,
   };
 }
 
@@ -451,12 +516,62 @@ export async function deleteMemorizeGoal(userId: string, payload: DeleteMemorize
     throw new Error("Goal not found.");
   }
 
-  await db
-    .update(memorizationGoals)
-    .set({ deletedAt: new Date() })
-    .where(eq(memorizationGoals.id, payload.goalId));
+  await db.transaction(async (tx) => {
+    const deletedAt = new Date();
+    const expiresAt = addUtcDays(deletedAt, GOAL_HISTORY_EXPIRY_DAYS);
+
+    await tx
+      .update(memorizationGoals)
+      .set({ deletedAt, expiresAt })
+      .where(eq(memorizationGoals.id, payload.goalId));
+  });
 
   return {
     deleted: true,
   };
+}
+
+export async function recreateMemorizeGoalFromHistory(userId: string, payload: RecreateMemorizeGoalPayload) {
+  if (!payload.historyId) {
+    throw new Error("History id is required.");
+  }
+
+  const activeGoal = await db.query.memorizationGoals.findFirst({
+    where: and(
+      eq(memorizationGoals.userId, userId),
+      eq(memorizationGoals.status, "active"),
+      isNull(memorizationGoals.deletedAt),
+    ),
+  });
+
+  if (activeGoal) {
+    throw new Error("Delete your current memorization goal before recreating another one.");
+  }
+
+  const historyRow = await db.query.memorizationGoals.findFirst({
+    where: and(
+      eq(memorizationGoals.id, payload.historyId),
+      eq(memorizationGoals.userId, userId),
+      isNotNull(memorizationGoals.deletedAt),
+      gt(memorizationGoals.expiresAt, new Date()),
+    ),
+  });
+
+  if (!historyRow) {
+    throw new Error("Recovery history not found or already expired.");
+  }
+
+  const recreatedGoal = await createMemorizeGoal(userId, {
+    title: historyRow.title,
+    surahNumber: historyRow.surahNumber,
+    targetDays: historyRow.targetDays,
+    repsPerVerse: historyRow.repsPerVerse,
+  });
+
+  await db
+    .update(memorizationGoals)
+    .set({ expiresAt: new Date() })
+    .where(eq(memorizationGoals.id, historyRow.id));
+
+  return recreatedGoal;
 }

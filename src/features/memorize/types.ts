@@ -41,9 +41,31 @@ export type MemorizeActiveGoal = {
   upcomingTargets: MemorizeUpcomingTarget[];
 };
 
+export type MemorizeDeletedGoalHistory = {
+  id: string;
+  historyState: "deleted" | "completed";
+  title: string;
+  surahNumber: number;
+  surahName: string;
+  surahArabicName: string;
+  totalVerses: number;
+  targetDays: number;
+  repsPerVerse: number;
+  status: "active" | "completed";
+  completedDays: number;
+  completedVerses: number;
+  progressPct: number;
+  currentStreak: number;
+  bestStreak: number;
+  deletedAt: string | null;
+  expiresAt: string | null;
+  completedAt: string | null;
+};
+
 export type MemorizeMeData = {
   surahs: MemorizeSurahOption[];
   activeGoal: MemorizeActiveGoal | null;
+  deletedGoalHistory: MemorizeDeletedGoalHistory[];
 };
 
 export type CreateMemorizeGoalPayload = {
@@ -66,4 +88,8 @@ export type UpdateMemorizeGoalPayload = {
 export type CompleteMemorizeSessionPayload = {
   goalId: string;
   dayNumber: number;
+};
+
+export type RecreateMemorizeGoalPayload = {
+  historyId: string;
 };

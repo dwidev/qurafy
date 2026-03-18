@@ -6,6 +6,7 @@ import type {
   CreateKhatamPlanPayload,
   DeleteKhatamPlanPayload,
   KhatamMeData,
+  RecreateKhatamPlanPayload,
   ToggleKhatamDayPayload,
   UpdateKhatamPlanPayload,
 } from "@/features/tracker/types";
@@ -87,6 +88,26 @@ async function deletePlan(data: DeleteKhatamPlanPayload): Promise<{ deleted: boo
 
   return {
     deleted: true,
+  };
+}
+
+async function postRecreatePlan(data: RecreateKhatamPlanPayload): Promise<{ planId: string }> {
+  const response = await fetch("/api/khatam/history/recreate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const payload = (await response.json()) as { planId?: string; error?: string };
+
+  if (!response.ok || !payload.planId) {
+    throw new KhatamApiError(payload.error ?? "Failed to recreate khatam plan.", response.status);
+  }
+
+  return {
+    planId: payload.planId,
   };
 }
 
@@ -175,6 +196,17 @@ export function useDeleteKhatamPlanMutation() {
 
   return useMutation({
     mutationFn: deletePlan,
+    onSuccess: async () => {
+      await refreshDashboard(queryClient);
+    },
+  });
+}
+
+export function useRecreateKhatamPlanMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: postRecreatePlan,
     onSuccess: async () => {
       await refreshDashboard(queryClient);
     },

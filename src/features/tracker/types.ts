@@ -30,8 +30,27 @@ export type KhatamActivePlan = {
   dailyTargets: KhatamDailyTarget[];
 };
 
+export type KhatamDeletedPlanHistory = {
+  id: string;
+  historyState: "deleted" | "completed";
+  name: string;
+  startJuz: number;
+  startDate: string;
+  targetDate: string;
+  totalDays: number;
+  completedDays: number;
+  completedJuz: number;
+  currentStreak: number;
+  bestStreak: number;
+  isCompleted: boolean;
+  deletedAt: string | null;
+  expiresAt: string | null;
+  completedAt: string | null;
+};
+
 export type KhatamMeData = {
   activePlan: KhatamActivePlan | null;
+  deletedPlanHistory: KhatamDeletedPlanHistory[];
 };
 
 export type CreateKhatamPlanPayload = {
@@ -55,4 +74,8 @@ export type ToggleKhatamDayPayload = {
   scheduledDate?: string;
   forceDone?: boolean;
   completedVerses?: number;
+};
+
+export type RecreateKhatamPlanPayload = {
+  historyId: string;
 };

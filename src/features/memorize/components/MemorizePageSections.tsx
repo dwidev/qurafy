@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BookOpen,
   Calendar,
   Check,
+  CheckCircle2,
   ChevronDown,
   Clock,
   Flame,
   Play,
   Plus,
+  RotateCcw,
   Settings2,
   Target,
   TrendingUp,
@@ -58,6 +60,7 @@ export type MemorizeGoalForm = {
 type MemorizeHeaderProps = {
   hasActiveGoal: boolean;
   onOpenSettings: () => void;
+  onCreateGoal?: () => void;
 };
 
 type MemorizeStatItem = {
@@ -167,6 +170,29 @@ export function formatLocalDateLabel(input = new Date()) {
     day: "numeric",
     year: "numeric",
   }).format(input);
+}
+
+function formatExpiryCountdown(expiresAt: string, nowMs: number) {
+  const diffMs = new Date(expiresAt).getTime() - nowMs;
+
+  if (diffMs <= 0) {
+    return "Expired";
+  }
+
+  const totalMinutes = Math.floor(diffMs / 60_000);
+  const days = Math.floor(totalMinutes / 1_440);
+  const hours = Math.floor((totalMinutes % 1_440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `Expires in ${days}d ${hours}h`;
+  }
+
+  if (hours > 0) {
+    return `Expires in ${hours}h ${minutes}m`;
+  }
+
+  return `Expires in ${Math.max(1, minutes)}m`;
 }
 
 export function readMemorizeSessionDoneMarker(): MemorizeSessionDoneMarker | null {
@@ -327,7 +353,7 @@ export function GoalSettingsModal({
   );
 }
 
-export function MemorizeHeader({ hasActiveGoal, onOpenSettings }: MemorizeHeaderProps) {
+export function MemorizeHeader({ hasActiveGoal, onOpenSettings, onCreateGoal }: MemorizeHeaderProps) {
   return (
     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
       <div>
@@ -347,12 +373,24 @@ export function MemorizeHeader({ hasActiveGoal, onOpenSettings }: MemorizeHeader
         >
           <Settings2 className="h-4 w-4" /> Goal Settings
         </button>
+      ) : onCreateGoal ? (
+        <button
+          type="button"
+          onClick={onCreateGoal}
+          className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:scale-[1.02] hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]"
+        >
+          <Plus className="h-4 w-4" /> Create Goal
+        </button>
       ) : null}
     </div>
   );
 }
 
-export function MemorizeWelcomeState({ onCreateGoal }: { onCreateGoal: () => void }) {
+export function MemorizeWelcomeState({
+  onCreateGoal,
+}: {
+  onCreateGoal: () => void;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500 md:py-24">
       <div className="relative mb-8">
@@ -399,6 +437,141 @@ export function MemorizeWelcomeState({ onCreateGoal }: { onCreateGoal: () => voi
     </div>
   );
 }
+
+export function MemorizeEmptyMainState() {
+  return (
+    <section className="rounded-4xl border border-border bg-card p-6 shadow-sm md:p-8">
+      <div className="space-y-2">
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+          <Target className="h-3.5 w-3.5" />
+          No Active Goal
+        </div>
+        <h2 className="text-2xl font-bold">Start a new memorization goal</h2>
+        <p className="max-w-xl text-sm text-muted-foreground">
+          Your previous completed and deleted goals are shown below. Use the create button in the header whenever you&apos;re ready to continue.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+export function DeletedGoalHistoryPanel({
+  historyItems,
+  onRecreateGoal,
+  recreateHistoryId,
+  isRecreating,
+}: {
+  historyItems: MemorizeMeData["deletedGoalHistory"];
+  onRecreateGoal: (historyId: string) => Promise<void>;
+  recreateHistoryId: string | null;
+  isRecreating: boolean;
+}) {
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 60_000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  return (
+    <section className="space-y-8 py-4">
+      <div className="flex items-center justify-between px-2">
+        <div className="space-y-1">
+          <h3 className="text-xl font-bold tracking-tight">Recent History</h3>
+          <p className="text-sm text-muted-foreground">Keep track of your memorization achievements.</p>
+        </div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/50 text-muted-foreground">
+          <RotateCcw className="h-5 w-5" />
+        </div>
+      </div>
+
+      <div className="relative space-y-8 pl-4 before:absolute before:bottom-2 before:left-[1.35rem] before:top-2 before:w-px before:bg-border/60">
+        {historyItems.map((item) => {
+          const isCurrentItem = recreateHistoryId === item.id;
+          const isDeleted = item.historyState === "deleted";
+          const actionLabel = isDeleted ? "Deleted" : "Finished";
+          const dateLabel = isDeleted ? item.deletedAt : item.completedAt;
+          console.log(item.expiresAt)
+
+          return (
+            <div key={item.id} className="relative pl-10">
+              {/* Timeline Dot */}
+              <div
+                className={`absolute left-0 top-1.5 z-10 h-3 w-3 rounded-full border-2 border-background ring-4 ${isDeleted ? "bg-destructive ring-destructive/10" : "bg-emerald-500 ring-emerald-500/10"
+                  }`}
+              />
+
+              <div className="flex flex-col gap-4 rounded-3xl border border-border/50 bg-card/40 p-5 transition-all hover:border-primary/20 hover:bg-card sm:flex-row sm:items-center">
+                <div className="flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {dateLabel ? formatLocalDateLabel(new Date(dateLabel)) : "No Date"}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${isDeleted ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-600"
+                        }`}
+                    >
+                      {actionLabel}
+                    </span>
+                  </div>
+
+                  <h4 className="text-lg font-bold text-foreground">{item.title}</h4>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      <span>{item.surahName}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Target className="h-3.5 w-3.5" />
+                      <span>{item.completedVerses}/{item.totalVerses} verses</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>{item.completedDays}/{item.targetDays} days</span>
+                    </div>
+                  </div>
+
+                  {isDeleted && item.expiresAt ? (
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-primary/80">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>{formatExpiryCountdown(item.expiresAt, nowMs)}</span>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="pt-2 sm:pt-0">
+                  {isDeleted ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void onRecreateGoal(item.id);
+                      }}
+                      disabled={isRecreating}
+                      className="flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-foreground px-6 text-sm font-bold text-background transition-all hover:scale-[1.02] hover:bg-foreground/90 active:scale-[0.98] disabled:opacity-50 sm:w-auto"
+                    >
+                      {isCurrentItem && isRecreating ? "Restoring..." : "Restore Goal"}
+                    </button>
+                  ) : (
+                    <div className="flex h-10 items-center gap-2 rounded-2xl bg-emerald-500/10 px-6 text-sm font-bold text-emerald-600">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Done
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+
 
 export function MemorizeStatsGrid({ items }: { items: MemorizeStatItem[] }) {
   return (

@@ -14,6 +14,7 @@ import {
   isUnauthorizedMemorizeError,
   useCreateMemorizeGoalMutation,
   useMemorizeMeQuery,
+  useRecreateMemorizeGoalMutation,
   useUpdateMemorizeGoalMutation,
 } from "@/features/memorize/api/client";
 import { MemorizePageSkeleton } from "@/features/memorize/components/MemorizePageSkeleton";
@@ -25,9 +26,11 @@ import {
   DEFAULT_SURAHS,
   DEFAULT_TODAY_VERSES,
   DEFAULT_UPCOMING,
+  DeletedGoalHistoryPanel,
   formatLocalDateLabel,
   getLocalDateKey,
   GoalSettingsModal,
+  MemorizeEmptyMainState,
   MemorizeHeader,
   MemorizeStatsGrid,
   MemorizeWelcomeState,
@@ -45,6 +48,7 @@ export default function MemorizePage() {
   const memorizeQuery = useMemorizeMeQuery();
   const createGoalMutation = useCreateMemorizeGoalMutation();
   const deleteGoalMutation = useDeleteMemorizeGoalMutation();
+  const recreateGoalMutation = useRecreateMemorizeGoalMutation();
   const updateGoalMutation = useUpdateMemorizeGoalMutation();
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -56,7 +60,9 @@ export default function MemorizePage() {
 
   const data = memorizeQuery.data;
   const activeGoal = data?.activeGoal ?? null;
+  const deletedGoalHistory = data?.deletedGoalHistory ?? [];
   const hasActiveGoal = Boolean(activeGoal);
+  const hasHistory = deletedGoalHistory.length > 0;
   const SURAHS = data?.surahs ?? DEFAULT_SURAHS;
   const safeSurahIdx = SURAHS[form.surahIdx] ? form.surahIdx : 0;
   const selectedSurah = SURAHS[safeSurahIdx];
@@ -173,6 +179,13 @@ export default function MemorizePage() {
     await memorizeQuery.refetch();
   }
 
+  async function handleRecreateGoal(historyId: string) {
+    await recreateGoalMutation.mutateAsync({ historyId });
+    clearMemorizeSessionDoneMarker();
+    setSessionDoneMarker(null);
+    await memorizeQuery.refetch();
+  }
+
   if (memorizeQuery.isError) {
     return (
       <div className="flex-1 p-4 md:p-8 pt-6 max-w-3xl mx-auto pb-24">
@@ -197,43 +210,59 @@ export default function MemorizePage() {
 
   return (
     <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 max-w-5xl mx-auto pb-20">
-      <MemorizeHeader hasActiveGoal={hasActiveGoal} onOpenSettings={() => setShowSettingsModal(true)} />
+      <MemorizeHeader
+        hasActiveGoal={hasActiveGoal}
+        onOpenSettings={() => setShowSettingsModal(true)}
+        onCreateGoal={!hasActiveGoal ? () => setShowGoalModal(true) : undefined}
+      />
+      <div className="space-y-8">
+        {!hasActiveGoal && !hasHistory ? (
+          <MemorizeWelcomeState onCreateGoal={() => setShowGoalModal(true)} />
+        ) : !hasActiveGoal ? (
+          <MemorizeEmptyMainState />
+        ) : (
+          <>
+            <MemorizeStatsGrid
+              items={[
+                { icon: Flame, label: "Day Streak", value: `${activeGoal?.currentStreak ?? 0} days`, color: "text-orange-500", bg: "bg-orange-50" },
+                { icon: BookOpen, label: "Verses Done", value: `${goal.doneVerses}/${goal.totalVerses}`, color: "text-blue-600", bg: "bg-blue-50" },
+                { icon: Clock, label: "Days Remaining", value: `${remaining} days`, color: "text-emerald-600", bg: "bg-emerald-50" },
+                { icon: TrendingUp, label: "Overall Progress", value: `${pct}%`, color: "text-primary", bg: "bg-primary/10" },
+              ]}
+            />
 
-      {!hasActiveGoal ? (
-        <MemorizeWelcomeState onCreateGoal={() => setShowGoalModal(true)} />
-      ) : (
-        <>
-          <MemorizeStatsGrid
-            items={[
-              { icon: Flame, label: "Day Streak", value: `${activeGoal?.currentStreak ?? 0} days`, color: "text-orange-500", bg: "bg-orange-50" },
-              { icon: BookOpen, label: "Verses Done", value: `${goal.doneVerses}/${goal.totalVerses}`, color: "text-blue-600", bg: "bg-blue-50" },
-              { icon: Clock, label: "Days Remaining", value: `${remaining} days`, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { icon: TrendingUp, label: "Overall Progress", value: `${pct}%`, color: "text-primary", bg: "bg-primary/10" },
-            ]}
+            <ActiveGoalCard
+              goal={goal}
+              selectedSurahName={selectedSurah?.en || ""}
+              pct={pct}
+              remainingDays={remaining}
+            />
+
+            <TodayTargetSection
+              showCompletionCard={showCompletionCard}
+              hasTodayTarget={Boolean(activeGoal?.todayTarget)}
+              surahName={activeGoal?.surahName || selectedSurah?.en || "An-Naba"}
+              startVerse={activeGoal?.todayTarget?.startVerse ?? 1}
+              endVerse={activeGoal?.todayTarget?.endVerse ?? 5}
+              versesCount={TODAY_VERSES.length}
+              targetReps={targetReps}
+              todayLabel={todayLabel}
+              onStartSession={startMemorizationSession}
+            />
+
+            <UpcomingTargetsSection items={UPCOMING} />
+          </>
+        )}
+
+        {hasHistory ? (
+          <DeletedGoalHistoryPanel
+            historyItems={deletedGoalHistory}
+            onRecreateGoal={handleRecreateGoal}
+            recreateHistoryId={recreateGoalMutation.variables?.historyId ?? null}
+            isRecreating={recreateGoalMutation.isPending}
           />
-
-          <ActiveGoalCard
-            goal={goal}
-            selectedSurahName={selectedSurah?.en || ""}
-            pct={pct}
-            remainingDays={remaining}
-          />
-
-          <TodayTargetSection
-            showCompletionCard={showCompletionCard}
-            hasTodayTarget={Boolean(activeGoal?.todayTarget)}
-            surahName={activeGoal?.surahName || selectedSurah?.en || "An-Naba"}
-            startVerse={activeGoal?.todayTarget?.startVerse ?? 1}
-            endVerse={activeGoal?.todayTarget?.endVerse ?? 5}
-            versesCount={TODAY_VERSES.length}
-            targetReps={targetReps}
-            todayLabel={todayLabel}
-            onStartSession={startMemorizationSession}
-          />
-
-          <UpcomingTargetsSection items={UPCOMING} />
-        </>
-      )}
+        ) : null}
+      </div>
       {showGoalModal && (
         <CreateGoalModal
           form={form}

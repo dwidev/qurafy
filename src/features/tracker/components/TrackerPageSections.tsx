@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   BookOpen,
@@ -16,7 +16,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import type { KhatamActivePlan } from "@/features/tracker/types";
+import type { KhatamActivePlan, KhatamMeData } from "@/features/tracker/types";
 
 export type KhatamPlan = KhatamActivePlan;
 
@@ -36,6 +36,7 @@ type EditModalProps = {
 type TrackerPageHeaderProps = {
   plan: KhatamPlan | null;
   onOpenEdit: () => void;
+  onOpenCreate?: () => void;
 };
 
 type TrackerPlanViewProps = {
@@ -76,6 +77,29 @@ export function formatShortDate(dateStr: string) {
     month: "short",
     day: "numeric",
   });
+}
+
+function formatExpiryCountdown(expiresAt: string, nowMs: number) {
+  const diffMs = new Date(expiresAt).getTime() - nowMs;
+
+  if (diffMs <= 0) {
+    return "Expired";
+  }
+
+  const totalMinutes = Math.floor(diffMs / 60_000);
+  const days = Math.floor(totalMinutes / 1_440);
+  const hours = Math.floor((totalMinutes % 1_440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `Expires in ${days}d ${hours}h`;
+  }
+
+  if (hours > 0) {
+    return `Expires in ${hours}h ${minutes}m`;
+  }
+
+  return `Expires in ${Math.max(1, minutes)}m`;
 }
 
 export function formatBoundaryLabel(surahName: string, surahNumber: number, verse: number) {
@@ -151,7 +175,7 @@ export function TrackerLoadingState() {
   );
 }
 
-export function TrackerPageHeader({ plan, onOpenEdit }: TrackerPageHeaderProps) {
+export function TrackerPageHeader({ plan, onOpenEdit, onOpenCreate }: TrackerPageHeaderProps) {
   return (
     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
       <div>
@@ -174,6 +198,15 @@ export function TrackerPageHeader({ plan, onOpenEdit }: TrackerPageHeaderProps) 
         >
           <Edit2 className="h-4 w-4" />
           Plan Settings
+        </button>
+      ) : onOpenCreate ? (
+        <button
+          type="button"
+          onClick={onOpenCreate}
+          className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:scale-[1.02] hover:bg-primary/90"
+        >
+          <Plus className="h-4 w-4" />
+          Create Plan
         </button>
       ) : null}
     </div>
@@ -200,12 +233,16 @@ function WelcomeFeature({
   );
 }
 
-export function WelcomeState({ onOpenSetup }: { onOpenSetup: () => void }) {
+export function WelcomeState({
+  onOpenSetup,
+}: {
+  onOpenSetup: () => void;
+}) {
   return (
     <div className="animate-in fade-in zoom-in-95 py-16 text-center duration-500 md:py-24">
       <div className="relative mb-8 flex justify-center">
         <div className="absolute inset-0 animate-pulse rounded-full bg-primary/20 blur-3xl" />
-        <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-4xl border border-primary/20 bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg">
+        <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-4xl border border-primary/20 bg-linear-to-br from-primary/20 to-primary/5 shadow-lg">
           <BookOpen className="h-16 w-16 text-primary" />
         </div>
       </div>
@@ -242,6 +279,142 @@ export function WelcomeState({ onOpenSetup }: { onOpenSetup: () => void }) {
     </div>
   );
 }
+
+export function TrackerEmptyMainState() {
+  return (
+    <section className="rounded-4xl border border-border bg-card p-6 shadow-sm md:p-8">
+      <div className="space-y-2">
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+          <BookOpen className="h-3.5 w-3.5" />
+          No Active Plan
+        </div>
+        <h2 className="text-2xl font-bold">Start a new khatam plan</h2>
+        <p className="max-w-xl text-sm text-muted-foreground">
+          Your previous completed and deleted plans are shown below. Use the create button in the header whenever you&apos;re ready to begin again.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+export function DeletedPlanHistoryPanel({
+  historyItems,
+  onRecreatePlan,
+  recreateHistoryId,
+  isRecreating,
+}: {
+  historyItems: KhatamMeData["deletedPlanHistory"];
+  onRecreatePlan: (historyId: string) => Promise<void>;
+  recreateHistoryId: string | null;
+  isRecreating: boolean;
+}) {
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 60_000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  return (
+    <section className="space-y-8 py-4">
+      <div className="flex items-center justify-between px-2">
+        <div className="space-y-1">
+          <h3 className="text-xl font-bold tracking-tight">Recent History</h3>
+          <p className="text-sm text-muted-foreground">Keep track of your past khatam journeys.</p>
+        </div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/50 text-muted-foreground">
+          <RotateCcw className="h-5 w-5" />
+        </div>
+      </div>
+
+      <div className="relative space-y-8 pl-4 before:absolute before:bottom-2 before:left-[1.35rem] before:top-2 before:w-px before:bg-border/60">
+        {historyItems.map((item) => {
+          const isCurrentItem = recreateHistoryId === item.id;
+          const isDeleted = item.historyState === "deleted";
+          const actionLabel = isDeleted ? "Deleted" : "Finished";
+          const dateLabel = isDeleted ? item.deletedAt : item.completedAt;
+
+          return (
+            <div key={item.id} className="relative pl-10">
+              {/* Timeline Dot */}
+              <div
+                className={`absolute left-0 top-1.5 z-10 h-3 w-3 rounded-full border-2 border-background ring-4 ${
+                  isDeleted ? "bg-destructive ring-destructive/10" : "bg-emerald-500 ring-emerald-500/10"
+                }`}
+              />
+
+              <div className="flex flex-col gap-4 rounded-3xl border border-border/50 bg-card/40 p-5 transition-all hover:border-primary/20 hover:bg-card sm:flex-row sm:items-center">
+                <div className="flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {dateLabel ? formatShortDate(dateLabel) : "No Date"}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
+                        isDeleted ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-600"
+                      }`}
+                    >
+                      {actionLabel}
+                    </span>
+                  </div>
+
+                  <h4 className="text-lg font-bold text-foreground">{item.name}</h4>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      <span>Start Juz {item.startJuz}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>{item.completedDays}/{item.totalDays} days</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Trophy className="h-3.5 w-3.5" />
+                      <span>{item.completedJuz} juz</span>
+                    </div>
+                  </div>
+
+                  {isDeleted && item.expiresAt ? (
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-primary/80">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>{formatExpiryCountdown(item.expiresAt, nowMs)}</span>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="pt-2 sm:pt-0">
+                  {isDeleted ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void onRecreatePlan(item.id);
+                      }}
+                      disabled={isRecreating}
+                      className="flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-foreground px-6 text-sm font-bold text-background transition-all hover:scale-[1.02] hover:bg-foreground/90 active:scale-[0.98] disabled:opacity-50 sm:w-auto"
+                    >
+                      {isCurrentItem && isRecreating ? "Restoring..." : "Restore Plan"}
+                    </button>
+                  ) : (
+                    <div className="flex h-10 items-center gap-2 rounded-2xl bg-emerald-500/10 px-6 text-sm font-bold text-emerald-600">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Done
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+
 
 export function SetupModal({ onSave, onClose, isSubmitting }: SetupModalProps) {
   const [name, setName] = useState("Ramadan Challenge");

@@ -127,6 +127,34 @@
       "when": 1773770400000,
       "tag": "0017_white_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1773795600000,
+      "tag": "0018_deleted_plan_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1773802800000,
+      "tag": "0019_drop_legacy_history_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1773806400000,
+      "tag": "0020_add_missing_expires_at_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1773882000000,
+      "tag": "0021_update_history_expiry_to_7_days",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, isNull, lt, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, or } from "drizzle-orm";
 import { db } from "@/db";
 import { khatamPlanProgress, khatamPlans, khatamProgress } from "@/db/schema";
 import { getQuranReadListData } from "@/features/read/server/quran-api";
@@ -9,11 +9,13 @@ import type {
   DeleteKhatamPlanPayload,
   KhatamDailyTarget,
   KhatamMeData,
+  RecreateKhatamPlanPayload,
   ToggleKhatamDayPayload,
   UpdateKhatamPlanPayload,
 } from "@/features/tracker/types";
 
 const MS_PER_DAY = 86_400_000;
+const KHATAM_HISTORY_EXPIRY_DAYS = 7;
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type SurahMeta = {
@@ -303,18 +305,77 @@ async function syncPlanSummary(
 }
 
 export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
-  const activePlan = await db.query.khatamPlans.findFirst({
-    where: and(
-      eq(khatamPlans.userId, userId),
-      eq(khatamPlans.isCompleted, false),
-      isNull(khatamPlans.deletedAt),
-    ),
-    orderBy: [desc(khatamPlans.targetDate)],
+  const now = new Date();
+  const [activePlan, deletedPlanRows] = await Promise.all([
+    db.query.khatamPlans.findFirst({
+      where: and(
+        eq(khatamPlans.userId, userId),
+        eq(khatamPlans.isCompleted, false),
+        isNull(khatamPlans.deletedAt),
+      ),
+      orderBy: [desc(khatamPlans.targetDate)],
+    }),
+    db.query.khatamPlans.findMany({
+      where: and(
+        eq(khatamPlans.userId, userId),
+        or(
+          and(
+            isNotNull(khatamPlans.deletedAt),
+            gt(khatamPlans.expiresAt, now),
+          ),
+          and(
+            isNull(khatamPlans.deletedAt),
+            eq(khatamPlans.isCompleted, true),
+          ),
+        ),
+      ),
+      orderBy: [desc(khatamPlans.deletedAt)],
+    }),
+  ]);
+
+  const deletedPlanIds = deletedPlanRows.map((row) => row.id);
+  const deletedPlanProgressRows = deletedPlanIds.length > 0
+    ? await db.query.khatamPlanProgress.findMany({
+      where: inArray(khatamPlanProgress.planId, deletedPlanIds),
+    })
+    : [];
+  const deletedPlanProgressMap = new Map(
+    deletedPlanProgressRows.map((row) => [row.planId, row] as const),
+  );
+
+  const deletedPlanHistory = deletedPlanRows.map((row) => {
+    const progress = deletedPlanProgressMap.get(row.id);
+    const startDate = startOfUtcDay(row.startDate);
+    const targetDate = startOfUtcDay(row.targetDate);
+    const historyState: "deleted" | "completed" = row.deletedAt ? "deleted" : "completed";
+
+    return {
+      id: row.id,
+      historyState,
+      name: row.name,
+      startJuz: row.startJuz,
+      startDate: dateKey(startDate),
+      targetDate: dateKey(targetDate),
+      totalDays: Math.max(1, daysBetween(startDate, targetDate) + 1),
+      completedDays: progress?.completedDays ?? 0,
+      completedJuz: progress?.completedJuz ?? 0,
+      currentStreak: progress?.currentStreak ?? 0,
+      bestStreak: progress?.bestStreak ?? 0,
+      isCompleted: row.isCompleted,
+      deletedAt: row.deletedAt?.toISOString() ?? null,
+      expiresAt: row.expiresAt?.toISOString() ?? null,
+      completedAt: progress?.lastCompletedAt?.toISOString() ?? null,
+    };
+  }).sort((left, right) => {
+    const leftTime = new Date(left.deletedAt ?? left.completedAt ?? 0).getTime();
+    const rightTime = new Date(right.deletedAt ?? right.completedAt ?? 0).getTime();
+    return rightTime - leftTime;
   });
 
   if (!activePlan) {
     return {
       activePlan: null,
+      deletedPlanHistory,
     };
   }
 
@@ -365,6 +426,7 @@ export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
       totalDays: schedule.totalDays,
       dailyTargets: schedule.dailyTargets,
     },
+    deletedPlanHistory,
   };
 }
 
@@ -503,14 +565,69 @@ export async function deleteKhatamPlan(userId: string, payload: DeleteKhatamPlan
     throw new Error("Plan not found.");
   }
 
-  await db
-    .update(khatamPlans)
-    .set({ deletedAt: new Date() })
-    .where(eq(khatamPlans.id, payload.planId));
+  await db.transaction(async (tx) => {
+    const deletedAt = new Date();
+    const expiresAt = addDays(deletedAt, KHATAM_HISTORY_EXPIRY_DAYS);
+
+    await tx
+      .update(khatamPlans)
+      .set({ deletedAt, expiresAt })
+      .where(eq(khatamPlans.id, payload.planId));
+  });
 
   return {
     deleted: true,
   };
+}
+
+export async function recreateKhatamPlanFromHistory(userId: string, payload: RecreateKhatamPlanPayload) {
+  if (!payload.historyId) {
+    throw new Error("History id is required.");
+  }
+
+  const activePlan = await db.query.khatamPlans.findFirst({
+    where: and(
+      eq(khatamPlans.userId, userId),
+      eq(khatamPlans.isCompleted, false),
+      isNull(khatamPlans.deletedAt),
+    ),
+  });
+
+  if (activePlan) {
+    throw new Error("Delete your current khatam plan before recreating another one.");
+  }
+
+  const historyRow = await db.query.khatamPlans.findFirst({
+    where: and(
+      eq(khatamPlans.id, payload.historyId),
+      eq(khatamPlans.userId, userId),
+      isNotNull(khatamPlans.deletedAt),
+      gt(khatamPlans.expiresAt, new Date()),
+    ),
+  });
+
+  if (!historyRow) {
+    throw new Error("Recovery history not found or already expired.");
+  }
+
+  const startDate = startOfUtcDay(new Date());
+  const originalTotalDays = Math.max(
+    2,
+    daysBetween(startOfUtcDay(historyRow.startDate), startOfUtcDay(historyRow.targetDate)) + 1,
+  );
+  const targetDate = addDays(startDate, originalTotalDays - 1);
+  const recreatedPlan = await createKhatamPlan(userId, {
+    name: historyRow.name,
+    startJuz: historyRow.startJuz,
+    targetDate: dateKey(targetDate),
+  });
+
+  await db
+    .update(khatamPlans)
+    .set({ expiresAt: new Date() })
+    .where(eq(khatamPlans.id, historyRow.id));
+
+  return recreatedPlan;
 }
 
 export async function toggleKhatamToday(userId: string, payload: ToggleKhatamDayPayload) {

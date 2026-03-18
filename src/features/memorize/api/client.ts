@@ -7,6 +7,7 @@ import type {
   CreateMemorizeGoalPayload,
   DeleteMemorizeGoalPayload,
   MemorizeMeData,
+  RecreateMemorizeGoalPayload,
   UpdateMemorizeGoalPayload,
 } from "@/features/memorize/types";
 
@@ -82,6 +83,24 @@ async function patchUpdateGoal(data: UpdateMemorizeGoalPayload): Promise<{ updat
   }
 
   return { updated: true };
+}
+
+async function postRecreateGoal(data: RecreateMemorizeGoalPayload): Promise<{ goalId: string }> {
+  const response = await fetch("/api/memorize/history/recreate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const payload = (await response.json()) as { goalId?: string; error?: string };
+
+  if (!response.ok || !payload.goalId) {
+    throw new MemorizeApiError(payload.error ?? "Failed to recreate goal.", response.status);
+  }
+
+  return { goalId: payload.goalId };
 }
 
 async function postCompleteSession(data: CompleteMemorizeSessionPayload): Promise<{ completed: boolean }> {
@@ -169,6 +188,20 @@ export function useUpdateMemorizeGoalMutation() {
 
   return useMutation({
     mutationFn: patchUpdateGoal,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
+        refreshDashboardQuery(queryClient),
+      ]);
+    },
+  });
+}
+
+export function useRecreateMemorizeGoalMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: postRecreateGoal,
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: memorizeQueryKeys.me }),
