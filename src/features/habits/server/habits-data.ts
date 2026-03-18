@@ -449,7 +449,8 @@ export async function getHabitsMeData(userId: string): Promise<HabitMeData> {
 
     const completedToday = habitsPayload.filter((habit) => habit.isCompletedToday).length;
     const perfectDayKeys = buildPerfectDayKeys(habitRows, completedByHabit, today);
-    const perfectDayStreak = buildStreakSummary(perfectDayKeys, today);
+    const perfectDayAnchor = completedToday === habitsPayload.length ? today : addUtcDays(today, -1);
+    const perfectDayStreak = buildStreakSummary(perfectDayKeys, perfectDayAnchor);
     const totalCheckIns = habitsPayload.reduce((total, habit) => total + habit.totalCheckIns, 0);
     const consistencyScore = roundPercentage(
       habitsPayload.reduce((total, habit) => total + habit.completionRate7d, 0) / Math.max(1, habitsPayload.length),
