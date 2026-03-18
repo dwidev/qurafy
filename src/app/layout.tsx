@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/shared/Providers";
 import { LandingCursor } from "@/components/shared/LandingCursor";
+import { ThemeProvider } from "@/components/shared/Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased landing-cursor-area">
+      <body className="antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
