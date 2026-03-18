@@ -12,13 +12,13 @@ import {
   useUpsertHabitEntryMutation,
 } from "@/features/habits/api/client";
 import { AddHabitModal } from "@/features/habits/components/AddHabitModal";
-import { HabitItem } from "@/features/habits/components/HabitItem";
-import { PrayerHabitCard } from "@/features/habits/components/PrayerHabitCard";
-import { HabitTrackerHeader } from "@/features/habits/components/HabitTrackerHeader";
 import { HabitFilters } from "@/features/habits/components/HabitFilters";
-import { HabitSuggestions } from "@/features/habits/components/HabitSuggestions";
+import { HabitItem } from "@/features/habits/components/HabitItem";
 import { HabitStats } from "@/features/habits/components/HabitStats";
+import { HabitSuggestions } from "@/features/habits/components/HabitSuggestions";
+import { HabitTrackerHeader } from "@/features/habits/components/HabitTrackerHeader";
 import { HabitTrackerPageSkeleton } from "@/features/habits/components/HabitTrackerPageSkeleton";
+import { PrayerHabitCard } from "@/features/habits/components/PrayerHabitCard";
 import type { HabitRecord, HabitRoutine, SaveHabitPayload } from "@/features/habits/types";
 
 type StatusFilter = "all" | "pending" | "completed";
@@ -62,13 +62,13 @@ export function HabitTrackerPage() {
 
   if (habitsQuery.isError) {
     return (
-      <div className="rounded-4xl border border-destructive/20 bg-destructive/5 p-8 backdrop-blur-md">
-        <h2 className="text-xl font-black tracking-tight text-destructive">Could not load habits</h2>
-        <p className="mt-2 text-sm font-medium text-destructive/80">{getHabitsErrorMessage(habitsQuery.error)}</p>
+      <div className="rounded-[2rem] border border-destructive/20 bg-card p-8 shadow-sm">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground">Could not load habits</h2>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{getHabitsErrorMessage(habitsQuery.error)}</p>
         <button
           type="button"
           onClick={() => habitsQuery.refetch()}
-          className="mt-6 rounded-2xl bg-destructive px-6 py-3.5 text-sm font-black uppercase tracking-[0.16em] text-white transition-transform hover:scale-105 active:scale-[0.98]"
+          className="mt-6 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
         >
           Retry
         </button>
@@ -189,8 +189,7 @@ export function HabitTrackerPage() {
   }
 
   return (
-    <div className="space-y-8 pb-32">
-      {/* 1. Page header — identity + search filter + add action */}
+    <div className="space-y-6 pb-28">
       <HabitTrackerHeader
         onAddHabit={() => {
           setEditingHabit(null);
@@ -211,35 +210,32 @@ export function HabitTrackerPage() {
         }
       />
 
-      {/* 2. Prayer card — always on top, time-sensitive daily actions */}
       {prayerHabits.length > 0 ? (
         <PrayerHabitCard habits={prayerHabits} pendingHabitId={pendingEntryHabitId} onSaveProgress={handleSaveProgress} />
       ) : null}
 
-      {/* 3. Stats — motivational overview of progress */}
       <HabitStats summary={data.summary} />
 
       {actionError ? (
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {actionError}
         </div>
       ) : null}
 
-      {/* 5. Habit list — the core actionable items */}
       {habits.length === 0 && prayerHabits.length === 0 ? (
-        <section className="flex min-h-[400px] flex-col items-center justify-center rounded-4xl border border-dashed border-border/40 bg-card/40 px-6 py-20 text-center backdrop-blur-sm">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+        <section className="flex min-h-[360px] flex-col items-center justify-center rounded-[2rem] border border-dashed border-border/50 bg-card/70 px-6 py-16 text-center shadow-sm">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-border/70 bg-background text-muted-foreground">
             <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-foreground md:text-3xl">No habits match this view</h2>
-          <p className="mt-4 max-w-md text-base font-medium text-muted-foreground">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">No habits match this view</h2>
+          <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">
             Adjust the filters above or create a new habit to start building your routine today.
           </p>
         </section>
       ) : habits.length > 0 ? (
-        <section className="space-y-5">
+        <section className="space-y-3">
           {habits.map((habit) => (
             <HabitItem
               key={habit.id}
@@ -257,11 +253,10 @@ export function HabitTrackerPage() {
         </section>
       ) : null}
 
-      {/* 6. Quick start ideas — discovery for new/growing users, at the bottom */}
-      <HabitSuggestions 
-        suggestions={data.suggestions} 
-        isPending={createHabitMutation.isPending} 
-        onQuickAdd={handleQuickAdd} 
+      <HabitSuggestions
+        suggestions={data.suggestions}
+        isPending={createHabitMutation.isPending}
+        onQuickAdd={handleQuickAdd}
       />
 
       <AddHabitModal

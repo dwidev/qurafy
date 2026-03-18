@@ -51,33 +51,33 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
   });
 
   return (
-    <article className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+    <article className="rounded-[2rem] border border-border/70 bg-card/80 p-6 shadow-sm backdrop-blur-sm md:p-8">
       <div className="space-y-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2.5">
             <div className="flex flex-wrap items-center gap-3">
-              <h3 className="text-xl font-bold tracking-tight text-foreground">Prayer</h3>
-              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+              <h3 className="text-xl font-semibold tracking-tight text-foreground">Prayer</h3>
+              <span className="rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
                 {completedCount}/{orderedHabits.length} today
               </span>
             </div>
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
               Keep all five daily prayers visible in one place and check them off one by one.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:min-w-[280px]">
-            <div className="rounded-2xl border border-border bg-secondary/20 px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Today</p>
-              <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{completedCount}</p>
+            <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Today</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{completedCount}</p>
             </div>
-            <div className="rounded-2xl border border-border bg-secondary/20 px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Target</p>
-              <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{orderedHabits.length}</p>
+            <div className="rounded-2xl border border-border/70 bg-background/70 px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Target</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{orderedHabits.length}</p>
             </div>
-            <div className="col-span-2 rounded-2xl border border-border bg-secondary/20 px-4 py-3 sm:col-span-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">7d score</p>
-              <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{consistencyScore}%</p>
+            <div className="col-span-2 rounded-2xl border border-border/70 bg-background/70 px-4 py-3 sm:col-span-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">7d score</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{consistencyScore}%</p>
             </div>
           </div>
         </div>
@@ -89,9 +89,9 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
                 className={cn(
                   "flex h-8 min-w-8 items-center justify-center rounded-full border px-2 text-[10px] font-black transition-colors duration-300",
                   point.completed === point.total && point.total > 0
-                    ? "border-emerald-500/20 bg-emerald-500 text-white shadow-sm shadow-emerald-500/20"
+                    ? "border-primary/15 bg-primary text-primary-foreground"
                     : point.completed > 0
-                      ? "border-emerald-500/20 bg-emerald-500/12 text-emerald-600"
+                      ? "border-primary/15 bg-primary/10 text-primary"
                       : "border-border/60 bg-background text-muted-foreground",
                 )}
               >
@@ -113,16 +113,16 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
                 disabled={isSaving}
                 onClick={() => onSaveProgress(habit, habit.isCompletedToday ? 0 : 1)}
                 className={cn(
-                  "flex min-h-24 flex-col items-start justify-between rounded-2xl border px-5 py-4 text-left transition-all hover:bg-accent/50 disabled:cursor-not-allowed disabled:opacity-60",
+                  "flex min-h-24 flex-col items-start justify-between rounded-2xl border px-5 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                   habit.isCompletedToday
-                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-900 dark:text-emerald-100"
-                    : "border-border bg-background hover:border-primary/30",
+                    ? "border-primary/15 bg-primary/5"
+                    : "border-border/70 bg-background/70 hover:bg-background",
                 )}
               >
                 <div className="flex w-full items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold tracking-tight text-foreground">{habit.title}</p>
-                    <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <p className="text-sm font-semibold tracking-tight text-foreground">{habit.title}</p>
+                    <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
                       {habit.routine}
                     </p>
                   </div>
@@ -131,7 +131,7 @@ export function PrayerHabitCard({ habits, pendingHabitId, onSaveProgress }: Pray
                     className={cn(
                       "flex h-6 w-6 items-center justify-center rounded-md border transition-colors",
                       habit.isCompletedToday
-                        ? "border-transparent bg-emerald-500 text-white shadow-sm shadow-emerald-500/20"
+                        ? "border-primary bg-primary text-primary-foreground"
                         : "border-border/60 bg-card text-muted-foreground",
                     )}
                   >

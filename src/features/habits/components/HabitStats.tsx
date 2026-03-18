@@ -12,56 +12,60 @@ export function HabitStats({ summary }: HabitStatsProps) {
       value: `${summary.completedToday}/${summary.totalHabits}`,
       hint: `${summary.completionRateToday}% complete`,
       icon: CheckCircle2,
-      tone: "text-emerald-500",
-      bgTone: "bg-emerald-500/10",
-      glow: "bg-emerald-500",
+      cardClass: "border-border/70 bg-card/80",
+      iconClass: "border-emerald-500/15 bg-linear-to-br from-emerald-400/20 to-emerald-500/5 text-emerald-600",
+      valueClass: "text-foreground",
     },
     {
       label: "Perfect streak",
       value: `${summary.currentStreak}d`,
       hint: `Best ${summary.bestStreak} days`,
       icon: Flame,
-      tone: "text-amber-500",
-      bgTone: "bg-amber-500/10",
-      glow: "bg-amber-500",
+      cardClass: "border-border/70 bg-card/80",
+      iconClass: "border-amber-500/15 bg-linear-to-br from-amber-400/20 to-amber-500/5 text-amber-600",
+      valueClass: "text-foreground",
     },
     {
       label: "Consistency",
       value: `${summary.consistencyScore}%`,
       hint: "Last 7 days",
       icon: Sparkles,
-      tone: "text-rose-500",
-      bgTone: "bg-rose-500/10",
-      glow: "bg-rose-500",
+      cardClass: "border-border/70 bg-card/80",
+      iconClass: "border-violet-500/15 bg-linear-to-br from-violet-400/20 to-violet-500/5 text-violet-600",
+      valueClass: "text-foreground",
     },
     {
       label: "Check-ins",
       value: `${summary.totalCheckIns}`,
       hint: "Completed entries",
       icon: Activity,
-      tone: "text-blue-500",
-      bgTone: "bg-blue-500/10",
-      glow: "bg-blue-500",
+      cardClass: "border-border/70 bg-card/80",
+      iconClass: "border-sky-500/15 bg-linear-to-br from-sky-400/20 to-sky-500/5 text-sky-600",
+      valueClass: "text-foreground",
     },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => {
         const Icon = card.icon;
 
         return (
           <article
             key={card.label}
-            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+            className={`rounded-[1.75rem] border p-5 shadow-sm ${card.cardClass}`}
           >
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${card.bgTone} ${card.tone}`}>
-              <Icon className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{card.label}</p>
-              <p className="text-2xl font-bold tracking-tight text-foreground leading-none mb-1">{card.value}</p>
-              <p className="text-[11px] font-medium text-muted-foreground">{card.hint}</p>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  {card.label}
+                </p>
+                <p className={`mt-4 text-3xl font-semibold tracking-tight ${card.valueClass}`}>{card.value}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{card.hint}</p>
+              </div>
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border ${card.iconClass}`}>
+                <Icon className="h-5 w-5" />
+              </div>
             </div>
           </article>
         );

@@ -14,36 +14,26 @@ interface HabitItemProps {
   onDelete: (habit: HabitRecord) => Promise<void> | void;
 }
 
-const colorClasses: Record<HabitRecord["color"], { badge: string; solid: string; soft: string; bar: string }> = {
+const colorClasses: Record<HabitRecord["color"], { dot: string; bar: string }> = {
   emerald: {
-    badge: "border-emerald-500/20 bg-emerald-500/10 text-emerald-600",
-    solid: "bg-emerald-500 text-white",
-    soft: "bg-emerald-500/12 text-emerald-600",
-    bar: "bg-emerald-500",
+    dot: "bg-emerald-500/70",
+    bar: "bg-emerald-500/70",
   },
   amber: {
-    badge: "border-amber-500/20 bg-amber-500/10 text-amber-600",
-    solid: "bg-amber-500 text-white",
-    soft: "bg-amber-500/12 text-amber-600",
-    bar: "bg-amber-500",
+    dot: "bg-amber-500/70",
+    bar: "bg-amber-500/70",
   },
   rose: {
-    badge: "border-rose-500/20 bg-rose-500/10 text-rose-600",
-    solid: "bg-rose-500 text-white",
-    soft: "bg-rose-500/12 text-rose-600",
-    bar: "bg-rose-500",
+    dot: "bg-rose-500/70",
+    bar: "bg-rose-500/70",
   },
   blue: {
-    badge: "border-blue-500/20 bg-blue-500/10 text-blue-600",
-    solid: "bg-blue-500 text-white",
-    soft: "bg-blue-500/12 text-blue-600",
-    bar: "bg-blue-500",
+    dot: "bg-blue-500/70",
+    bar: "bg-blue-500/70",
   },
   indigo: {
-    badge: "border-indigo-500/20 bg-indigo-500/10 text-indigo-600",
-    solid: "bg-indigo-500 text-white",
-    soft: "bg-indigo-500/12 text-indigo-600",
-    bar: "bg-indigo-500",
+    dot: "bg-indigo-500/70",
+    bar: "bg-indigo-500/70",
   },
 };
 
@@ -55,91 +45,83 @@ export function HabitItem({ habit, isSaving = false, isDeleting = false, onSaveP
   return (
     <article
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:border-primary/20 hover:shadow-sm",
-        habit.isCompletedToday && "opacity-80",
+        "overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/80 shadow-sm transition-colors",
+        habit.isCompletedToday && "border-primary/15 bg-primary/[0.03]",
       )}
     >
-      {/* Color accent bar */}
-      <span className={cn("absolute inset-y-0 left-0 w-1", palette.bar)} />
-
-      {/* Main row */}
-      <div className="flex items-center gap-3 pl-4 pr-3 py-3">
-        {/* Avatar */}
-        <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold uppercase", palette.soft)}>
-          {habit.title.slice(0, 2)}
+      <div className="flex items-center gap-2.5 px-3.5 py-3 md:px-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background text-[11px] font-semibold uppercase text-foreground">
+          {habit.title.slice(0, 2).toUpperCase()}
         </div>
 
-        {/* Title + meta */}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className={cn("truncate text-sm font-bold tracking-tight", habit.isCompletedToday ? "text-muted-foreground line-through" : "text-foreground")}>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h3 className={cn("truncate text-[13px] font-semibold tracking-tight", habit.isCompletedToday ? "text-muted-foreground line-through" : "text-foreground")}>
               {habit.title}
             </h3>
-            <span className={cn("hidden shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest sm:inline-block", palette.badge)}>
+            <span className="hidden items-center gap-1.5 rounded-full border border-border/70 bg-background px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground sm:inline-flex">
+              <span className={cn("h-1.5 w-1.5 rounded-full", palette.dot)} />
               {habit.category}
             </span>
+            {habit.isCompletedToday ? (
+              <span className="hidden rounded-full border border-primary/15 bg-primary/10 px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.18em] text-primary sm:inline-flex">
+                Done today
+              </span>
+            ) : null}
           </div>
-          <div className="mt-0.5 flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {habit.routine}
-            </span>
-            <span className="text-[10px] text-muted-foreground/60">·</span>
-            <span className="text-[10px] text-muted-foreground/80">
-              {habit.currentStreak}d streak · {habit.completionRate7d}% / week
-            </span>
+
+          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+            <span className="font-medium uppercase tracking-[0.2em]">{habit.routine}</span>
+            <span>•</span>
+            <span>{habit.currentStreak}d streak</span>
+            <span>•</span>
+            <span>{habit.completionRate7d}% week</span>
           </div>
-          {/* Progress bar for quantitative */}
-          {habit.type === "quantitative" && (
-            <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-secondary">
+
+          {habit.type === "quantitative" ? (
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
               <div
                 className={cn("h-full rounded-full transition-all duration-500", palette.bar)}
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-          )}
+          ) : null}
         </div>
 
-        {/* Week dots */}
         <div className="hidden shrink-0 items-center gap-1 md:flex">
           {habit.week.map((point) => (
-            <div key={point.date} className="flex flex-col items-center gap-0.5">
-              <div
-                className={cn(
-                  "h-2.5 w-2.5 rounded-full border border-transparent transition-colors",
-                  point.isCompleted ? palette.solid : "bg-secondary",
-                  point.isToday && !point.isCompleted && "border-foreground/30 bg-background",
-                )}
-              />
-            </div>
+            <div
+              key={point.date}
+              className={cn(
+                "h-2.5 w-2.5 rounded-full",
+                point.isCompleted ? palette.dot : "bg-secondary",
+                point.isToday && !point.isCompleted && "ring-2 ring-border ring-offset-2 ring-offset-card",
+              )}
+            />
           ))}
         </div>
 
-        {/* Quick action */}
         {habit.type === "boolean" ? (
           <button
             type="button"
             disabled={isSaving || isDeleting}
             onClick={() => void onSaveProgress(habit, habit.isCompletedToday ? 0 : 1)}
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-sm transition-all disabled:cursor-not-allowed disabled:opacity-60",
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60",
               habit.isCompletedToday
-                ? `${palette.solid} border-transparent shadow-sm`
-                : "border-border bg-background text-foreground hover:bg-secondary",
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border/70 bg-background text-foreground hover:bg-secondary",
             )}
             title={habit.isCompletedToday ? "Mark undone" : "Mark done"}
           >
             <Check className="h-4 w-4" />
           </button>
         ) : progressPercent >= 100 ? (
-          /* Target reached — show checkmark, tap to reset */
           <button
             type="button"
             disabled={isSaving || isDeleting}
             onClick={() => void onSaveProgress(habit, 0)}
-            className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-transparent shadow-sm transition-all disabled:cursor-not-allowed disabled:opacity-60",
-              palette.solid,
-            )}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary bg-primary text-primary-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-60"
             title="Target reached! Tap to reset"
           >
             <Check className="h-4 w-4" />
@@ -150,79 +132,59 @@ export function HabitItem({ habit, isSaving = false, isDeleting = false, onSaveP
               type="button"
               disabled={isSaving || isDeleting}
               onClick={() => void onSaveProgress(habit, Math.max(0, habit.todayValue - 1))}
-              className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+              className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/70 bg-background text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
             >
               <Minus className="h-3 w-3" />
             </button>
-            <span className="min-w-8 text-center text-sm font-bold text-foreground">
+            <span className="min-w-7 text-center text-[13px] font-semibold text-foreground">
               {habit.todayValue}
             </span>
             <button
               type="button"
               disabled={isSaving || isDeleting}
               onClick={() => void onSaveProgress(habit, habit.todayValue + 1)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+              className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/70 bg-background text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
             >
               <Plus className="h-3 w-3" />
             </button>
           </div>
         )}
 
-        {/* Edit / delete icon buttons */}
-        <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-          <button
-            type="button"
-            disabled={isSaving || isDeleting}
-            onClick={() => onEdit(habit)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-60"
-            title="Edit habit"
-          >
-            <Pencil className="h-3 w-3" />
-          </button>
-          <button
-            type="button"
-            disabled={isSaving || isDeleting}
-            onClick={() => void onDelete(habit)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-destructive/30 bg-destructive/5 text-destructive transition-colors hover:bg-destructive/15 disabled:opacity-60"
-            title="Delete habit"
-          >
-            <Trash2 className="h-3 w-3" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary"
-            title={expanded ? "Collapse" : "Expand"}
-          >
-            {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-background text-muted-foreground transition-colors hover:text-foreground"
+          title={expanded ? "Collapse" : "Expand"}
+        >
+          {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        </button>
       </div>
 
-      {/* Expanded panel — extra controls */}
-      {expanded && (
-        <div className="border-t border-border bg-secondary/5 px-5 py-4 pl-5 animate-in fade-in slide-in-from-top-1 duration-200">
+      {expanded ? (
+        <div className="border-t border-border/70 bg-background/70 px-5 py-4 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex flex-wrap items-center gap-3">
-            {habit.type === "quantitative" && (
+            {habit.type === "quantitative" ? (
               <>
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
+                <div className="flex items-center gap-2 rounded-2xl border border-border/70 bg-background px-3 py-2">
                   <button
                     type="button"
                     disabled={isSaving || isDeleting}
                     onClick={() => void onSaveProgress(habit, Math.max(0, habit.todayValue - 1))}
-                    className="flex h-6 w-6 items-center justify-center rounded-md border border-border text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/70 text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
                   >
                     <Minus className="h-3 w-3" />
                   </button>
                   <div className="text-center">
-                    <p className="text-lg font-bold leading-none text-foreground">{habit.todayValue}</p>
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">/ {habit.target} {habit.unit}</p>
+                    <p className="text-lg font-semibold leading-none text-foreground">{habit.todayValue}</p>
+                    <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                      / {habit.target} {habit.unit}
+                    </p>
                   </div>
                   <button
                     type="button"
                     disabled={isSaving || isDeleting}
                     onClick={() => void onSaveProgress(habit, habit.todayValue + 1)}
-                    className="flex h-6 w-6 items-center justify-center rounded-md border border-border text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/70 text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
                   >
                     <Plus className="h-3 w-3" />
                   </button>
@@ -231,37 +193,36 @@ export function HabitItem({ habit, isSaving = false, isDeleting = false, onSaveP
                   type="button"
                   disabled={isSaving || isDeleting}
                   onClick={() => void onSaveProgress(habit, habit.target)}
-                  className={cn("h-9 rounded-xl px-4 text-xs font-semibold shadow-sm transition-colors disabled:opacity-60", palette.solid)}
+                  className="h-10 rounded-full bg-foreground px-4 text-xs font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-60"
                 >
                   Complete Target
                 </button>
               </>
-            )}
+            ) : null}
 
-            {/* 7-day week row in expand */}
             <div className="flex items-center gap-1.5 md:hidden">
               {habit.week.map((point) => (
-                <div key={point.date} className="flex flex-col items-center gap-0.5">
+                <div key={point.date} className="flex flex-col items-center gap-1">
                   <div
                     className={cn(
-                      "h-3 w-3 rounded-full border border-transparent",
-                      point.isCompleted ? palette.solid : "bg-secondary",
-                      point.isToday && !point.isCompleted && "border-foreground/30 bg-background",
+                      "h-3 w-3 rounded-full",
+                      point.isCompleted ? palette.dot : "bg-secondary",
+                      point.isToday && !point.isCompleted && "ring-2 ring-border ring-offset-2 ring-offset-background",
                     )}
                   />
-                  <span className="text-[8px] font-bold uppercase text-muted-foreground">
+                  <span className="text-[8px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                     {new Date(`${point.date}T00:00:00.000Z`).toLocaleDateString("en-US", { weekday: "narrow" })}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="ml-auto flex gap-2">
+            <div className="ml-auto flex flex-wrap gap-2">
               <button
                 type="button"
                 disabled={isSaving || isDeleting}
                 onClick={() => onEdit(habit)}
-                className="flex h-9 items-center gap-1.5 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+                className="flex h-10 items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 text-xs font-medium text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
               >
                 <Pencil className="h-3 w-3" />
                 Edit
@@ -270,15 +231,15 @@ export function HabitItem({ habit, isSaving = false, isDeleting = false, onSaveP
                 type="button"
                 disabled={isSaving || isDeleting}
                 onClick={() => void onDelete(habit)}
-                className="flex h-9 items-center gap-1.5 rounded-xl border border-destructive/30 bg-destructive/5 px-3 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/15 disabled:opacity-60"
+                className="flex h-10 items-center gap-1.5 rounded-full border border-destructive/20 bg-destructive/5 px-4 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
               >
                 <Trash2 className="h-3 w-3" />
-                {isDeleting ? "Deleting…" : "Delete"}
+                {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </article>
   );
 }

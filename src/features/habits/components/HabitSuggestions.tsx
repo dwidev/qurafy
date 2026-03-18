@@ -1,4 +1,5 @@
 import { LoaderCircle, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { HabitSuggestion, SaveHabitPayload } from "@/features/habits/types";
 
 interface HabitSuggestionsProps {
@@ -7,50 +8,32 @@ interface HabitSuggestionsProps {
   onQuickAdd: (payload: SaveHabitPayload) => void;
 }
 
-const colorMap: Record<string, string> = {
-  emerald: "bg-emerald-500",
-  amber: "bg-amber-500",
-  rose: "bg-rose-500",
-  blue: "bg-blue-500",
-  indigo: "bg-indigo-500",
-};
-
-const colorTextMap: Record<string, string> = {
-  emerald: "text-emerald-600",
-  amber: "text-amber-600",
-  rose: "text-rose-600",
-  blue: "text-blue-600",
-  indigo: "text-indigo-600",
-};
-
-const colorBgMap: Record<string, string> = {
-  emerald: "bg-emerald-500/10",
-  amber: "bg-amber-500/10",
-  rose: "bg-rose-500/10",
-  blue: "bg-blue-500/10",
-  indigo: "bg-indigo-500/10",
+const accentMap: Record<string, string> = {
+  emerald: "bg-emerald-500/70",
+  amber: "bg-amber-500/70",
+  rose: "bg-rose-500/70",
+  blue: "bg-blue-500/70",
+  indigo: "bg-indigo-500/70",
 };
 
 export function HabitSuggestions({ suggestions, isPending, onQuickAdd }: HabitSuggestionsProps) {
   if (suggestions.length === 0) return null;
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             Templates
           </p>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">Quick start ideas</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">Quick start ideas</h2>
         </div>
         {isPending ? <LoaderCircle className="h-5 w-5 animate-spin text-muted-foreground" /> : null}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {suggestions.slice(0, 4).map((suggestion) => {
-          const accentBar = colorMap[suggestion.color] ?? "bg-primary";
-          const accentText = colorTextMap[suggestion.color] ?? "text-primary";
-          const accentBg = colorBgMap[suggestion.color] ?? "bg-primary/10";
+          const accentDot = accentMap[suggestion.color] ?? "bg-primary/70";
 
           return (
             <button
@@ -68,36 +51,29 @@ export function HabitSuggestions({ suggestions, isPending, onQuickAdd }: HabitSu
                   unit: suggestion.unit,
                 })
               }
-              className="group relative overflow-hidden rounded-3xl border border-border bg-card p-5 text-left transition-all duration-200 hover:border-primary/30 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+              className="group rounded-[1.75rem] border border-border/70 bg-card/80 p-5 text-left shadow-sm transition-colors hover:border-border hover:bg-card disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {/* Left accent bar */}
-              <span className={`absolute inset-y-0 left-0 w-1 rounded-l-3xl ${accentBar}`} />
-
-              <div className="flex items-start justify-between gap-3 pl-3">
-                <div className="flex-1 space-y-2">
-                  {/* Icon + meta */}
-                  <div className="flex items-center gap-2">
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${accentBg} ${accentText}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background text-foreground">
                       <Plus className="h-4 w-4" />
                     </div>
-                    <div>
-                      <p className={`text-[10px] font-bold uppercase tracking-widest ${accentText}`}>
+                    <div className="space-y-1">
+                      <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        <span className={cn("h-1.5 w-1.5 rounded-full", accentDot)} />
                         {suggestion.category}
                       </p>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                        {suggestion.routine}
-                      </p>
+                      <p className="text-[11px] text-muted-foreground">{suggestion.routine}</p>
                     </div>
                   </div>
 
-                  {/* Habit label */}
-                  <p className="text-sm font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200">
+                  <p className="text-sm font-semibold leading-6 tracking-tight text-foreground">
                     {suggestion.label}
                   </p>
                 </div>
 
-                {/* Quick add badge */}
-                <span className="shrink-0 mt-0.5 rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                <span className="shrink-0 rounded-full border border-border/70 bg-background px-3 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground transition-colors group-hover:text-foreground">
                   Add
                 </span>
               </div>
