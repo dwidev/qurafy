@@ -37,6 +37,18 @@ function addDays(input: Date, days: number) {
   return startOfUtcDay(next);
 }
 
+function resolveKhatamHistoryExpiresAt(deletedAt: Date | null, expiresAt: Date | null) {
+  if (expiresAt) {
+    return expiresAt;
+  }
+
+  if (!deletedAt) {
+    return null;
+  }
+
+  return addDays(deletedAt, KHATAM_HISTORY_EXPIRY_DAYS);
+}
+
 function daysBetween(startDate: Date, endDate: Date) {
   return Math.floor((endDate.getTime() - startDate.getTime()) / MS_PER_DAY);
 }
@@ -306,6 +318,7 @@ async function syncPlanSummary(
 
 export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
   const now = new Date();
+  const deletedHistoryFallbackCutoff = addDays(now, -KHATAM_HISTORY_EXPIRY_DAYS);
   const [activePlan, deletedPlanRows] = await Promise.all([
     db.query.khatamPlans.findFirst({
       where: and(
@@ -321,7 +334,13 @@ export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
         or(
           and(
             isNotNull(khatamPlans.deletedAt),
-            gt(khatamPlans.expiresAt, now),
+            or(
+              gt(khatamPlans.expiresAt, now),
+              and(
+                isNull(khatamPlans.expiresAt),
+                gt(khatamPlans.deletedAt, deletedHistoryFallbackCutoff),
+              ),
+            ),
           ),
           and(
             isNull(khatamPlans.deletedAt),
@@ -348,6 +367,7 @@ export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
     const startDate = startOfUtcDay(row.startDate);
     const targetDate = startOfUtcDay(row.targetDate);
     const historyState: "deleted" | "completed" = row.deletedAt ? "deleted" : "completed";
+    const expiresAt = resolveKhatamHistoryExpiresAt(row.deletedAt, row.expiresAt);
 
     return {
       id: row.id,
@@ -363,7 +383,7 @@ export async function getKhatamMeData(userId: string): Promise<KhatamMeData> {
       bestStreak: progress?.bestStreak ?? 0,
       isCompleted: row.isCompleted,
       deletedAt: row.deletedAt?.toISOString() ?? null,
-      expiresAt: row.expiresAt?.toISOString() ?? null,
+      expiresAt: expiresAt?.toISOString() ?? null,
       completedAt: progress?.lastCompletedAt?.toISOString() ?? null,
     };
   }).sort((left, right) => {
@@ -602,7 +622,13 @@ export async function recreateKhatamPlanFromHistory(userId: string, payload: Rec
       eq(khatamPlans.id, payload.historyId),
       eq(khatamPlans.userId, userId),
       isNotNull(khatamPlans.deletedAt),
-      gt(khatamPlans.expiresAt, new Date()),
+      or(
+        gt(khatamPlans.expiresAt, new Date()),
+        and(
+          isNull(khatamPlans.expiresAt),
+          gt(khatamPlans.deletedAt, addDays(new Date(), -KHATAM_HISTORY_EXPIRY_DAYS)),
+        ),
+      ),
     ),
   });
 

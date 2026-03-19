@@ -15,6 +15,18 @@ import type {
 
 const GOAL_HISTORY_EXPIRY_DAYS = 7;
 
+function resolveMemorizeHistoryExpiresAt(deletedAt: Date | null, expiresAt: Date | null) {
+  if (expiresAt) {
+    return expiresAt;
+  }
+
+  if (!deletedAt) {
+    return null;
+  }
+
+  return addUtcDays(deletedAt, GOAL_HISTORY_EXPIRY_DAYS);
+}
+
 function buildRangeLabel(surahName: string, startVerse: number, endVerse: number) {
   if (startVerse === endVerse) {
     return `${surahName}, Verse ${startVerse}`;
@@ -85,6 +97,7 @@ function buildMemorizationStreakUpdate(
 
 export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData> {
   const now = new Date();
+  const deletedHistoryFallbackCutoff = addUtcDays(now, -GOAL_HISTORY_EXPIRY_DAYS);
   const [quranListResult, activeGoalRow, deletedGoalRows] = await Promise.all([
     getQuranReadListData().catch(() => null),
     db.query.memorizationGoals.findFirst({
@@ -101,7 +114,13 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
         or(
           and(
             isNotNull(memorizationGoals.deletedAt),
-            gt(memorizationGoals.expiresAt, now),
+            or(
+              gt(memorizationGoals.expiresAt, now),
+              and(
+                isNull(memorizationGoals.expiresAt),
+                gt(memorizationGoals.deletedAt, deletedHistoryFallbackCutoff),
+              ),
+            ),
           ),
           and(
             isNull(memorizationGoals.deletedAt),
@@ -138,6 +157,7 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
     const historyState: "deleted" | "completed" = row.deletedAt ? "deleted" : "completed";
     const completedVerses = Math.max(0, Math.min(progress?.completedVerses ?? 0, row.totalVerses));
     const progressPct = Math.min(100, Math.round((completedVerses / Math.max(1, row.totalVerses)) * 100));
+    const expiresAt = resolveMemorizeHistoryExpiresAt(row.deletedAt, row.expiresAt);
 
     return {
       id: row.id,
@@ -156,7 +176,7 @@ export async function getMemorizeMeData(userId: string): Promise<MemorizeMeData>
       currentStreak: progress?.currentStreak ?? 0,
       bestStreak: progress?.bestStreak ?? 0,
       deletedAt: row.deletedAt?.toISOString() ?? null,
-      expiresAt: row.expiresAt?.toISOString() ?? null,
+      expiresAt: expiresAt?.toISOString() ?? null,
       completedAt: progress?.lastCompletedAt?.toISOString() ?? null,
     };
   }).sort((left, right) => {
@@ -553,7 +573,13 @@ export async function recreateMemorizeGoalFromHistory(userId: string, payload: R
       eq(memorizationGoals.id, payload.historyId),
       eq(memorizationGoals.userId, userId),
       isNotNull(memorizationGoals.deletedAt),
-      gt(memorizationGoals.expiresAt, new Date()),
+      or(
+        gt(memorizationGoals.expiresAt, new Date()),
+        and(
+          isNull(memorizationGoals.expiresAt),
+          gt(memorizationGoals.deletedAt, addUtcDays(new Date(), -GOAL_HISTORY_EXPIRY_DAYS)),
+        ),
+      ),
     ),
   });
 

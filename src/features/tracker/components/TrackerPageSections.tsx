@@ -386,9 +386,15 @@ export function DeletedPlanHistoryPanel({
                     </div>
 
                     {isDeleted && item.expiresAt ? (
-                      <div className="flex items-center gap-1.5 text-sm font-medium text-primary/80">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>{formatExpiryCountdown(item.expiresAt, nowMs)}</span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-primary/80">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{formatExpiryCountdown(item.expiresAt, nowMs)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>Expires on {formatDate(item.expiresAt)}</span>
+                        </div>
                       </div>
                     ) : null}
                   </div>
