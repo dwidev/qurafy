@@ -63,6 +63,7 @@ export default function MemorizePage() {
   const deletedGoalHistory = data?.deletedGoalHistory ?? [];
   const hasActiveGoal = Boolean(activeGoal);
   const hasHistory = deletedGoalHistory.length > 0;
+  const shouldShowHistory = !hasActiveGoal;
   const SURAHS = data?.surahs ?? DEFAULT_SURAHS;
   const safeSurahIdx = SURAHS[form.surahIdx] ? form.surahIdx : 0;
   const selectedSurah = SURAHS[safeSurahIdx];
@@ -254,7 +255,7 @@ export default function MemorizePage() {
           </>
         )}
 
-        {hasHistory ? (
+        {shouldShowHistory ? (
           <DeletedGoalHistoryPanel
             historyItems={deletedGoalHistory}
             onRecreateGoal={handleRecreateGoal}

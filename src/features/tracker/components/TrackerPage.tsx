@@ -37,6 +37,7 @@ export default function TrackerPage() {
   const plan = khatamQuery.data?.activePlan ?? null;
   const deletedPlanHistory = khatamQuery.data?.deletedPlanHistory ?? [];
   const hasHistory = deletedPlanHistory.length > 0;
+  const shouldShowHistory = !Boolean(plan);
 
   useEffect(() => {
     if (khatamQuery.error && isUnauthorizedKhatamError(khatamQuery.error)) {
@@ -125,7 +126,7 @@ export default function TrackerPage() {
           />
         )}
 
-        {hasHistory ? (
+        {shouldShowHistory ? (
           <DeletedPlanHistoryPanel
             historyItems={deletedPlanHistory}
             onRecreatePlan={handleRecreatePlan}

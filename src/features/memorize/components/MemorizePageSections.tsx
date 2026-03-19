@@ -488,85 +488,94 @@ export function DeletedGoalHistoryPanel({
         </div>
       </div>
 
-      <div className="relative space-y-8 pl-4 before:absolute before:bottom-2 before:left-[1.35rem] before:top-2 before:w-px before:bg-border/60">
-        {historyItems.map((item) => {
-          const isCurrentItem = recreateHistoryId === item.id;
-          const isDeleted = item.historyState === "deleted";
-          const actionLabel = isDeleted ? "Deleted" : "Finished";
-          const dateLabel = isDeleted ? item.deletedAt : item.completedAt;
-          console.log(item.expiresAt)
+      {historyItems.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border/70 bg-card/30 p-6 text-sm text-muted-foreground">
+          Your completed or deleted memorization goals will appear here.
+        </div>
+      ) : null}
 
-          return (
-            <div key={item.id} className="relative pl-10">
-              {/* Timeline Dot */}
-              <div
-                className={`absolute left-0 top-1.5 z-10 h-3 w-3 rounded-full border-2 border-background ring-4 ${isDeleted ? "bg-destructive ring-destructive/10" : "bg-emerald-500 ring-emerald-500/10"
+      {historyItems.length > 0 ? (
+        <div className="relative space-y-8 pl-4 before:absolute before:bottom-2 before:left-[1.35rem] before:top-2 before:w-px before:bg-border/60">
+          {historyItems.map((item) => {
+            const isCurrentItem = recreateHistoryId === item.id;
+            const isDeleted = item.historyState === "deleted";
+            const actionLabel = isDeleted ? "Deleted" : "Finished";
+            const dateLabel = isDeleted ? item.deletedAt : item.completedAt;
+
+            return (
+              <div key={item.id} className="relative pl-10">
+                {/* Timeline Dot */}
+                <div
+                  className={`absolute left-0 top-1.5 z-10 h-3 w-3 rounded-full border-2 border-background ring-4 ${
+                    isDeleted ? "bg-destructive ring-destructive/10" : "bg-emerald-500 ring-emerald-500/10"
                   }`}
-              />
+                />
 
-              <div className="flex flex-col gap-4 rounded-3xl border border-border/50 bg-card/40 p-5 transition-all hover:border-primary/20 hover:bg-card sm:flex-row sm:items-center">
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      {dateLabel ? formatLocalDateLabel(new Date(dateLabel)) : "No Date"}
-                    </span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${isDeleted ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-600"
+                <div className="flex flex-col gap-4 rounded-3xl border border-border/50 bg-card/40 p-5 transition-all hover:border-primary/20 hover:bg-card sm:flex-row sm:items-center">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        {dateLabel ? formatLocalDateLabel(new Date(dateLabel)) : "No Date"}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
+                          isDeleted ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-600"
                         }`}
-                    >
-                      {actionLabel}
-                    </span>
+                      >
+                        {actionLabel}
+                      </span>
+                    </div>
+
+                    <h4 className="text-lg font-bold text-foreground">{item.title}</h4>
+
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <BookOpen className="h-3.5 w-3.5" />
+                        <span>{item.surahName}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Target className="h-3.5 w-3.5" />
+                        <span>{item.completedVerses}/{item.totalVerses} verses</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>{item.completedDays}/{item.targetDays} days</span>
+                      </div>
+                    </div>
+
+                    {isDeleted && item.expiresAt ? (
+                      <div className="flex items-center gap-1.5 text-sm font-medium text-primary/80">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>{formatExpiryCountdown(item.expiresAt, nowMs)}</span>
+                      </div>
+                    ) : null}
                   </div>
 
-                  <h4 className="text-lg font-bold text-foreground">{item.title}</h4>
-
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      <BookOpen className="h-3.5 w-3.5" />
-                      <span>{item.surahName}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Target className="h-3.5 w-3.5" />
-                      <span>{item.completedVerses}/{item.totalVerses} verses</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>{item.completedDays}/{item.targetDays} days</span>
-                    </div>
+                  <div className="pt-2 sm:pt-0">
+                    {isDeleted ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void onRecreateGoal(item.id);
+                        }}
+                        disabled={isRecreating}
+                        className="flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-foreground px-6 text-sm font-bold text-background transition-all hover:scale-[1.02] hover:bg-foreground/90 active:scale-[0.98] disabled:opacity-50 sm:w-auto"
+                      >
+                        {isCurrentItem && isRecreating ? "Restoring..." : "Restore Goal"}
+                      </button>
+                    ) : (
+                      <div className="flex h-10 items-center gap-2 rounded-2xl bg-emerald-500/10 px-6 text-sm font-bold text-emerald-600">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Done
+                      </div>
+                    )}
                   </div>
-
-                  {isDeleted && item.expiresAt ? (
-                    <div className="flex items-center gap-1.5 text-sm font-medium text-primary/80">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>{formatExpiryCountdown(item.expiresAt, nowMs)}</span>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="pt-2 sm:pt-0">
-                  {isDeleted ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        void onRecreateGoal(item.id);
-                      }}
-                      disabled={isRecreating}
-                      className="flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-foreground px-6 text-sm font-bold text-background transition-all hover:scale-[1.02] hover:bg-foreground/90 active:scale-[0.98] disabled:opacity-50 sm:w-auto"
-                    >
-                      {isCurrentItem && isRecreating ? "Restoring..." : "Restore Goal"}
-                    </button>
-                  ) : (
-                    <div className="flex h-10 items-center gap-2 rounded-2xl bg-emerald-500/10 px-6 text-sm font-bold text-emerald-600">
-                      <CheckCircle2 className="h-4 w-4" />
-                      Done
-                    </div>
-                  )}
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : null}
     </section>
   );
 }
