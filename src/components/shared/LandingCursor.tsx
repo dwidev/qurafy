@@ -19,12 +19,17 @@ export function LandingCursor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particles = useRef<Particle[]>([]);
   const rafId = useRef<number>(0);
-  const spawnCounter = useRef(0);
+  const lastSpawnAt = useRef(0);
+  const lastSpawnPoint = useRef<{ x: number; y: number } | null>(null);
 
   const spawnParticle = useCallback((x: number, y: number) => {
     const type = Math.random() > 0.4 ? "star" : "moon";
     const angle = Math.random() * Math.PI * 2;
-    const speed = 0.3 + Math.random() * 1.2;
+    const speed = 0.08 + Math.random() * 0.32;
+
+    if (particles.current.length >= 80) {
+      particles.current.shift();
+    }
 
     particles.current.push({
       x,
@@ -34,9 +39,9 @@ export function LandingCursor() {
       rotation: Math.random() * 360,
       type,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 0.3,
+      vy: Math.sin(angle) * speed - 0.12,
       life: 0,
-      maxLife: 40 + Math.random() * 30,
+      maxLife: 56 + Math.random() * 36,
     });
   }, []);
 
@@ -107,10 +112,21 @@ export function LandingCursor() {
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      spawnCounter.current += 1;
-      if (spawnCounter.current % 2 === 0) {
-        spawnParticle(e.clientX, e.clientY);
+      const now = performance.now();
+      const point = { x: e.clientX, y: e.clientY };
+      const previousPoint = lastSpawnPoint.current;
+      const elapsed = now - lastSpawnAt.current;
+      const distance = previousPoint
+        ? Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y)
+        : Infinity;
+
+      if (elapsed < 32 || distance < 14) {
+        return;
       }
+
+      lastSpawnAt.current = now;
+      lastSpawnPoint.current = point;
+      spawnParticle(point.x, point.y);
     };
 
     const animate = () => {
@@ -120,12 +136,12 @@ export function LandingCursor() {
         particle.life += 1;
         particle.x += particle.vx;
         particle.y += particle.vy;
-        particle.rotation += 1.5;
-        particle.vy += 0.01;
+        particle.rotation += 0.6;
+        particle.vy += 0.003;
 
         const progress = particle.life / particle.maxLife;
         const fadeOpacity = particle.opacity * (1 - progress);
-        const scale = 1 - progress * 0.5;
+        const scale = 1 - progress * 0.35;
 
         if (particle.type === "star") {
           drawStar(particle.x, particle.y, particle.size * scale, particle.rotation, fadeOpacity);
